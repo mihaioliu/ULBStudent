@@ -3,21 +3,119 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test</title>
+    <title>ULBStudent - Comunitatea Studenților ULB</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
     <header>
-      <h1>Nume 1.1</h1>
+      <div class="header-content">
+        <h1>ULBStudent</h1>
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#home" class="nav-link active">Pagina Principală</a></li>
+          <li><a href="#documents" class="nav-link">Documente</a></li>
+          <li><a href="#subreddit" class="nav-link">Subreddit</a></li>
+        </ul>
+      </nav>
     </header>
 
-    <main>
-      <p>paragraf</p>
+    <main id="home">
+      <section class="search-section">
+        <div class="search-header">
+          <h2>Caută Profesori și Materii</h2>
+          <p>Găsește informații valoroase despre profesori și cursuri</p>
+        </div>
+        <form class="search-form">
+          <div class="form-group">
+            <input type="text" placeholder="Profesor" id="professor" class="search-input">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="Specializare" id="specialization" class="search-input">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="Materie" id="subject" class="search-input">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="An (ex: 1, 2, 3)" id="year" class="search-input">
+          </div>
+          <button type="submit" class="search-btn">Caută</button>
+        </form>
+      </section>
+
+      <section class="questions-section">
+        <div class="section-header">
+          <h2>Cele Mai Relevante Întrebări</h2>
+          <div class="view-toggle">
+            <span class="filter-label">Ordine:</span>
+            <select id="sort-select" class="sort-select">
+              <option>Cele mai recente</option>
+              <option>Cele mai helpful</option>
+              <option>Cele mai comentate</option>
+            </select>
+          </div>
+        </div>
+        <div class="question-list">
+          <div class="question">
+            <div class="question-header">
+              <h3>Cum să treci examenul la Matematică?</h3>
+              <span class="question-tag">Matematică</span>
+            </div>
+            <p class="question-excerpt">Sfaturi și îndrumări practice pentru a promova examenul final. Discuțiile arată că pregătirea timpurie este esențială...</p>
+            <div class="question-meta">
+              <span class="meta-item">👤 de Student ULB</span>
+              <span class="meta-item">📅 acum 2 zile</span>
+              <span class="meta-item">💬 12 comentarii</span>
+            </div>
+          </div>
+          <div class="question">
+            <div class="question-header">
+              <h3>Recomandări pentru profesorul de Fizică</h3>
+              <span class="question-tag">Fizică</span>
+            </div>
+            <p class="question-excerpt">Experiențe și perspective ale studenților despre metodologia și dificultatea cursurilor. Informații ce pot ajuta la alegere...</p>
+            <div class="question-meta">
+              <span class="meta-item">👤 de Another Student</span>
+              <span class="meta-item">📅 acum 1 zi</span>
+              <span class="meta-item">💬 8 comentarii</span>
+            </div>
+          </div>
+          <div class="question">
+            <div class="question-header">
+              <h3>Cum se organizează proiectele de Programare?</h3>
+              <span class="question-tag">Programare</span>
+            </div>
+            <p class="question-excerpt">Detalii despre cerințele proiectelor, deadline-uri și criterii de evaluare. Sfaturi de la studenți care au trecut prin asta...</p>
+            <div class="question-meta">
+              <span class="meta-item">👤 de Developer Student</span>
+              <span class="meta-item">📅 acum 3 zile</span>
+              <span class="meta-item">💬 15 comentarii</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
-      <p>Footer: informații de subsol</p>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB</p>
+        </div>
+        <div class="footer-section">
+          <h4>Linkuri Rapide</h4>
+          <ul>
+            <li><a href="#documents">Documente</a></li>
+            <li><a href="#subreddit">Subreddit</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>
