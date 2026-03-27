@@ -3,11 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Titlu și link catre CSS -->
     <title>ULBStudent - Comunitatea Studenților ULB</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
+    <!-- Header: logo + meniu -->
     <header>
       <div class="header-content">
         <h1>ULBStudent</h1>
@@ -15,6 +17,7 @@
       </div>
       <nav>
         <ul>
+          <!-- Navigare catre sectiuni -->
           <li><a href="#home" class="nav-link active">Pagina Principală</a></li>
           <li><a href="#documents" class="nav-link">Documente</a></li>
           <li><a href="#subreddit" class="nav-link">Subreddit</a></li>
@@ -22,13 +25,16 @@
       </nav>
     </header>
 
+    <!-- Continut principal -->
     <main id="home">
+      <!-- Sectiune cautare -->
       <section class="search-section">
         <div class="search-header">
           <h2>Caută Profesori și Materii</h2>
           <p>Găsește informații valoroase despre profesori și cursuri</p>
         </div>
         <form class="search-form">
+          <!-- Campuri cautare -->
           <div class="form-group">
             <input type="text" placeholder="Profesor" id="professor" class="search-input">
           </div>
@@ -41,13 +47,16 @@
           <div class="form-group">
             <input type="text" placeholder="An (ex: 1, 2, 3)" id="year" class="search-input">
           </div>
+          <!-- Buton cautare -->
           <button type="submit" class="search-btn">Caută</button>
         </form>
       </section>
 
+      <!-- Sectiune intrebari -->
       <section class="questions-section">
         <div class="section-header">
           <h2>Cele Mai Relevante Întrebări</h2>
+          <!-- Filtru sortare -->
           <div class="view-toggle">
             <span class="filter-label">Ordine:</span>
             <select id="sort-select" class="sort-select">
@@ -57,6 +66,8 @@
             </select>
           </div>
         </div>
+
+        <!-- Lista intrebari -->
         <div class="question-list">
           <div class="question">
             <div class="question-header">
@@ -70,6 +81,7 @@
               <span class="meta-item">💬 12 comentarii</span>
             </div>
           </div>
+
           <div class="question">
             <div class="question-header">
               <h3>Recomandări pentru profesorul de Fizică</h3>
@@ -82,6 +94,7 @@
               <span class="meta-item">💬 8 comentarii</span>
             </div>
           </div>
+
           <div class="question">
             <div class="question-header">
               <h3>Cum se organizează proiectele de Programare?</h3>
@@ -98,6 +111,7 @@
       </section>
     </main>
 
+    <!-- Footer -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">

@@ -1,4 +1,5 @@
 :root {
+  /* Culori & umbre globale */
   --bg: #f0f4f8; /* Light background */
   --surface: #ffffff; /* White */
   --text: #003366; /* Navy blue */
@@ -11,16 +12,19 @@
   --shadow-lg: 0 10px 24px rgba(78, 91, 128, 0.12);
 }
 
+/* Reset general */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Scroll smooth */
 html {
   scroll-behavior: smooth;
 }
 
+/* Stil global pagina */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
@@ -31,6 +35,7 @@ body {
   flex-direction: column;
 }
 
+/* Carduri principale */
 header {
   margin-top: 2rem;
   margin-bottom: 1.5rem;
@@ -51,6 +56,7 @@ footer {
   box-shadow: var(--shadow);
 }
 
+/* Layout comun pentru header/main/footer */
 header,
 main,
 footer {
@@ -59,6 +65,7 @@ footer {
   border-radius: 12px;
 }
 
+/* Header layout */
 header {
   display: flex;
   justify-content: space-between;
@@ -67,6 +74,7 @@ header {
   gap: 2rem;
 }
 
+/* Titlu logo */
 .header-content h1 {
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   color: var(--accent);
@@ -75,12 +83,14 @@ header {
   letter-spacing: -0.5px;
 }
 
+/* Subtitlu */
 .tagline {
   font-size: 0.95rem;
   color: #666;
   font-weight: 400;
 }
 
+/* Stil titluri globale */
 h1 {
   color: var(--accent);
 }
@@ -110,6 +120,7 @@ p {
   font-size: 0.95rem;
 }
 
+/* Meniu */
 nav ul {
   list-style: none;
   display: flex;
@@ -128,6 +139,7 @@ nav .nav-link {
   position: relative;
 }
 
+/* Hover + link activ */
 nav .nav-link:hover,
 nav .nav-link.active {
   background: var(--accent);
@@ -135,12 +147,14 @@ nav .nav-link.active {
   box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
 }
 
+/* Sectiune cautare */
 .search-section {
   margin-bottom: 3rem;
   padding-bottom: 2rem;
   border-bottom: 2px solid var(--light-gray);
 }
 
+/* Titlu cautare */
 .search-header {
   margin-bottom: 1.5rem;
 }
@@ -154,6 +168,7 @@ nav .nav-link.active {
   font-size: 0.95rem;
 }
 
+/* Grid formular */
 .search-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -161,11 +176,13 @@ nav .nav-link.active {
   align-items: flex-end;
 }
 
+/* Input groups */
 .form-group {
   display: flex;
   flex-direction: column;
 }
 
+/* Input text */
 .search-input {
   padding: 0.85rem 1rem;
   border: 1.5px solid var(--border-color);
@@ -176,6 +193,7 @@ nav .nav-link.active {
   background: var(--light-gray);
 }
 
+/* Focus input */
 .search-input:focus {
   outline: none;
   background: var(--surface);
@@ -187,6 +205,7 @@ nav .nav-link.active {
   color: #999;
 }
 
+/* Buton cautare */
 .search-btn {
   padding: 0.85rem 2rem;
   background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
@@ -200,6 +219,7 @@ nav .nav-link.active {
   box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
 }
 
+/* Hover buton */
 .search-btn:hover {
   background: linear-gradient(135deg, var(--bronze) 0%, #b86f2c 100%);
   transform: translateY(-2px);
@@ -210,10 +230,12 @@ nav .nav-link.active {
   transform: translateY(0);
 }
 
+/* Sectiune intrebari */
 .questions-section {
   padding-top: 1rem;
 }
 
+/* Header sectiune */
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -223,6 +245,7 @@ nav .nav-link.active {
   flex-wrap: wrap;
 }
 
+/* Filtru sortare */
 .view-toggle {
   display: flex;
   align-items: center;
@@ -235,6 +258,7 @@ nav .nav-link.active {
   font-size: 0.9rem;
 }
 
+/* Select sortare */
 .sort-select {
   padding: 0.5rem 0.75rem;
   border: 1.5px solid var(--border-color);
@@ -253,12 +277,14 @@ nav .nav-link.active {
   box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
 }
 
+/* Lista intrebari */
 .question-list {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
+/* Card intrebare */
 .question {
   background: var(--surface);
   padding: 1.75rem;
@@ -267,12 +293,14 @@ nav .nav-link.active {
   transition: all 0.3s ease;
 }
 
+/* Hover card */
 .question:hover {
   box-shadow: var(--shadow-lg);
   border-color: var(--accent);
   transform: translateY(-2px);
 }
 
+/* Header intrebare */
 .question-header {
   display: flex;
   justify-content: space-between;
@@ -289,6 +317,7 @@ nav .nav-link.active {
   line-height: 1.4;
 }
 
+/* Tag categorie */
 .question-tag {
   background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
   color: white;
@@ -300,6 +329,7 @@ nav .nav-link.active {
   box-shadow: 0 2px 6px rgba(230, 57, 70, 0.2);
 }
 
+/* Descriere intrebare */
 .question-excerpt {
   color: #666;
   margin-bottom: 1rem;
@@ -307,6 +337,7 @@ nav .nav-link.active {
   font-size: 0.95rem;
 }
 
+/* Meta info */
 .question-meta {
   display: flex;
   gap: 1.5rem;
@@ -323,16 +354,19 @@ nav .nav-link.active {
   gap: 0.3rem;
 }
 
+/* Footer */
 footer {
   padding: 2.5rem 1.5rem;
 }
 
+/* Coloane footer */
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
 }
 
+/* Sectiuni footer */
 .footer-section {
   padding-bottom: 1rem;
 }
@@ -368,6 +402,7 @@ footer {
   text-decoration: underline;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   header {
     flex-direction: column;
