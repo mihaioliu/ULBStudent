@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Titlu și link catre CSS -->
+    <title>ULBStudent - Comunitatea Studenților ULB</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <!-- Header: logo + meniu -->
+    <header>
+      <div class="header-content">
+        <h1>ULBStudent</h1>
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <!-- Navigare catre sectiuni -->
+          <li><a href="index.html" class="nav-link active">Pagina Principală</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+  <div class="subreddit-banner">
+    <div class="sub-info">
+      <img src="https://via.placeholder.com/80" alt="Logo Sub" class="sub-logo">
+      <div>
+        <h2>r/StudentULBS</h2>
+        <p>Comunitatea oficială a studenților - Știri, evenimente și ajutor.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subreddit-layout">
+    <div class="posts-container">
+            <div class="create-post-box">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user-circle"></i> </div>
+        
+        <form class="quick-post-form">
+          <input type="text" placeholder="Creează o postare nouă sau pune o întrebare..." class="post-input">
+          
+          <div class="form-actions">
+            <div class="media-uploads">
+              <button type="button" class="action-btn" title="Adaugă Imagine">
+                <i class="fa-solid fa-image"></i>
+              </button>
+              <button type="button" class="action-btn" title="Adaugă Link">
+                <i class="fa-solid fa-link"></i>
+              </button>
+              <button type="button" class="action-btn" title="Adaugă Sondaj">
+                <i class="fa-solid fa-poll-h"></i>
+              </button>
+            </div>
+            
+            <button type="submit" class="post-submit-btn">Postează</button>
+          </div>
+        </form>
+      </div>
+      <div class="post-card">
+        <div class="post-votes">
+          <i class="fa-solid fa-arrow-up"></i>
+          <span>150</span>
+          <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <div class="post-body">
+          <span class="post-meta">Postat de u/Andrei • acum 5 ore</span>
+          <h4>S-au afișat rezultatele la bursă! 📜</h4>
+          <p>Verificați avizierul sau platforma online. Mult succes tuturor!</p>
+          <div class="post-actions">
+            <span><i class="fa-solid fa-comment"></i> 45 Comentarii</span>
+            <span><i class="fa-solid fa-share"></i> Share</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="sub-sidebar">
+      <div class="sidebar-box">
+        <h4>Despre Comunitate</h4>
+        <p>Creată pe 28.03.2026. Suntem peste 5.000 de studenți aici!</p>
+        <button class="join-btn">Join</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB</p>
+        </div>
+        <div class="footer-section">
+          <h4>Linkuri Rapide</h4>
+          <ul>
+            <li><a href="documente.html">Documente</a></li>
+            <li><a href="subreddit.html">Subreddit</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

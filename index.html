@@ -6,6 +6,7 @@
     <!-- Titlu și link catre CSS -->
     <title>ULBStudent - Comunitatea Studenților ULB</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
 
   <body>
@@ -18,9 +19,9 @@
       <nav>
         <ul>
           <!-- Navigare catre sectiuni -->
-          <li><a href="#home" class="nav-link active">Pagina Principală</a></li>
-          <li><a href="#documents" class="nav-link">Documente</a></li>
-          <li><a href="#subreddit" class="nav-link">Subreddit</a></li>
+          <li><a href="index.html" class="nav-link active">Pagina Principală</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
         </ul>
       </nav>
     </header>
@@ -48,7 +49,7 @@
             <input type="text" placeholder="An (ex: 1, 2, 3)" id="year" class="search-input">
           </div>
           <!-- Buton cautare -->
-          <button type="submit" class="search-btn">Caută</button>
+          <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
         </form>
       </section>
 
@@ -70,42 +71,65 @@
         <!-- Lista intrebari -->
         <div class="question-list">
           <div class="question">
-            <div class="question-header">
-              <h3>Cum să treci examenul la Matematică?</h3>
-              <span class="question-tag">Matematică</span>
+            <div class="vote-column">
+              <i class="fa-solid fa-arrow-up"></i>
+              <span>24</span>
+              <i class="fa-solid fa-arrow-down"></i>
             </div>
-            <p class="question-excerpt">Sfaturi și îndrumări practice pentru a promova examenul final. Discuțiile arată că pregătirea timpurie este esențială...</p>
-            <div class="question-meta">
-              <span class="meta-item">👤 de Student ULB</span>
-              <span class="meta-item">📅 acum 2 zile</span>
-              <span class="meta-item">💬 12 comentarii</span>
-            </div>
-          </div>
+
+            <div class="question-content">
+              
+              <div class="question-header">
+                <h3>Cum să treci examenul la Matematică?</h3>
+                <span class="question-tag" style="background-color: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem;">Matematică</span>
+              </div>
+
+              <p class="question-excerpt">Sfaturi și îndrumări practice pentru a promova examenul final. Discuțiile arată că pregătirea timpurie este esențială...</p>
+
+              <div class="question-meta">
+                <div class="meta-item"><i class="fa-solid fa-user"></i> de Student ULBS</div>
+                <div class="meta-item"><i class="fa-solid fa-calendar-days"></i> acum 2 zile</div>
+                <div class="meta-item"><i class="fa-solid fa-comment"></i> 12 comentarii</div>
+              </div>
+
+            </div> </div>
 
           <div class="question">
-            <div class="question-header">
-              <h3>Recomandări pentru profesorul de Fizică</h3>
-              <span class="question-tag">Fizică</span>
-            </div>
+              <div class="vote-column">
+                  <i class="fa-solid fa-arrow-up"></i>
+                  <span>18</span>
+                  <i class="fa-solid fa-arrow-down"></i>
+                </div>
+              <div class="question-content">
+                <div class="question-header">
+                  <h3>Recomandări pentru profesorul de Fizică</h3>
+                  <span class="question-tag">Fizică</span>
+                </div>
             <p class="question-excerpt">Experiențe și perspective ale studenților despre metodologia și dificultatea cursurilor. Informații ce pot ajuta la alegere...</p>
             <div class="question-meta">
-              <span class="meta-item">👤 de Another Student</span>
-              <span class="meta-item">📅 acum 1 zi</span>
-              <span class="meta-item">💬 8 comentarii</span>
+              <span class="meta-item"><i class="fa-solid fa-user"></i> de Another Student</span>
+              <span class="meta-item"><i class="fa-solid fa-calendar"></i> acum 1 zi</span>
+              <span class="meta-item"><i class="fa-solid fa-comment"></i> 8 comentarii</span>
             </div>
-          </div>
+          </div></div>
 
           <div class="question">
-            <div class="question-header">
-              <h3>Cum se organizează proiectele de Programare?</h3>
-              <span class="question-tag">Programare</span>
-            </div>
+              <div class="vote-column">
+                  <i class="fa-solid fa-arrow-up"></i>
+                  <span>30</span>
+                  <i class="fa-solid fa-arrow-down"></i>
+                </div>
+              <div class="question-content">
+                <div class="question-header">
+                  <h3>Cum se organizează proiectele de Programare?</h3>
+                  <span class="question-tag">Programare</span>
+                </div>
             <p class="question-excerpt">Detalii despre cerințele proiectelor, deadline-uri și criterii de evaluare. Sfaturi de la studenți care au trecut prin asta...</p>
             <div class="question-meta">
-              <span class="meta-item">👤 de Developer Student</span>
-              <span class="meta-item">📅 acum 3 zile</span>
-              <span class="meta-item">💬 15 comentarii</span>
-            </div>
+              <span class="meta-item"><i class="fa-solid fa-user"></i> de Developer Student</span>
+              <span class="meta-item"><i class="fa-solid fa-calendar"></i> acum 3 zile</span>
+              <span class="meta-item"><i class="fa-solid fa-comment"></i> 15 comentarii</span>
+            </div></div>
           </div>
         </div>
       </section>
@@ -121,8 +145,8 @@
         <div class="footer-section">
           <h4>Linkuri Rapide</h4>
           <ul>
-            <li><a href="#documents">Documente</a></li>
-            <li><a href="#subreddit">Subreddit</a></li>
+            <li><a href="documente.html">Documente</a></li>
+            <li><a href="subreddit.html">Subreddit</a></li>
           </ul>
         </div>
         <div class="footer-section">
