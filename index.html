@@ -1,10 +1,17 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Titlu și link catre CSS -->
-    <title>ULBStudent - Comunitatea Studenților ULB</title>
+    <meta name="description" content="ULBStudent - Comunitatea studenților ULB. Găsește profesori, materii, documente și suport pentru studii." />
+    <meta name="keywords" content="ULB, studenți, profesori, materii, documente, comunitate, studiu" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <meta property="og:title" content="ULBStudent - Comunitatea Studenților ULB" />
+    <meta property="og:description" content="Platformă de suport și comunitate pentru studenții Universității Lucian Blaga" />
+    <meta property="og:type" content="website" />
+    
+    <title>ULBStudent - Comunitatea Studenților ULB | Platformă Studiu</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
@@ -22,8 +29,16 @@
           <li><a href="index.html" class="nav-link active">Pagina Principală</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
     </header>
 
     <!-- Continut principal -->
@@ -53,7 +68,359 @@
         </form>
       </section>
 
-      <!-- Sectiune intrebari -->
+      <!-- Advanced Global Search Section -->
+      <section class="advanced-search-section">
+        <div class="section-header">
+          <h2>🔍 Căutare Globală Avansată</h2>
+          <p style="color: #666; margin: 0;">Caută simultan în documente, postări, profesori și anunțuri</p>
+        </div>
+
+        <div class="advanced-search-container">
+          <div class="search-bar-advanced">
+            <i class="fas fa-search"></i>
+            <input type="text" id="globalSearchInput" placeholder="Caută: Profesor, materie, document, tag..." class="global-search-input">
+            <button id="globalSearchBtn" class="search-submit-btn">Caută</button>
+          </div>
+
+          <div class="search-filters">
+            <label class="filter-checkbox">
+              <input type="checkbox" value="professors" checked>
+              <span>👨‍🏫 Profesori</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="documents" checked>
+              <span>📄 Documente</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="posts" checked>
+              <span>💬 Postări</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="announcements" checked>
+              <span>📢 Anunțuri</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" value="reviews" checked>
+              <span>⭐ Recenzii</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="searchResults" class="search-results-container" style="display: none;">
+          <div class="results-header">
+            <h3>Rezultate pentru: <span id="searchQuery"></span></h3>
+            <button class="btn-close-results">&times;</button>
+          </div>
+          <div class="results-list" id="resultsList"></div>
+        </div>
+      </section>
+
+      <!-- Sectiune Anunțuri Urgente (Avizier Digital) -->
+      <section class="announcements-section">
+        <div class="section-header">
+          <h2>📢 Anunțuri Urgente</h2>
+          <p style="color: #e63946; margin: 0; font-weight: 500;">Informații importante de la profesori</p>
+        </div>
+        
+        <div class="announcements-container">
+          <div class="announcement-card urgent">
+            <div class="announcement-badge">🚨 URGENT</div>
+            <h4>S-a mutat sala de curs!</h4>
+            <p class="announcement-meta">Matematică I - Prof. Alexandru Dinu • acum 30 min</p>
+            <p class="announcement-text">Sala de curs s-a mutat de la A142 la B307. Atenție: sesiunea de astazi la ora 14:00 va fi în noua locație!</p>
+            <div class="announcement-footer">
+              <span class="posted-time">⏰ 30 minute în urmă</span>
+              <button class="btn-mark-read">Marchez ca citit</button>
+            </div>
+          </div>
+
+          <div class="announcement-card important">
+            <div class="announcement-badge">⚠️ IMPORTANT</div>
+            <h4>Termenul pentru proiect a fost prelungit</h4>
+            <p class="announcement-meta">Programare I - Prof. Ion Cristian • acum 2 ore</p>
+            <p class="announcement-text">Din cauza cererilor studenților, deadline-ul pentru proiect a fost mutat de la 15 martie la 20 martie.</p>
+            <div class="announcement-footer">
+              <span class="posted-time">⏰ 2 ore în urmă</span>
+              <button class="btn-mark-read">Marchez ca citit</button>
+            </div>
+          </div>
+
+          <div class="announcement-card info">
+            <div class="announcement-badge">ℹ️ INFO</div>
+            <h4>Examen amânat din cauza tehnică</h4>
+            <p class="announcement-meta">Fizică II - Prof. Maria Popescu • acum 5 ore</p>
+            <p class="announcement-text">Examenul de laborator programat pentru astazi a fost amânat. Data nouă va fi anunțată în următoarele 24 ore.</p>
+            <div class="announcement-footer">
+              <span class="posted-time">⏰ 5 ore în urmă</span>
+              <button class="btn-mark-read">Marchez ca citit</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sectiune Recenzii Materii -->
+      <section class=\"reviews-section\">
+        <div class=\"section-header\">
+          <h2>Recenzii Materii & Profesori</h2>
+          <p style=\"color: #888; margin: 0;\">Evaluări de la studenți cu experiență</p>
+        </div>
+        
+        <div class=\"reviews-grid\">
+          <div class=\"review-card\">
+            <div class=\"review-header\">
+              <h4>Matematică I</h4>
+              <div class=\"stars\">
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star\">★</span>
+              </div>
+            </div>
+            <p class=\"professor-name\">Prof. Dr. Alexandru Dinu</p>
+            <div class=\"stats\">
+              <span class=\"stat-item\">📊 Dificultate: 8/10</span>
+              <span class=\"stat-item\">✅ Utilitate: 9/10</span>
+              <span class=\"stat-item\">💡 Sfat: Învață exercițiile</span>
+            </div>
+            <p class=\"review-text\">Curs challenging dar foarte util. Prof. explică bine, dar sunt mulți exerciții la examen.</p>
+            <span class=\"helpful-count\">👍 425 găsit util</span>
+          </div>
+
+          <div class=\"review-card\">
+            <div class=\"review-header\">
+              <h4>Fizică II</h4>
+              <div class=\"stars\">
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star\">★</span>
+                <span class=\"star\">★</span>
+              </div>
+            </div>
+            <p class=\"professor-name\">Prof. Dr. Maria Popescu</p>
+            <div class=\"stats\">
+              <span class=\"stat-item\">📊 Dificultate: 6/10</span>
+              <span class=\"stat-item\">✅ Utilitate: 7/10</span>
+              <span class=\"stat-item\">💡 Sfat: Laborator e important</span>
+            </div>
+            <p class=\"review-text\">Materie ușoară dacă ești atent la laboratoare. Examenul e fair play.</p>
+            <span class=\"helpful-count\">👍 318 găsit util</span>
+          </div>
+
+          <div class=\"review-card\">
+            <div class=\"review-header\">
+              <h4>Programare I</h4>
+              <div class=\"stars\">
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+                <span class=\"star filled\">★</span>
+              </div>
+            </div>
+            <p class=\"professor-name\">Prof. Dr. Ion Cristian</p>
+            <div class=\"stats\">
+              <span class=\"stat-item\">📊 Dificultate: 7/10</span>
+              <span class=\"stat-item\">✅ Utilitate: 10/10</span>
+              <span class=\"stat-item\">💡 Sfat: Practice coding daily</span>
+            </div>
+            <p class=\"review-text\">Excelent curs! Prof. e foarte implicat. Proiectele sunt interesante și practice.</p>
+            <span class=\"helpful-count\">👍 562 găsit util</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sectiune Top Săptămânii -->
+      <section class=\"leaderboard-section\">
+        <div class=\"section-header\">
+          <h2>🏆 Top Săptămânii - Studenți Activi</h2>
+          <p style=\"color: #888; margin: 0;\">Cei mai de ajutor membri ai comunității</p>
+        </div>
+
+        <div class=\"leaderboard-table\">
+          <div class=\"leaderboard-item rank1\">
+            <div class=\"rank\">🥇</div>
+            <div class=\"user-info\">
+              <h4>Ana Popescu</h4>
+              <span class=\"badge expert\">Expert în Matematică</span>
+            </div>
+            <div class=\"stats-right\">
+              <span>245 puncte</span>
+              <div class=\"progress-bar\">
+                <div class=\"progress\" style=\"width: 100%\"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class=\"leaderboard-item rank2\">
+            <div class=\"rank\">🥈</div>
+            <div class=\"user-info\">
+              <h4>Mihai Ionescu</h4>
+              <span class=\"badge active\">Salvatorul din Sesiune</span>
+            </div>
+            <div class=\"stats-right\">
+              <span>198 puncte</span>
+              <div class=\"progress-bar\">
+                <div class=\"progress\" style=\"width: 81%\"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class=\"leaderboard-item rank3\">
+            <div class=\"rank\">🥉</div>
+            <div class=\"user-info\">
+              <h4>Ella Costache</h4>
+              <span class=\"badge curious\">Boboc Curios</span>
+            </div>
+            <div class=\"stats-right\">
+              <span>156 puncte</span>
+              <div class=\"progress-bar\">
+                <div class=\"progress\" style=\"width: 64%\"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sectiune Statistici Platformă -->
+      <section class="statistics-section">
+        <div class="section-header">
+          <h2>📊 Statistici Platformă</h2>
+          <p style="color: #888; margin: 0;">Impactul comunității ULBStudent în numere</p>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <h3>2,450+</h3>
+              <p>Studenți Activi</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-content">
+              <h3>1,200+</h3>
+              <p>Documente Partajate</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">💬</div>
+            <div class="stat-content">
+              <h3>8,500+</h3>
+              <p>Discuții & Postări</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+              <h3>4.8/5</h3>
+              <p>Rating Mediu</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sectiune Activitate Recentă -->
+      <section class="recent-activity-section">
+        <div class="section-header">
+          <h2>🔥 Activitate Recentă</h2>
+          <p style="color: #888; margin: 0;">Ce se întâmplă acum în comunitate</p>
+        </div>
+        
+        <div class="activity-feed">
+          <div class="activity-item">
+            <div class="activity-avatar">👨‍💻</div>
+            <div class="activity-content">
+              <h4>Rares Popescu</h4>
+              <p>a pus o întrebare: "Cum se rezolvă Exercise 5 din Algoritmi?"</p>
+              <span class="activity-time">Acum 5 minute</span>
+            </div>
+            <div class="activity-badge">Nou</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar">👩‍💼</div>
+            <div class="activity-content">
+              <h4>Catalina Ionescu</h4>
+              <p>a pozitionat o recenzie: "Matematică I - Curs excelent"</p>
+              <span class="activity-time">Acum 22 minute</span>
+            </div>
+            <div class="activity-badge">Review</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar">👨‍🎓</div>
+            <div class="activity-content">
+              <h4>David Mihai</h4>
+              <p>s-a alăturat grupului: "Studenți Programare An 2"</p>
+              <span class="activity-time">Acum 1 oră</span>
+            </div>
+            <div class="activity-badge">Grup</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-avatar">👩‍🎓</div>
+            <div class="activity-content">
+              <h4>Elena Petcu</h4>
+              <p>a postat un document: "Rezumate Fizică - Capitolul 3"</p>
+              <span class="activity-time">Acum 2 ore</span>
+            </div>
+            <div class="activity-badge">Doc</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sectiune Testimoniale Studenți -->
+      <section class="testimonials-section">
+        <div class="section-header">
+          <h2>💬 Povești de Succes</h2>
+          <p style="color: #888; margin: 0;">De la studenți care au beneficiat de platformă</p>
+        </div>
+        
+        <div class="testimonials-grid">
+          <div class="testimonial-card">
+            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"ULBStudent m-a ajutat să trec Matematică I cu 9. Răspunsurile la întrebări au fost super utile!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">SC</div>
+              <div>
+                <h4>Ștefan Cristea</h4>
+                <span>Anul 1 • Informatică</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"Documentele partajate aici mi-au salvat sesiunea. Romi oamenii care ajuta fără reținere!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">MG</div>
+              <div>
+                <h4>Maria Georgiu</h4>
+                <span>Anul 2 • Inginerie CTC</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">"Team matching feature e genial! Am găsit colegii perfecti pentru proiect și am luat 10."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">LI</div>
+              <div>
+                <h4>Lina Ionascu</h4>
+                <span>Anul 3 • Electrotehnie</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="questions-section">
         <div class="section-header">
           <h2>Cele Mai Relevante Întrebări</h2>
@@ -135,25 +502,48 @@
       </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer cu Info & Links -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>ULBStudent</h4>
-          <p>Platformă de suport pentru comunitatea studenților ULB</p>
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
+          <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <a href="#" title="Facebook" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
+            <a href="#" title="Discord" style="color: #5865f2;"><i class="fab fa-discord"></i></a>
+            <a href="#" title="GitHub" style="color: #333;"><i class="fab fa-github"></i></a>
+          </div>
         </div>
+        
         <div class="footer-section">
-          <h4>Linkuri Rapide</h4>
-          <ul>
-            <li><a href="documente.html">Documente</a></li>
-            <li><a href="subreddit.html">Subreddit</a></li>
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="documente.html">Bibliotecă Documente</a></li>
+            <li><a href="subreddit.html">Comunitate (Subreddit)</a></li>
+            <li><a href="team-matching.html">Team Matching</a></li>
           </ul>
         </div>
+        
         <div class="footer-section">
-          <h4>Contact</h4>
+          <h4>❓ Ajutor & Info</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="#">Politica Confidențialității</a></li>
+            <li><a href="#">Termeni și Condiții</a></li>
+            <li><a href="#">Contactează-ne</a></li>
+            <li><a href="#">Raportează problemă</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>📞 Contact</h4>
+          <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
+          <p style="font-size: 0.9rem; color: #888;">Realizat cu ❤️ pentru studenții ULB</p>
         </div>
       </div>
     </footer>
+
+    <script src="interactive.js"></script>
   </body>
 </html>

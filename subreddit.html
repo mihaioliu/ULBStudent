@@ -1,10 +1,14 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Titlu și link catre CSS -->
-    <title>ULBStudent - Comunitatea Studenților ULB</title>
+    <meta name="description" content="r/StudentULBS - Comunitate oficială de discuții și ajutor pentru studenții Universității Lucian Blaga." />
+    <meta name="keywords" content="subreddit, comunitate ULB, studenți, discuții, ajutor" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    
+    <title>Subreddit - ULBStudent | Comunitate Studenți</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
@@ -20,16 +24,24 @@
         <ul>
           <!-- Navigare catre sectiuni -->
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
-          <li><a href="documente.html" class="nav-link ">Documente</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="subreddit.html" class="nav-link active">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
     </header>
 
     <main class="container">
   <div class="subreddit-banner">
     <div class="sub-info">
-      <img src="https://via.placeholder.com/80" alt="Logo Sub" class="sub-logo">
+      <img src="assets/logosite.png" alt="Logo ULBStudent" class="sub-logo-horizontal">
       <div>
         <h2>r/StudentULBS</h2>
         <p>Comunitatea oficială a studenților - Știri, evenimente și ajutor.</p>
@@ -82,8 +94,74 @@
     </div>
 
     <aside class="sub-sidebar">
-      <div class="sidebar-box">
-        <h4>Despre Comunitate</h4>
+      <!-- Trending Now - TOP -->
+      <div class="sidebar-box trending-box">
+        <h4>🔥 Trending Acum</h4>
+        <div class="trending-item">
+          <span class="trending-tag">Matematică I</span>
+          <span class="trending-count">152 postări</span>
+        </div>
+        <div class="trending-item">
+          <span class="trending-tag">Sesiune</span>
+          <span class="trending-count">89 postări</span>
+        </div>
+        <div class="trending-item">
+          <span class="trending-tag">Bursă</span>
+          <span class="trending-count">64 postări</span>
+        </div>
+      </div>
+
+      <!-- User Profile Card with Reputation & Badges -->
+      <div class="sidebar-box user-profile-card">
+        <div class="profile-header">
+          <div class="avatar-circle">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <h4>Profil Utilizator</h4>
+            <span class="reputation-badge">⭐ 450 puncte</span>
+          </div>
+        </div>
+
+        <div class="user-stats">
+          <div class="stat-mini">
+            <span class="stat-value">15</span>
+            <span class="stat-label">Răspunsuri</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-value">32</span>
+            <span class="stat-label">Postări</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-value">89</span>
+            <span class="stat-label">Upvote-uri</span>
+          </div>
+        </div>
+
+        <h5 style="margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text);">Insigne Dezblocat</h5>
+        <div class="badges-container">
+          <div class="badge-item" title="Boboc Curios - Primii 10 răspunsuri">
+            <span class="badge-emoji">🎓</span>
+            <span class="badge-name">Boboc Curios</span>
+          </div>
+          <div class="badge-item" title="Salvatorul din Sesiune - 50 upvote-uri">
+            <span class="badge-emoji">🆘</span>
+            <span class="badge-name">Salvator</span>
+          </div>
+          <div class="badge-item" title="Expert în Matematică - 100 postări în tag">
+            <span class="badge-emoji">🔢</span>
+            <span class="badge-name">Expert Math</span>
+          </div>
+          <div class="badge-item locked" title="Contributor Activ - Deblochează cu 500 puncte">
+            <span class="badge-emoji">🔒</span>
+            <span class="badge-name">Locked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Despre Comunitate - BOTTOM -->
+      <div class="sidebar-box about-box">
+        <h4>ℹ️ Despre Comunitate</h4>
         <p>Creată pe 28.03.2026. Suntem peste 5.000 de studenți aici!</p>
         <button class="join-btn">Join</button>
       </div>
@@ -91,25 +169,41 @@
   </div>
 </main>
 
-    <!-- Footer -->
+    <!-- Footer cu Info & Links -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>ULBStudent</h4>
-          <p>Platformă de suport pentru comunitatea studenților ULB</p>
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
         </div>
+        
         <div class="footer-section">
-          <h4>Linkuri Rapide</h4>
-          <ul>
-            <li><a href="documente.html">Documente</a></li>
-            <li><a href="subreddit.html">Subreddit</a></li>
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="documente.html">Bibliotecă Documente</a></li>
+            <li><a href="subreddit.html">Comunitate (Subreddit)</a></li>
+            <li><a href="team-matching.html">Team Matching</a></li>
           </ul>
         </div>
+        
         <div class="footer-section">
-          <h4>Contact</h4>
+          <h4>❓ Ajutor</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="#">Politica Confidențialității</a></li>
+            <li><a href="#">Termeni și Condiții</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>📞 Contact</h4>
+          <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>
       </div>
     </footer>
+
+    <script src="interactive.js"></script>
   </body>
 </html>

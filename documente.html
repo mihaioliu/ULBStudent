@@ -1,10 +1,14 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="ro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Titlu și link catre CSS -->
-    <title>ULBStudent - Comunitatea Studenților ULB</title>
+    <meta name="description" content="Bibliotecă de documente ULB - Cursuri, seminare și materiale de studiu pentru studenți." />
+    <meta name="keywords" content="documente ULB, cursuri, seminare, materiale studiu, pdf" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    
+    <title>Documente - ULBStudent | Resurse Studiu Gratuite</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
@@ -22,68 +26,186 @@
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
           <li><a href="documente.html" class="nav-link active">Documente</a></li>
           <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
       </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
     </header>
 
     <main class="container">
   <div class="docs-header">
-    <h2>Bibliotecă Documente</h2>
-    <p>Aici găsești cursuri, seminare și materiale utile partajate de comunitate.</p>
+    <h2>📚 Bibliotecă Documente</h2>
+    <p>Aici găsești cursuri, seminare și materiale utile partajate de comunitate. Filtrează după an și categorie.</p>
+    
+    <div class="docs-filters">
+      <select id="yearFilter" class="filter-select">
+        <option value="">Anul de Studiu</option>
+        <option value="1">Anul 1</option>
+        <option value="2">Anul 2</option>
+        <option value="3">Anul 3</option>
+        <option value="4">Anul 4</option>
+      </select>
+      
+      <select id="categoryFilter" class="filter-select">
+        <option value="">Toate Categoriile</option>
+        <option value="math">Matematică</option>
+        <option value="physics">Fizică</option>
+        <option value="programming">Programare</option>
+        <option value="other">Altele</option>
+      </select>
+      
+      <select id="sortFilter" class="filter-select">
+        <option value="newest">Cel mai recent</option>
+        <option value="downloads">Cele mai descărcate</option>
+        <option value="rating">Cel mai bine evaluat</option>
+      </select>
+    </div>
   </div>
 
-  <div class="docs-grid">
-    <div class="doc-card">
-      <div class="doc-icon"><i class="fa-solid fa-file-pdf"></i></div>
-      <div class="doc-info">
-        <h4>Curs Analiză Matematică</h4>
-        <p>Anul 1, Semestrul 1</p>
-        <span class="doc-size">2.4 MB</span>
+  <div class="docs-grid" id="docsGrid">
+    <div class="doc-card" data-year="1" data-category="math">
+      <div class="doc-header">
+        <div class="doc-icon" style="color: #3b82f6;"><i class="fa-solid fa-file-pdf"></i></div>
+        <div class="doc-meta">
+          <span class="doc-year">Anul 1, Sem 1</span>
+          <span class="doc-category">Matematică</span>
+        </div>
       </div>
-      <button class="download-btn"><i class="fa-solid fa-download"></i></button>
+      <div class="doc-info">
+        <h4>Curs Analiză Matematică I</h4>
+        <p class="doc-description">Limita, continuitate, derivarea funcțiilor reale. 50+ exerciții rezolvate.</p>
+        <div class="doc-stats">
+          <span class="stat-badge">⭐ 4.8/5 <small>(124)</small></span>
+          <span class="stat-badge">📥 1,245</span>
+          <span class="doc-size">2.4 MB</span>
+        </div>
+      </div>
+      <button class="download-btn"><i class="fa-solid fa-download"></i> Descarcă</button>
     </div>
 
-    <div class="doc-card">
-      <div class="doc-icon"><i class="fa-solid fa-file-lines"></i></div>
-      <div class="doc-info">
-        <h4>Seminar Fizică: Mecanică</h4>
-        <p>Anul 1, Semestrul 2</p>
-        <span class="doc-size">1.1 MB</span>
+    <div class="doc-card" data-year="1" data-category="physics">
+      <div class="doc-header">
+        <div class="doc-icon" style="color: #ef4444;"><i class="fa-solid fa-flask-vial"></i></div>
+        <div class="doc-meta">
+          <span class="doc-year">Anul 1, Sem 2</span>
+          <span class="doc-category">Fizică</span>
+        </div>
       </div>
-      <button class="download-btn"><i class="fa-solid fa-download"></i></button>
+      <div class="doc-info">
+        <h4>Seminar Fizică: Mecanică Clasică</h4>
+        <p class="doc-description">Cinematică, dinamică, lucrul mecanic, energie. Soluții pas-cu-pas.</p>
+        <div class="doc-stats">
+          <span class="stat-badge">⭐ 4.6/5 <small>(98)</small></span>
+          <span class="stat-badge">📥 893</span>
+          <span class="doc-size">1.1 MB</span>
+        </div>
+      </div>
+      <button class="download-btn"><i class="fa-solid fa-download"></i> Descarcă</button>
     </div>
 
-    <div class="doc-card">
-      <div class="doc-icon" style="color: #2ecc71;"><i class="fa-solid fa-file-code"></i></div>
+    <div class="doc-card" data-year="2" data-category="programming">
+      <div class="doc-header">
+        <div class="doc-icon" style="color: #10b981;"><i class="fa-solid fa-code"></i></div>
+        <div class="doc-meta">
+          <span class="doc-year">Anul 2, Sem 1</span>
+          <span class="doc-category">Programare</span>
+        </div>
+      </div>
       <div class="doc-info">
         <h4>Laborator Programare C++</h4>
-        <p>Anul 2, Semestrul 1</p>
-        <span class="doc-size">500 KB</span>
+        <p class="doc-description">Structuri de date, pointeri, clasele și POO. Cod comentat și testat.</p>
+        <div class="doc-stats">
+          <span class="stat-badge">⭐ 4.9/5 <small>(156)</small></span>
+          <span class="stat-badge">📥 2,341</span>
+          <span class="doc-size">890 KB</span>
+        </div>
       </div>
-      <button class="download-btn"><i class="fa-solid fa-download"></i></button>
+      <button class="download-btn"><i class="fa-solid fa-download"></i> Descarcă</button>
+    </div>
+
+    <div class="doc-card" data-year="2" data-category="programming">
+      <div class="doc-header">
+        <div class="doc-icon" style="color: #f59e0b;"><i class="fa-solid fa-database"></i></div>
+        <div class="doc-meta">
+          <span class="doc-year">Anul 2, Sem 2</span>
+          <span class="doc-category">Programare</span>
+        </div>
+      </div>
+      <div class="doc-info">
+        <h4>Curs Baze de Date SQL</h4>
+        <p class="doc-description">SQL queries, JOIN-uri, indexuri. 30+ exemple practice cu PostgreSQL.</p>
+        <div class="doc-stats">
+          <span class="stat-badge">⭐ 4.7/5 <small>(112)</small></span>
+          <span class="stat-badge">📥 1,567</span>
+          <span class="doc-size">1.8 MB</span>
+        </div>
+      </div>
+      <button class="download-btn"><i class="fa-solid fa-download"></i> Descarcă</button>
+    </div>
+
+    <div class="doc-card" data-year="3" data-category="other">
+      <div class="doc-header">
+        <div class="doc-icon" style="color: #8b5cf6;"><i class="fa-solid fa-book"></i></div>
+        <div class="doc-meta">
+          <span class="doc-year">Anul 3, Sem 1</span>
+          <span class="doc-category">Altele</span>
+        </div>
+      </div>
+      <div class="doc-info">
+        <h4>Project Management Metodologii Agile</h4>
+        <p class="doc-description">Scrum, Kanban, planificarea sprinturilor și rapoarte retrospective.</p>
+        <div class="doc-stats">
+          <span class="stat-badge">⭐ 4.5/5 <small>(67)</small></span>
+          <span class="stat-badge">📥 542</span>
+          <span class="doc-size">1.5 MB</span>
+        </div>
+      </div>
+      <button class="download-btn"><i class="fa-solid fa-download"></i> Descarcă</button>
     </div>
   </div>
 </main>
 
-    <!-- Footer -->
+    <!-- Footer cu Info & Links -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>ULBStudent</h4>
-          <p>Platformă de suport pentru comunitatea studenților ULB</p>
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
         </div>
+        
         <div class="footer-section">
-          <h4>Linkuri Rapide</h4>
-          <ul>
-            <li><a href="documente.html">Documente</a></li>
-            <li><a href="subreddit.html">Subreddit</a></li>
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="documente.html">Bibliotecă Documente</a></li>
+            <li><a href="subreddit.html">Comunitate (Subreddit)</a></li>
+            <li><a href="team-matching.html">Team Matching</a></li>
           </ul>
         </div>
+        
         <div class="footer-section">
-          <h4>Contact</h4>
+          <h4>❓ Ajutor</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="#">Politica Confidențialității</a></li>
+            <li><a href="#">Termeni și Condiții</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>📞 Contact</h4>
+          <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>
       </div>
     </footer>
+
+    <script src="interactive.js"></script>
   </body>
 </html>
