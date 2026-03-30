@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeGlobalSearch();         // 🔎 Căutare globală
   initializeScrollAnimations();     // ✨ Animații secțiuni pe scroll
   initializeDocumentFilters();      // 📚 Filtrare documente
+  initializePostCreation();         // 📝 Sistem de postări
 });
 
 /**
@@ -299,33 +300,72 @@ function filterQuestions(questions, option) {
   
   switch(option) {
     case 'Cele mai recente':
+      // Keep original order (most recent first) - reverse current order
       questionsArray.reverse();
       break;
+      
     case 'Cele mai helpful':
+      // Sort by votes descending
       questionsArray.sort((a, b) => {
-        const votesA = parseInt(a.querySelector('.vote-column span').textContent);
-        const votesB = parseInt(b.querySelector('.vote-column span').textContent);
+        const votesA = parseInt(a.querySelector('.vote-column span').textContent) || 0;
+        const votesB = parseInt(b.querySelector('.vote-column span').textContent) || 0;
         return votesB - votesA;
       });
       break;
+      
     case 'Cele mai comentate':
+      // Sort by comments descending
       questionsArray.sort((a, b) => {
-        const commentsA = parseInt(a.querySelector('.meta-item:nth-child(3)').textContent);
-        const commentsB = parseInt(b.querySelector('.meta-item:nth-child(3)').textContent);
+        // Extract comments count from the meta item with the comment icon
+        const metaItemsA = a.querySelectorAll('.meta-item');
+        const metaItemsB = b.querySelectorAll('.meta-item');
+        
+        let commentsA = 0;
+        let commentsB = 0;
+        
+        metaItemsA.forEach(item => {
+          const text = item.textContent;
+          if (text.includes('comentar')) {
+            commentsA = parseInt(text.match(/\d+/)?.[0] || 0);
+          }
+        });
+        
+        metaItemsB.forEach(item => {
+          const text = item.textContent;
+          if (text.includes('comentar')) {
+            commentsB = parseInt(text.match(/\d+/)?.[0] || 0);
+          }
+        });
+        
         return commentsB - commentsA;
       });
       break;
   }
   
   const container = document.querySelector('.question-list');
-  questionsArray.forEach((q, index) => {
-    q.style.animation = 'none';
-    setTimeout(() => {
-      q.style.animation = `slideUp 0.5s ease-out ${index * 0.1}s forwards`;
-    }, 10);
-  });
   
-  container.append(...questionsArray);
+  if (container) {
+    // Animate reordering
+    questionsArray.forEach((q, index) => {
+      q.style.opacity = '0';
+      q.style.transform = 'translateY(10px)';
+    });
+    
+    setTimeout(() => {
+      questionsArray.forEach((q) => {
+        container.appendChild(q);
+      });
+      
+      questionsArray.forEach((q, index) => {
+        q.style.animation = 'none';
+        setTimeout(() => {
+          q.style.opacity = '1';
+          q.style.transform = 'translateY(0)';
+          q.style.transition = 'all 0.3s ease-out';
+        }, 10);
+      });
+    }, 50);
+  }
 }
 
 // ============================================
@@ -375,32 +415,50 @@ function toggleLike(button) {
  * Afișez notificări toast în colțul jos-dreapta
  * Slide-in cu animație la apariție, dispariție după 3 sec
  */
+let notificationCount = 0;
+
 function showNotification(message) {
   // Creez element div cu clasa 'notification'
   const notification = document.createElement('div');
   notification.className = 'notification';
   notification.textContent = message;
   
+  // Calculez poziția basată pe numărul de notificări existente
+  const bottomPosition = 30 + (notificationCount * 90);
+  
   // Stil inline: poziție fixed, gradient roșu, shadow
   notification.style.cssText = `
     position: fixed;
-    bottom: 30px;
+    bottom: ${bottomPosition}px;
     right: 30px;
     background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
     color: white;
     padding: 1rem 1.5rem;
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(230, 57, 70, 0.4);
-    z-index: 1000;
+    z-index: ${1000 + notificationCount};
     animation: slideInRight 0.5s ease-out;
+    max-width: 350px;
+    word-wrap: break-word;
   `;
   
+  notificationCount++;
   document.body.appendChild(notification); // Adaug la pagină
   
   // Auto-dismiss după 3 secunde cu slide-out animație
   setTimeout(() => {
     notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
-    setTimeout(() => notification.remove(), 500);
+    setTimeout(() => {
+      notification.remove();
+      notificationCount = Math.max(0, notificationCount - 1);
+      
+      // Reajustez poziția notificărilor rămase
+      const remainingNotifications = document.querySelectorAll('.notification');
+      remainingNotifications.forEach((notif, index) => {
+        notif.style.bottom = (30 + (index * 90)) + 'px';
+        notif.style.zIndex = 1000 + index;
+      });
+    }, 500);
   }, 3000);
 }
 
@@ -821,6 +879,105 @@ function initializeDocumentFilters() {
 }
 
 // ============================================
+// 12. POST CREATION SYSTEM
+// ============================================
+function initializePostCreation() {
+  const postForm = document.querySelector('.quick-post-form');
+  const postInput = document.querySelector('.post-input');
+  const postSubmitBtn = document.querySelector('.post-submit-btn');
+  
+  if (!postForm || !postSubmitBtn) return; // Nu suntem pe pagina subreddit
+  
+  postForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const content = postInput.value.trim();
+    
+    if (!content) {
+      showNotification('⚠️ Scrie ceva înainte de a posta!');
+      return;
+    }
+    
+    // Creez element de postare nouă
+    const newPost = document.createElement('div');
+    newPost.className = 'post-card';
+    newPost.innerHTML = `
+      <div class="post-votes">
+        <i class="fa-solid fa-arrow-up"></i>
+        <span>0</span>
+        <i class="fa-solid fa-arrow-down"></i>
+      </div>
+      <div class="post-body">
+        <span class="post-meta">Postat de u/Tu • acum câteva secunde</span>
+        <h4>${escapeHtml(content)}</h4>
+        <div class="post-actions">
+          <button class="action-btn">💬 Comentează</button>
+          <button class="action-btn">↗️ Share</button>
+          <button class="action-btn">⋯ Alte opțiuni</button>
+        </div>
+      </div>
+    `;
+    
+    // Adaug la începutul listei de postări
+    const postContainer = document.querySelector('.posts-container');
+    const existingPosts = postContainer.querySelectorAll('.post-card');
+    
+    if (existingPosts.length > 0) {
+      existingPosts[0].before(newPost);
+    } else {
+      postContainer.appendChild(newPost);
+    }
+    
+    // Animație pentru noua postare
+    newPost.style.opacity = '0';
+    newPost.style.transform = 'translateY(-20px)';
+    setTimeout(() => {
+      newPost.style.transition = 'all 0.4s ease-out';
+      newPost.style.opacity = '1';
+      newPost.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Golesc input
+    postInput.value = '';
+    
+    // Notificare
+    showNotification('✅ Postare adăugată cu succes!');
+  });
+  
+  // Action buttons functionality
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.action-btn')) {
+      const btn = e.target.closest('.action-btn');
+      const text = btn.textContent.trim();
+      
+      switch(true) {
+        case text.includes('Comentează'):
+          showNotification('💬 Funcția de comentarii va fi disponibilă în curând!');
+          break;
+        case text.includes('Share'):
+          showNotification('↗️ Postarea a fost copiată în clipboard!');
+          break;
+        case text.includes('Alte opțiuni'):
+          showNotification('⋯ Opțiuni suplimentare în dezvoltare!');
+          break;
+      }
+    }
+  });
+}
+
+/**
+ * Escapes HTML characters to prevent XSS
+ */
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
 // HELPER FUNCTIONS BELOW
 // ============================================
 
