@@ -51,12 +51,13 @@
 
   <div class="subreddit-layout">
     <div class="posts-container">
-            <div class="create-post-box">
+      <div class="create-post-box">
         <div class="user-avatar">
-          <i class="fa-solid fa-user-circle"></i> </div>
+          <i class="fa-solid fa-user-circle"></i> 
+        </div>
         
-        <form class="quick-post-form">
-          <input type="text" placeholder="Creează o postare nouă sau pune o întrebare..." class="post-input">
+        <form id="postCreateForm" class="quick-post-form">
+          <textarea id="postContentInput" type="text" placeholder="Creează o postare nouă..." class="post-input" required></textarea>
           
           <div class="form-actions">
             <div class="media-uploads">
@@ -75,20 +76,37 @@
           </div>
         </form>
       </div>
-      <div class="post-card">
-        <div class="post-votes">
-          <i class="fa-solid fa-arrow-up"></i>
-          <span>150</span>
-          <i class="fa-solid fa-arrow-down"></i>
-        </div>
-        <div class="post-body">
-          <span class="post-meta">Postat de u/Andrei • acum 5 ore</span>
-          <h4>S-au afișat rezultatele la bursă! 📜</h4>
-          <p>Verificați avizierul sau platforma online. Mult succes tuturor!</p>
-          <div class="post-actions">
-            <span><i class="fa-solid fa-comment"></i> 45 Comentarii</span>
-            <span><i class="fa-solid fa-share"></i> Share</span>
+
+      <section class="questions-section" style="margin-top: 0.5rem;">
+        <div class="section-header" style="margin-bottom: 0.8rem;">
+          <h2 style="font-size: 1.35rem;">Întrebări Comunitate</h2>
+          <div class="view-toggle">
+            <span class="filter-label">Ordine:</span>
+            <select id="sort-select" class="sort-select">
+              <option>Cele mai recente</option>
+              <option>Cele mai helpful</option>
+              <option>Cele mai comentate</option>
+            </select>
           </div>
+        </div>
+
+        <form id="questionCreateForm" style="margin-bottom: 1rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; display: grid; gap: 0.75rem;">
+          <input id="questionTitleInput" type="text" placeholder="Titlul întrebării" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface); color: var(--text);" required>
+          <textarea id="questionDescriptionInput" placeholder="Descrie întrebarea ta..." style="width: 100%; min-height: 100px; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface); color: var(--text);" required></textarea>
+          <button type="submit" style="justify-self: end; padding: 0.7rem 1rem; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer;">Publică întrebarea</button>
+        </form>
+
+        <div class="question-list">
+          <p id="questionsEmptyState" style="color: #888; background: var(--light-gray); border: 1px dashed var(--border-color); border-radius: 10px; padding: 1rem;">Încă nu există întrebări. Fii primul care postează o întrebare.</p>
+        </div>
+      </section>
+
+      <div id="postsFeed"></div>
+      <div id="postsEmptyState" class="post-card" style="display: none;">
+        <div class="post-body">
+          <span class="post-meta">Comunitate</span>
+          <h4>Încă nu există postări.</h4>
+          <p>Fii primul student care publică o postare în comunitate.</p>
         </div>
       </div>
     </div>
@@ -115,46 +133,34 @@
       <div class="sidebar-box user-profile-card">
         <div class="profile-header">
           <div class="avatar-circle">
-            <i class="fas fa-user"></i>
+            <span id="subredditProfileInitials">ST</span>
           </div>
           <div class="profile-info">
-            <h4>Profil Utilizator</h4>
-            <span class="reputation-badge">⭐ 450 puncte</span>
+            <h4 id="subredditProfileName">Cont conectat</h4>
+            <span class="reputation-badge" id="subredditProfileFaculty">Date profil indisponibile</span>
           </div>
         </div>
 
         <div class="user-stats">
           <div class="stat-mini">
-            <span class="stat-value">15</span>
-            <span class="stat-label">Răspunsuri</span>
+            <span class="stat-value" id="subredditProfileYear">-</span>
+            <span class="stat-label">An studiu</span>
           </div>
           <div class="stat-mini">
-            <span class="stat-value">32</span>
+            <span class="stat-value" id="subredditPostsCount">0</span>
             <span class="stat-label">Postări</span>
           </div>
           <div class="stat-mini">
-            <span class="stat-value">89</span>
-            <span class="stat-label">Upvote-uri</span>
+            <span class="stat-value" id="subredditCommentsCount">0</span>
+            <span class="stat-label">Comentarii</span>
           </div>
         </div>
 
         <h5 style="margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text);">Insigne Dezblocat</h5>
         <div class="badges-container">
-          <div class="badge-item" title="Boboc Curios - Primii 10 răspunsuri">
-            <span class="badge-emoji">🎓</span>
-            <span class="badge-name">Boboc Curios</span>
-          </div>
-          <div class="badge-item" title="Salvatorul din Sesiune - 50 upvote-uri">
-            <span class="badge-emoji">🆘</span>
-            <span class="badge-name">Salvator</span>
-          </div>
-          <div class="badge-item" title="Expert în Matematică - 100 postări în tag">
-            <span class="badge-emoji">🔢</span>
-            <span class="badge-name">Expert Math</span>
-          </div>
-          <div class="badge-item locked" title="Contributor Activ - Deblochează cu 500 puncte">
+          <div class="badge-item locked" title="Momentan nu există insigne pentru acest cont">
             <span class="badge-emoji">🔒</span>
-            <span class="badge-name">Locked</span>
+            <span class="badge-name">Încă nu există insigne</span>
           </div>
         </div>
       </div>

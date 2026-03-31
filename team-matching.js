@@ -59,12 +59,48 @@ let currentProfileIndex = 0;
 let matches = JSON.parse(localStorage.getItem('teamMatches')) || [];
 let filteredProfiles = [...studentProfiles];
 
-function initializeTeamMatching() {
+function mapDbMatchToUi(row) {
+  if (row.profile_name) {
+    return {
+      id: Number(row.profile_id || Date.now()),
+      name: row.profile_name,
+      year: row.profile_year || '-',
+      specialization: row.profile_specialization || 'Specializare necompletată',
+      skills: Array.isArray(row.profile_skills) ? row.profile_skills : [],
+      matchType: row.match_type,
+      matchedAt: row.created_at
+    };
+  }
+
+  const parsed = (row.match_type || '').split(':');
+  return {
+    id: Number(row.id || Date.now()),
+    name: parsed[1] || 'Student',
+    year: '-',
+    specialization: 'Profil extern',
+    skills: [],
+    matchType: parsed[0] || 'like',
+    matchedAt: row.created_at
+  };
+}
+
+async function initializeTeamMatching() {
+  await loadMatchesFromDatabase();
   renderProfileCard();
   renderMatches();
   addSwipeListeners();
   initializeFilters();
   updateMatchStats();
+}
+
+async function loadMatchesFromDatabase() {
+  if (typeof getTeamMatches !== 'function') return;
+
+  const dbMatches = await getTeamMatches();
+  if (dbMatches.success && dbMatches.data.length > 0) {
+    matches = dbMatches.data.map(mapDbMatchToUi);
+    localStorage.setItem('teamMatches', JSON.stringify(matches));
+  }
 }
 
 /**
@@ -264,6 +300,15 @@ function addMatch(profile, type) {
   matches.unshift(match);
   localStorage.setItem('teamMatches', JSON.stringify(matches));
 
+  // Persist to DB (non-blocking)
+  if (typeof saveTeamMatch === 'function') {
+    saveTeamMatch(profile, type).then((result) => {
+      if (!result.success) {
+        console.warn('Team match not saved in DB, kept locally.');
+      }
+    });
+  }
+
   if (type === 'like') {
     showNotification(`${profile.name} adăugat la potriviri! ❤️`);
   } else if (type === 'superLike') {
@@ -273,9 +318,10 @@ function addMatch(profile, type) {
 
 function renderMatches() {
   const matchesList = document.getElementById('matchesList');
+  if (!matchesList) return;
   
   if (matches.length === 0) {
-    matchesList.innerHTML = '<p style="text-align: center; color: #888;">Nu ai încă potriviri. Începe să dai swipe! 👆</p>';
+    matchesList.innerHTML = '<p style="text-align: center; color: #888;">Nu există încă potriviri pentru contul tău.</p>';
     return;
   }
 
@@ -298,7 +344,8 @@ function renderMatches() {
 
 function contactMatch(profileId) {
   const match = matches.find(m => m.id === profileId);
-  showNotification(`Mesaj trimis către ${match.name}! 💬`);
+  if (!match) return;
+  showNotification(`Conversație inițiată cu ${match.name}.`);
 }
 
 /**
@@ -344,6 +391,6 @@ function showNotification(message) {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  initializeTeamMatching();
+document.addEventListener('DOMContentLoaded', async function() {
+  await initializeTeamMatching();
 });

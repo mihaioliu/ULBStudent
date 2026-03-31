@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeQuestionFilters();      // 🎯 Filtrare întrebări
   initializeLikeButton();           // ❤️ Favorite questions
   initializeBackToTop();            // ⬆️ Buton sus
+  initializeSmoothScrollLinks();    // 📜 Smooth scroll pentru anchor links
+  handleAnchorOnPageLoad();         // 🎯 Scroll la anchor dacă URL are #
   initializeAuthButtons();          // 🔐 Sign in/up
   initializeGamification();         // 🎮 Puncte și badges
   initializeReviewInteractions();   // ⭐ Click pe recenzii
@@ -21,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeScrollAnimations();     // ✨ Animații secțiuni pe scroll
   initializeDocumentFilters();      // 📚 Filtrare documente
   initializePostCreation();         // 📝 Sistem de postări
+  initializeQuestionsData();        // ❓ Întrebări din baza de date
+  initializeSubredditData();        // 👤 Profil + postări din baza de date
+  initializeCommentsData();         // 💬 Comentarii din baza de date
 });
 
 /**
@@ -117,56 +122,77 @@ let votes = {
 };
 
 function initializeVotingSystem() {
-  // Selectez toate coloanele de vot pe pagină
-  const voteColumns = document.querySelectorAll('.vote-column');
-  
-  voteColumns.forEach((column, index) => {
-    // Găsesc butoanele upvote și downvote în fiecare coloană
-    const upButton = column.querySelector('.fa-arrow-up');
-    const downButton = column.querySelector('.fa-arrow-down');
-    const voteCount = column.querySelector('span'); // Elementul care afișează numărul
+  // Vote on postări (posts)
+  document.addEventListener('click', async function(e) {
+    const upButton = e.target.closest('.post-votes .fa-arrow-up');
+    const downButton = e.target.closest('.post-votes .fa-arrow-down');
     
-    // Buton upvote - incrementez și animez cu verde
-    if (upButton) {
-      upButton.addEventListener('click', function() {
-        handleVote('up', voteCount, index);
-      });
-    }
+    if (!upButton && !downButton) return;
     
-    // Buton downvote - decrementez și animez cu roșu
-    if (downButton) {
-      downButton.addEventListener('click', function() {
-        handleVote('down', voteCount, index);
-      });
+    const postCard = e.target.closest('.post-card');
+    if (!postCard) return;
+    
+    const postId = postCard.getAttribute('data-post-id');
+    if (!postId) return;
+    
+    const direction = upButton ? 'up' : 'down';
+    const voteSpan = postCard.querySelector('.post-votes > span');
+    
+    if (!voteSpan) return;
+    
+    try {
+      const result = await updatePostVotes(postId, direction);
+      if (result.success) {
+        voteSpan.textContent = result.newVotes;
+        // Feedback visual
+        voteSpan.style.color = direction === 'up' ? '#22c55e' : '#ef4444';
+        createParticles(voteSpan, direction === 'up' ? '#22c55e' : '#ef4444');
+        setTimeout(() => {
+          voteSpan.style.color = '';
+        }, 500);
+      } else {
+        showNotification('❌ Eroare la salvarea votului.');
+      }
+    } catch (error) {
+      showNotification('❌ Eroare: ' + error.message);
     }
   });
-}
-
-/**
- * Gestionez clic upvote/downvote cu feedback vizual
- */
-function handleVote(direction, voteElement, questionIndex) {
-  const voteKey = 'q' + (questionIndex + 1);
-  const currentVotes = parseInt(voteElement.textContent);
   
-  if (direction === 'up') {
-    // Upvote: incrementez, color verde, particule
-    votes[voteKey]++;
-    voteElement.textContent = votes[voteKey];
-    voteElement.style.color = '#22c55e';
-    createParticles(voteElement, '#22c55e'); // Animație floating particles
-  } else {
-    // Downvote: decrementez, color roșu, particule
-    votes[voteKey]--;
-    voteElement.textContent = votes[voteKey];
-    voteElement.style.color = '#ef4444';
-    createParticles(voteElement, '#ef4444');
-  }
-  
-  // Reset color after animation
-  setTimeout(() => {
-    voteElement.style.color = '';
-  }, 500);
+  // Vote on questions
+  document.addEventListener('click', async function(e) {
+    const upButton = e.target.closest('.vote-column .fa-arrow-up');
+    const downButton = e.target.closest('.vote-column .fa-arrow-down');
+    
+    if (!upButton && !downButton) return;
+    
+    const question = e.target.closest('.question');
+    if (!question) return;
+    
+    const questionId = question.getAttribute('data-question-id');
+    if (!questionId) return;
+    
+    const direction = upButton ? 'up' : 'down';
+    const voteSpan = question.querySelector('.vote-column > span');
+    
+    if (!voteSpan) return;
+    
+    try {
+      const result = await updateQuestionVotes(questionId, direction);
+      if (result.success) {
+        voteSpan.textContent = result.newVotes;
+        // Feedback visual
+        voteSpan.style.color = direction === 'up' ? '#22c55e' : '#ef4444';
+        createParticles(voteSpan, direction === 'up' ? '#22c55e' : '#ef4444');
+        setTimeout(() => {
+          voteSpan.style.color = '';
+        }, 500);
+      } else {
+        showNotification('❌ Eroare la salvarea votului.');
+      }
+    } catch (error) {
+      showNotification('❌ Eroare: ' + error.message);
+    }
+  });
 }
 
 /**
@@ -510,6 +536,91 @@ function initializeBackToTop() {
   backToTopBtn.addEventListener('mouseleave', () => {
     backToTopBtn.style.transform = 'scale(1)';
   });
+}
+
+// ============================================
+// 8.5 SMOOTH SCROLL FOR ALL ANCHOR LINKS
+// ============================================
+/**
+ * Inițializează smooth scroll pentru toți anchor links
+ * Functionează pentru linkuri interne (#header, #section, etc)
+ */
+function initializeSmoothScrollLinks() {
+  // Smooth scroll pentru toate linkurile cu href="#..."
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      
+      // Skip dacă href este doar "#"
+      if (href === '#') return;
+      
+      const targetId = href.substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        e.preventDefault();
+        
+        // Smooth scroll cu offset pentru header
+        const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+        const targetPosition = targetElement.offsetTop - headerHeight;
+        
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Update URL fără reload
+        window.history.pushState(null, '', href);
+      }
+    });
+  });
+}
+
+// ============================================
+// 8.6 SCROLL TO SECTION (From Navigation)
+// ============================================
+/**
+ * Funcție universală pentru scroll la o secțiune
+ * Folosit de navigation menu
+ */
+function scrollToSection(sectionId) {
+  const element = document.getElementById(sectionId);
+  
+  if (element) {
+    const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+    const targetPosition = element.offsetTop - headerHeight;
+    
+    window.scrollTo({
+      top: targetPosition,
+      behavior: 'smooth',
+      duration: 800
+    });
+  }
+}
+
+// ============================================
+// 8.7 SMOOTH SCROLL ON PAGE LOAD (if URL has anchor)
+// ============================================
+function handleAnchorOnPageLoad() {
+  // Daca URL are un anchor (#...), scroll la el smooth
+  const anchor = window.location.hash;
+  if (anchor) {
+    // Astepți puțin pentru ca pagina să se șargă complet
+    setTimeout(() => {
+      const targetId = anchor.substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+        const targetPosition = targetElement.offsetTop - headerHeight;
+        
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 500);
+  }
 }
 
 // ============================================
@@ -879,112 +990,316 @@ function initializeDocumentFilters() {
 }
 
 // ============================================
-// 12. POST CREATION SYSTEM
+// 12. DATABASE-DRIVEN QUESTIONS / POSTS / COMMENTS
 // ============================================
+function formatTimeAgo(isoDate) {
+  if (!isoDate) return 'acum câteva secunde';
+  const date = new Date(isoDate);
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return 'acum câteva secunde';
+  if (minutes < 60) return `acum ${minutes} min`;
+  if (hours < 24) return `acum ${hours} ore`;
+  return `acum ${days} zile`;
+}
+
+function renderQuestionCard(question) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'question';
+  wrapper.setAttribute('data-question-id', question.id);
+  wrapper.innerHTML = `
+    <div class="vote-column">
+      <i class="fa-solid fa-arrow-up"></i>
+      <span>${question.upvotes || 0}</span>
+      <i class="fa-solid fa-arrow-down"></i>
+    </div>
+    <div class="question-content">
+      <div class="question-header">
+        <h3>${escapeHtml(question.title || 'Întrebare fără titlu')}</h3>
+        <span class="question-tag">General</span>
+      </div>
+      <p class="question-excerpt">${escapeHtml(question.description || 'Fără descriere')}</p>
+      <div class="question-meta">
+        <span class="meta-item"><i class="fa-solid fa-user"></i> de Student</span>
+        <span class="meta-item"><i class="fa-solid fa-calendar"></i> ${formatTimeAgo(question.created_at)}</span>
+        <span class="meta-item"><i class="fa-solid fa-comment"></i> 0 comentarii</span>
+      </div>
+    </div>
+  `;
+  return wrapper;
+}
+
+async function initializeQuestionsData() {
+  const questionList = document.querySelector('.question-list');
+  const questionForm = document.getElementById('questionCreateForm');
+  const titleInput = document.getElementById('questionTitleInput');
+  const descriptionInput = document.getElementById('questionDescriptionInput');
+  const emptyState = document.getElementById('questionsEmptyState');
+
+  if (!questionList) return;
+
+  const loaded = await getQuestions();
+  questionList.querySelectorAll('.question').forEach(item => item.remove());
+
+  if (!loaded.success || loaded.data.length === 0) {
+    if (emptyState) emptyState.style.display = 'block';
+  } else {
+    if (emptyState) emptyState.style.display = 'none';
+    loaded.data.forEach(question => questionList.appendChild(renderQuestionCard(question)));
+  }
+
+  if (!questionForm) return;
+  questionForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const title = (titleInput?.value || '').trim();
+    const description = (descriptionInput?.value || '').trim();
+
+    if (!title || !description) {
+      showNotification('⚠️ Completează titlul și descrierea întrebării.');
+      return;
+    }
+
+    try {
+      const saved = await saveQuestion(title, description);
+      const row = saved?.data?.[0];
+      if (row) {
+        if (emptyState) emptyState.style.display = 'none';
+        questionList.prepend(renderQuestionCard(row));
+      }
+      questionForm.reset();
+      showNotification('✅ Întrebarea a fost publicată în baza de date.');
+    } catch (error) {
+      showNotification('❌ Nu s-a putut salva întrebarea.');
+    }
+  });
+}
+
+function renderPostCard(post, currentUser) {
+  const card = document.createElement('div');
+  card.className = 'post-card';
+  card.setAttribute('data-post-id', post.id);
+  const author = currentUser?.email ? currentUser.email.split('@')[0] : 'student';
+  card.innerHTML = `
+    <div class="post-votes">
+      <i class="fa-solid fa-arrow-up"></i>
+      <span>${post.votes || 0}</span>
+      <i class="fa-solid fa-arrow-down"></i>
+    </div>
+    <div class="post-body">
+      <span class="post-meta">Postat de u/${escapeHtml(author)} • ${formatTimeAgo(post.created_at)}</span>
+      <h4>${escapeHtml(post.content || post.title || 'Postare fără conținut')}</h4>
+      <div class="post-actions">
+        <button class="action-btn" data-action="comments">💬 Comentează</button>
+        <button class="action-btn" data-action="share">↗️ Share</button>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+async function initializeSubredditData() {
+  const postsFeed = document.getElementById('postsFeed');
+  const emptyState = document.getElementById('postsEmptyState');
+  if (!postsFeed) return;
+
+  const currentUser = getCurrentUser();
+  const profileResult = await getCurrentUserProfileData();
+  const profile = profileResult?.data || {};
+
+  const profileName = document.getElementById('subredditProfileName');
+  const profileFaculty = document.getElementById('subredditProfileFaculty');
+  const profileYear = document.getElementById('subredditProfileYear');
+  const profileInitials = document.getElementById('subredditProfileInitials');
+
+  if (profileName && currentUser) {
+    const fullName = profile.nume_complet || currentUser.user_metadata?.full_name || currentUser.email;
+    profileName.textContent = fullName;
+    profileFaculty.textContent = profile.specializare ? `Specializare: ${profile.specializare}` : 'Specializare necompletată';
+    profileYear.textContent = profile.an_studiu || '-';
+    if (profileInitials) {
+      const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      profileInitials.textContent = initials || 'ST';
+    }
+  }
+
+  const loaded = await getPosts();
+  postsFeed.innerHTML = '';
+
+  if (!loaded.success || loaded.data.length === 0) {
+    if (emptyState) emptyState.style.display = 'flex';
+  } else {
+    if (emptyState) emptyState.style.display = 'none';
+    loaded.data.forEach(post => postsFeed.appendChild(renderPostCard(post, currentUser)));
+  }
+
+  const postsCount = document.getElementById('subredditPostsCount');
+  if (postsCount && loaded.success) {
+    postsCount.textContent = String(loaded.data.length);
+  }
+
+  const commentsCount = document.getElementById('subredditCommentsCount');
+  if (commentsCount && currentUser?.email) {
+    try {
+      const client = await initSupabaseClient();
+      const { count } = await client
+        .from('comments')
+        .select('id', { count: 'exact', head: true })
+        .eq('email', currentUser.email);
+      commentsCount.textContent = String(count || 0);
+    } catch {
+      commentsCount.textContent = '0';
+    }
+  }
+}
+
 function initializePostCreation() {
-  const postForm = document.querySelector('.quick-post-form');
-  const postInput = document.querySelector('.post-input');
+  const postForm = document.getElementById('postCreateForm');
+  const postInput = document.getElementById('postContentInput');
   const postSubmitBtn = document.querySelector('.post-submit-btn');
-  
-  if (!postForm || !postSubmitBtn) return; // Nu suntem pe pagina subreddit
-  
+  const postsFeed = document.getElementById('postsFeed');
+  const emptyState = document.getElementById('postsEmptyState');
+
+  if (!postForm) return;
+
   postForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const content = postInput.value.trim();
-    
+    const content = (postInput?.value || '').trim();
+
     if (!content) {
       showNotification('⚠️ Scrie ceva înainte de a posta!');
       return;
     }
-    
-    // Verific dacă utilizatorul e logat
+
     const user = getCurrentUser();
     if (!user) {
-      showNotification('❌ Trebuie să fi logat pentru a posta!');
+      showNotification('❌ Trebuie să fii conectat pentru a posta.');
       return;
     }
-    
+
     try {
-      // Salvez postarea în baza de date
-      const result = await savePost('Post din subreddit', content);
-      
-      if (!result.success) {
-        showNotification('❌ Eroare la salvarea postării!');
+      const saved = await savePost('Postare comunitate', content);
+      const newPost = saved?.data?.[0];
+      if (!newPost) {
+        showNotification('❌ Eroare la salvarea postării.');
         return;
       }
+
+      if (emptyState && postsFeed) emptyState.style.display = 'none';
+      if (postsFeed) postsFeed.prepend(renderPostCard(newPost, user));
+      postForm.reset();
+      showNotification('✅ Postare salvată în baza de date.');
       
-      const postId = result.data[0]?.id;
-      
-      // Creez element de postare nouă
-      const newPost = document.createElement('div');
-      newPost.className = 'post-card';
-      newPost.setAttribute('data-post-id', postId); // Salvez ID-ul din DB
-      newPost.innerHTML = `
-        <div class="post-votes">
-          <i class="fa-solid fa-arrow-up"></i>
-          <span>0</span>
-          <i class="fa-solid fa-arrow-down"></i>
-        </div>
-        <div class="post-body">
-          <span class="post-meta">Postat de u/${user.email?.split('@')[0]} • acum câteva secunde</span>
-          <h4>${escapeHtml(content)}</h4>
-          <div class="post-actions">
-            <button class="action-btn">💬 Comentează</button>
-            <button class="action-btn">↗️ Share</button>
-            <button class="action-btn">⋯ Alte opțiuni</button>
-          </div>
-        </div>
-      `;
-      
-      // Adaug la începutul listei de postări
-      const postContainer = document.querySelector('.posts-container');
-      const existingPosts = postContainer.querySelectorAll('.post-card');
-      
-      if (existingPosts.length > 0) {
-        existingPosts[0].before(newPost);
-      } else {
-        postContainer.appendChild(newPost);
+      // Actualizeaza profilul și numărarea postărilor
+      const postsCount = document.getElementById('subredditPostsCount');
+      if (postsCount) {
+        postsCount.textContent = String(parseInt(postsCount.textContent || '0') + 1);
       }
-      
-      // Animație pentru noua postare
-      newPost.style.opacity = '0';
-      newPost.style.transform = 'translateY(-20px)';
-      setTimeout(() => {
-        newPost.style.transition = 'all 0.4s ease-out';
-        newPost.style.opacity = '1';
-        newPost.style.transform = 'translateY(0)';
-      }, 10);
-      
-      // Golesc input
-      postInput.value = '';
-      
-      // Notificare
-      showNotification('✅ Postare adăugată cu succes în baza de date!');
     } catch (error) {
-      console.error('Error creating post:', error);
       showNotification('❌ Eroare la postare: ' + error.message);
     }
   });
-  
-  // Action buttons functionality
+
+  // Handle action buttons on posts
   document.addEventListener('click', function(e) {
-    if (e.target.closest('.action-btn')) {
-      const btn = e.target.closest('.action-btn');
-      const text = btn.textContent.trim();
-      
-      switch(true) {
-        case text.includes('Comentează'):
-          showNotification('💬 Redirecționare la comentarii...');
-          // TODO: Redirect to comments page
-          break;
-        case text.includes('Share'):
-          showNotification('↗️ Postarea a fost copiată în clipboard!');
-          break;
-        case text.includes('Alte opțiuni'):
-          showNotification('⋯ Opțiuni suplimentare în dezvoltare!');
-          break;
-      }
+    const btn = e.target.closest('.action-btn');
+    if (!btn) return;
+
+    const action = btn.getAttribute('data-action');
+    const postCard = btn.closest('.post-card');
+    const postId = postCard?.getAttribute('data-post-id');
+
+    if (action === 'comments' && postId) {
+      window.location.href = `comments.html?post=${encodeURIComponent(postId)}`;
+      return;
+    }
+
+    if (action === 'share') {
+      navigator.clipboard?.writeText(window.location.href);
+      showNotification('↗️ Link copiat.');
+    }
+  });
+}
+
+function renderCommentCard(comment) {
+  const item = document.createElement('div');
+  item.style.cssText = 'background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);';
+  item.innerHTML = `
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+      <div style="font-size: 1.8rem;">💬</div>
+      <div>
+        <h4 style="margin: 0; color: var(--text);">${escapeHtml(comment.name || 'Anonim')}</h4>
+        <p style="margin: 0; color: #888; font-size: 0.85rem;">${formatTimeAgo(comment.created_at)}</p>
+      </div>
+    </div>
+    <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(comment.content || '')}</p>
+  `;
+  return item;
+}
+
+async function initializeCommentsData() {
+  const form = document.getElementById('commentForm');
+  const commentsList = document.getElementById('commentsList');
+  const commentsTitle = document.getElementById('commentsTitle');
+  const emptyState = document.getElementById('commentsEmptyState');
+  const postContainer = document.getElementById('commentsPostContainer');
+  if (!form || !commentsList) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const postId = Number(params.get('post'));
+
+  if (!postId) {
+    if (emptyState) emptyState.style.display = 'block';
+    if (commentsTitle) commentsTitle.textContent = '💭 0 Comentarii';
+    form.querySelector('button[type="submit"]').disabled = true;
+    return;
+  }
+
+  const postResult = await getPostById(postId);
+  if (postResult.success && postResult.data && postContainer) {
+    postContainer.innerHTML = `
+      <h2 style="color: var(--text); margin: 0 0 1rem 0;">${escapeHtml(postResult.data.title || 'Postare')}</h2>
+      <p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">${escapeHtml(postResult.data.content || '')}</p>
+    `;
+  }
+
+  const loadAndRender = async () => {
+    const loaded = await getComments(postId);
+    commentsList.innerHTML = '';
+    const rows = loaded.success ? loaded.data : [];
+    if (commentsTitle) commentsTitle.textContent = `💭 ${rows.length} Comentarii`;
+
+    if (rows.length === 0) {
+      if (emptyState) emptyState.style.display = 'block';
+      return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+    rows.forEach(row => commentsList.appendChild(renderCommentCard(row)));
+  };
+
+  await loadAndRender();
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('commentName').value || 'Anonim';
+    const email = document.getElementById('commentEmail').value || '';
+    const comment = document.getElementById('commentText').value;
+
+    if (!comment.trim()) {
+      showNotification('⚠️ Scrie un comentariu înainte de trimitere.');
+      return;
+    }
+
+    try {
+      await saveComment(postId, name, email, comment.trim());
+      form.reset();
+      await loadAndRender();
+      showNotification('✅ Comentariu salvat în baza de date.');
+    } catch (error) {
+      showNotification('❌ Eroare la salvarea comentariului.');
     }
   });
 }

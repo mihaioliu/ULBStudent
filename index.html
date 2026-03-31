@@ -399,81 +399,11 @@
 
       <section class="questions-section">
         <div class="section-header">
-          <h2>Cele Mai Relevante Întrebări</h2>
-          <!-- Filtru sortare -->
-          <div class="view-toggle">
-            <span class="filter-label">Ordine:</span>
-            <select id="sort-select" class="sort-select">
-              <option>Cele mai recente</option>
-              <option>Cele mai helpful</option>
-              <option>Cele mai comentate</option>
-            </select>
-          </div>
+          <h2>Întrebări și Discuții</h2>
         </div>
-
-        <!-- Lista intrebari -->
-        <div class="question-list">
-          <div class="question">
-            <div class="vote-column">
-              <i class="fa-solid fa-arrow-up"></i>
-              <span>24</span>
-              <i class="fa-solid fa-arrow-down"></i>
-            </div>
-
-            <div class="question-content">
-              
-              <div class="question-header">
-                <h3>Cum să treci examenul la Matematică?</h3>
-                <span class="question-tag" style="background-color: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem;">Matematică</span>
-              </div>
-
-              <p class="question-excerpt">Sfaturi și îndrumări practice pentru a promova examenul final. Discuțiile arată că pregătirea timpurie este esențială...</p>
-
-              <div class="question-meta">
-                <div class="meta-item"><i class="fa-solid fa-user"></i> de Student ULBS</div>
-                <div class="meta-item"><i class="fa-solid fa-calendar-days"></i> acum 2 zile</div>
-                <div class="meta-item"><i class="fa-solid fa-comment"></i> 12 comentarii</div>
-              </div>
-
-            </div> </div>
-
-          <div class="question">
-              <div class="vote-column">
-                  <i class="fa-solid fa-arrow-up"></i>
-                  <span>18</span>
-                  <i class="fa-solid fa-arrow-down"></i>
-                </div>
-              <div class="question-content">
-                <div class="question-header">
-                  <h3>Recomandări pentru profesorul de Fizică</h3>
-                  <span class="question-tag">Fizică</span>
-                </div>
-            <p class="question-excerpt">Experiențe și perspective ale studenților despre metodologia și dificultatea cursurilor. Informații ce pot ajuta la alegere...</p>
-            <div class="question-meta">
-              <span class="meta-item"><i class="fa-solid fa-user"></i> de Another Student</span>
-              <span class="meta-item"><i class="fa-solid fa-calendar"></i> acum 1 zi</span>
-              <span class="meta-item"><i class="fa-solid fa-comment"></i> 8 comentarii</span>
-            </div>
-          </div></div>
-
-          <div class="question">
-              <div class="vote-column">
-                  <i class="fa-solid fa-arrow-up"></i>
-                  <span>30</span>
-                  <i class="fa-solid fa-arrow-down"></i>
-                </div>
-              <div class="question-content">
-                <div class="question-header">
-                  <h3>Cum se organizează proiectele de Programare?</h3>
-                  <span class="question-tag">Programare</span>
-                </div>
-            <p class="question-excerpt">Detalii despre cerințele proiectelor, deadline-uri și criterii de evaluare. Sfaturi de la studenți care au trecut prin asta...</p>
-            <div class="question-meta">
-              <span class="meta-item"><i class="fa-solid fa-user"></i> de Developer Student</span>
-              <span class="meta-item"><i class="fa-solid fa-calendar"></i> acum 3 zile</span>
-              <span class="meta-item"><i class="fa-solid fa-comment"></i> 15 comentarii</span>
-            </div></div>
-          </div>
+        <div style="background: var(--light-gray); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem;">
+          <p style="margin: 0 0 0.8rem 0; color: var(--text-secondary);">Crearea și afișarea întrebărilor a fost mutată în pagina de comunitate pentru un flux unic de discuții.</p>
+          <a href="subreddit.html" style="display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 0.65rem 1rem; border-radius: 8px; font-weight: 700;">Deschide Subreddit</a>
         </div>
       </section>
     </main>
@@ -524,38 +454,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script src="interactive.js"></script>
-    <script>
-  const supabaseUrl = 'https://wjxedaygcaoktwhucagn.supabase.co'; 
-  const supabaseKey = 'sb_publishable_1Qa6uuCo8hKdMwXLDMF8Nw_KTgpbm9K'; 
-  
-  // AICI ESTE MODIFICAREA: Am redenumit variabila în "clientSupabase"
-  const clientSupabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  // Test de verificare
-  console.log("Conectat la Supabase cu succes! 🚀");
-  async function adaugaStudentTest() {
-    const { data, error } = await clientSupabase
-      .from('utilizatori') // Numele tabelului creat de noi
-      .insert([
-        { 
-          nume_complet: 'Gabriel Test', 
-          email: 'gabriel.test@ulbsibiu.ro', 
-          an_studiu: 2, 
-          specializare: 'Calculatoare' 
-        }
-      ]);
-
-    if (error) {
-      console.error("A apărut o eroare:", error.message);
-    } else {
-      console.log("Datele au fost trimise cu succes în Supabase!");
-    }
-  }
-
-  // Rulăm funcția automat când se încarcă pagina
-  adaugaStudentTest();
-</script>
-
-
   </body>
 </html>

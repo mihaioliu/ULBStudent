@@ -1,0 +1,314 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Profilul meu - ULBStudent" />
+    <meta name="keywords" content="profil, student, ULB" />
+    
+    <title>Profilul Meu - ULBStudent</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="header-content">
+        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo">
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="profile-page">
+        <!-- Profile Header Banner -->
+        <div class="profile-banner">
+          <div class="banner-bg" style="background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);"></div>
+          <div class="profile-header-content">
+            <div class="profile-avatar-large" id="profileAvatarLarge">👤</div>
+            <div class="profile-header-info">
+              <h1 id="profileFullName">Nume Student</h1>
+              <p id="profileEmail" style="color: var(--text-secondary); margin: 0;">email@ulb.ro</p>
+              <div class="profile-badges" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <span class="profile-badge" style="background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">Activ</span>
+              </div>
+            </div>
+            <button id="editProfileBtn" class="btn-edit-profile">
+              <i class="fas fa-edit"></i> Editează Profil
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+          <div class="profile-main">
+            <!-- Personal Info Section -->
+            <section class="profile-section">
+              <h2 class="section-title">Informații Personale</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Nume Complet</label>
+                  <p id="infoFullName">-</p>
+                </div>
+                <div class="info-item">
+                  <label>Email</label>
+                  <p id="infoEmail">-</p>
+                </div>
+                <div class="info-item">
+                  <label>An de Studiu</label>
+                  <p id="infoYear">-</p>
+                </div>
+                <div class="info-item">
+                  <label>Specializare</label>
+                  <p id="infoSpecialization">-</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Activity Section -->
+            <section class="profile-section">
+              <h2 class="section-title">Activitate</h2>
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-value" id="statPosts">0</div>
+                  <div class="stat-label">Postări</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="statComments">0</div>
+                  <div class="stat-label">Comentarii</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="statQuestions">0</div>
+                  <div class="stat-label">Întrebări</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="statMatches">0</div>
+                  <div class="stat-label">Potriviri</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="profile-section">
+              <h2 class="section-title">Activitate Recentă</h2>
+              <div id="recentActivity" class="activity-list">
+                <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Nicio activitate recentă.</p>
+              </div>
+            </section>
+          </div>
+
+          <!-- Profile Sidebar -->
+          <div class="profile-sidebar">
+            <!-- Account Security -->
+            <div class="sidebar-card">
+              <h3><i class="fas fa-lock"></i> Securitate Cont</h3>
+              <button class="btn-secondary" id="changePasswordBtn">
+                <i class="fas fa-key"></i> Schimbă Parolă
+              </button>
+              <button class="btn-secondary" id="twoFactorBtn">
+                <i class="fas fa-shield-alt"></i> Autentificare 2FA
+              </button>
+            </div>
+
+            <!-- Preferences -->
+            <div class="sidebar-card">
+              <h3><i class="fas fa-sliders-h"></i> Preferințe</h3>
+              <label class="preference-item">
+                <input type="checkbox" id="emailNotifications" checked>
+                <span>Notificări Email</span>
+              </label>
+              <label class="preference-item">
+                <input type="checkbox" id="pushNotifications" checked>
+                <span>Notificări Push</span>
+              </label>
+              <label class="preference-item">
+                <input type="checkbox" id="profilePublic" checked>
+                <span>Profil Public</span>
+              </label>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="sidebar-card danger">
+              <h3><i class="fas fa-exclamation-triangle"></i> Zona Periculoasă</h3>
+              <button class="btn-danger" id="deleteAccountBtn">
+                <i class="fas fa-trash"></i> Șterge Cont
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Editează Profil</h2>
+          <button class="modal-close" id="closeEditModal">&times;</button>
+        </div>
+        <form id="editProfileForm" class="modal-body">
+          <div class="form-group">
+            <label>Nume Complet</label>
+            <input type="text" id="editFullName" placeholder="Introdu numele tău complet" required>
+          </div>
+          <div class="form-group">
+            <label>An de Studiu</label>
+            <select id="editYear" required>
+              <option value="">Selectează anul</option>
+              <option value="1">Anul I</option>
+              <option value="2">Anul II</option>
+              <option value="3">Anul III</option>
+              <option value="4">Anul IV</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Specializare</label>
+            <input type="text" id="editSpecialization" placeholder="Ex: Informatică, Matematică">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Salvează</button>
+            <button type="button" class="btn-secondary" id="cancelEditBtn">Anulează</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB.</p>
+        </div>
+        <div class="footer-section">
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="subreddit.html">Comunitate</a></li>
+            <li><a href="team-matching.html">Team Matching</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>❓ Ajutor</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="politica-confidentialitate.html">Politică Confidențialitate</a></li>
+            <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">
+        <p>&copy; 2026 ULBStudent. Toate drepturile rezervate.</p>
+      </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+    <script>
+      // Profile Page Initialization
+      async function initializeProfilePage() {
+        // Protect this page
+        await protectPage();
+        
+        const user = getCurrentUser();
+        const profileData = await getCurrentUserProfileData();
+        
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        
+        const fullName = profileData.data?.nume_complet || user.user_metadata?.full_name || user.email;
+        const year = profileData.data?.an_studiu || '-';
+        const specialization = profileData.data?.specializare || '-';
+        
+        // Update header
+        document.getElementById('profileFullName').textContent = fullName;
+        document.getElementById('profileEmail').textContent = user.email;
+        
+        // Update info section
+        document.getElementById('infoFullName').textContent = fullName;
+        document.getElementById('infoEmail').textContent = user.email;
+        document.getElementById('infoYear').textContent = year || '-';
+        document.getElementById('infoSpecialization').textContent = specialization || '-';
+        
+        // Update avatar
+        const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        document.getElementById('profileAvatarLarge').textContent = initials || 'ST';
+        
+        // Load stats
+        const postsResult = await getPosts();
+        document.getElementById('statPosts').textContent = postsResult.success ? postsResult.data.length : '0';
+        
+        const questionsResult = await getQuestions();
+        document.getElementById('statQuestions').textContent = questionsResult.success ? questionsResult.data.length : '0';
+        
+        // Edit profile modal
+        const editBtn = document.getElementById('editProfileBtn');
+        const modal = document.getElementById('editProfileModal');
+        const closeBtn = document.getElementById('closeEditModal');
+        const cancelBtn = document.getElementById('cancelEditBtn');
+        const form = document.getElementById('editProfileForm');
+        
+        editBtn.addEventListener('click', () => {
+          document.getElementById('editFullName').value = fullName;
+          document.getElementById('editYear').value = year || '';
+          document.getElementById('editSpecialization').value = specialization || '';
+          modal.style.display = 'flex';
+        });
+        
+        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        cancelBtn.addEventListener('click', () => modal.style.display = 'none');
+        
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const newFullName = document.getElementById('editFullName').value;
+          const newYear = document.getElementById('editYear').value;
+          const newSpec = document.getElementById('editSpecialization').value;
+          
+          // Update in localStorage
+          user.user_metadata = user.user_metadata || {};
+          user.user_metadata.full_name = newFullName;
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          
+          // TODO: Save to Supabase utilizatori table
+          
+          showNotification('✅ Profil actualizat!');
+          modal.style.display = 'none';
+          
+          // Reload after 1 sec
+          setTimeout(() => window.location.reload(), 1000);
+        });
+        
+        // Account actions
+        document.getElementById('changePasswordBtn').addEventListener('click', () => {
+          showNotification('🔐 Funcție în dezvoltare');
+        });
+        
+        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+          if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
+            showNotification('❌ Funcție în dezvoltare');
+          }
+        });
+      }
+      
+      document.addEventListener('DOMContentLoaded', initializeProfilePage);
+    </script>
+  </body>
+</html>

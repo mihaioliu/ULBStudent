@@ -281,6 +281,37 @@ function getCurrentUser() {
   }
 }
 
+/**
+ * Get logged-in user's profile row from `utilizatori`
+ */
+async function getCurrentUserProfileData() {
+  try {
+    const client = await initSupabaseClient();
+    const user = getCurrentUser();
+
+    if (!user?.email) {
+      return { success: false, data: null };
+    }
+
+    const { data, error } = await client
+      .from('utilizatori')
+      .select('*')
+      .eq('email', user.email)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('⚠️ Could not fetch utilizatori profile:', error.message);
+      return { success: false, data: null };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ Error fetching user profile data:', error.message);
+    return { success: false, data: null };
+  }
+}
+
 // ========================================
 // DATABASE OPERATIONS - Întrebări, Postări, Comentarii
 // ========================================
@@ -423,6 +454,29 @@ async function getPosts() {
 }
 
 /**
+ * Get a single post by id
+ */
+async function getPostById(postId) {
+  try {
+    const client = await initSupabaseClient();
+
+    const { data, error } = await client
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ Error fetching single post:', error.message);
+    return { success: false, data: null };
+  }
+}
+
+/**
  * Get Comments for a Post
  */
 async function getComments(postId) {
@@ -445,6 +499,180 @@ async function getComments(postId) {
 }
 
 /**
+ * Save Team Match to Database
+ * Preferred table: team_matches
+ * Fallback table: matches
+ */
+async function saveTeamMatch(profile, matchType) {
+  try {
+    const client = await initSupabaseClient();
+    const user = getCurrentUser();
+
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    const preferredPayload = {
+      user_id: user.id,
+      profile_id: String(profile.id),
+      profile_name: profile.name,
+      profile_year: profile.year,
+      profile_specialization: profile.specialization,
+      profile_skills: profile.skills,
+      match_type: matchType
+    };
+
+    // Try team_matches first (rich payload)
+    const preferredInsert = await client
+      .from('team_matches')
+      .insert([preferredPayload])
+      .select();
+
+    if (!preferredInsert.error) {
+      return { success: true, data: preferredInsert.data, source: 'team_matches' };
+    }
+
+    // Fallback for existing `matches` table
+    const fallbackPayload = {
+      user_id_1: user.id,
+      user_id_2: null,
+      match_type: `${matchType}:${profile.name}`
+    };
+
+    const fallbackInsert = await client
+      .from('matches')
+      .insert([fallbackPayload])
+      .select();
+
+    if (fallbackInsert.error) {
+      throw new Error(fallbackInsert.error.message);
+    }
+
+    return { success: true, data: fallbackInsert.data, source: 'matches' };
+  } catch (error) {
+    console.error('❌ Error saving team match:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Update Post Votes (Upvote/Downvote)
+ * Saves the vote change to the database
+ */
+async function updatePostVotes(postId, voteDirection) {
+  try {
+    const client = await initSupabaseClient();
+    
+    // Fetch current votes
+    const { data: currentPost, error: fetchError } = await client
+      .from('posts')
+      .select('votes')
+      .eq('id', postId)
+      .limit(1)
+      .maybeSingle();
+    
+    if (fetchError || !currentPost) {
+      throw new Error('Could not fetch current post');
+    }
+    
+    const newVotes = currentPost.votes + (voteDirection === 'up' ? 1 : -1);
+    
+    // Update the votes in database
+    const { data, error } = await client
+      .from('posts')
+      .update({ votes: newVotes })
+      .eq('id', postId)
+      .select();
+    
+    if (error) throw new Error(error.message);
+    
+    return { success: true, data: data?.[0], newVotes };
+  } catch (error) {
+    console.error('❌ Error updating post votes:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Update Question Votes (Upvote/Downvote)
+ * Saves the vote change to the database
+ */
+async function updateQuestionVotes(questionId, voteDirection) {
+  try {
+    const client = await initSupabaseClient();
+    
+    // Fetch current votes
+    const { data: currentQuestion, error: fetchError } = await client
+      .from('questions')
+      .select('upvotes')
+      .eq('id', questionId)
+      .limit(1)
+      .maybeSingle();
+    
+    if (fetchError || !currentQuestion) {
+      throw new Error('Could not fetch current question');
+    }
+    
+    const newVotes = currentQuestion.upvotes + (voteDirection === 'up' ? 1 : -1);
+    
+    // Update the votes in database
+    const { data, error } = await client
+      .from('questions')
+      .update({ upvotes: newVotes })
+      .eq('id', questionId)
+      .select();
+    
+    if (error) throw new Error(error.message);
+    
+    return { success: true, data: data?.[0], newVotes };
+  } catch (error) {
+    console.error('❌ Error updating question votes:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Get Team Matches from Database
+ */
+async function getTeamMatches() {
+  try {
+    const client = await initSupabaseClient();
+    const user = getCurrentUser();
+
+    if (!user?.id) {
+      return { success: false, data: [] };
+    }
+
+    // Try team_matches first
+    const preferredSelect = await client
+      .from('team_matches')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!preferredSelect.error) {
+      return { success: true, data: preferredSelect.data, source: 'team_matches' };
+    }
+
+    // Fallback to matches
+    const fallbackSelect = await client
+      .from('matches')
+      .select('*')
+      .eq('user_id_1', user.id)
+      .order('created_at', { ascending: false });
+
+    if (fallbackSelect.error) {
+      throw new Error(fallbackSelect.error.message);
+    }
+
+    return { success: true, data: fallbackSelect.data, source: 'matches' };
+  } catch (error) {
+    console.error('❌ Error loading team matches:', error.message);
+    return { success: false, data: [] };
+  }
+}
+
+/**
  * Protect Pages - Redirect to Login if Not Authenticated
  */
 async function protectPage() {
@@ -457,96 +685,227 @@ async function protectPage() {
     'termeni-conditii.html',
     'politica-confidentialitate.html',
     'contact.html',
-    'raporteaza-problema.html'
+    'raporteaza-problema.html',
+    'index.html',
+    'documente.html',
+    'subreddit.html',
+    'team-matching.html',
+    'comments.html'
+  ];
+  
+  // Protected pages - require authentication
+  const protectedPages = [
+    'profile.html',
+    'settings.html'
   ];
   
   if (publicPages.includes(currentPage)) {
-    return;
+    return; // No protection needed
   }
-
-  const { authenticated } = await checkAuthStatus();
   
-  if (!authenticated) {
-    console.log('🔒 Page protected. Redirecting to login...');
-    window.location.href = 'login.html';
+  if (protectedPages.includes(currentPage)) {
+    const { authenticated } = await checkAuthStatus();
+    
+    if (!authenticated) {
+      console.log('🔒 Page protected. Redirecting to login...');
+      window.location.href = 'login.html';
+    }
   }
 }
 
 /**
  * Update Header with User Info (if logged in)
+ * INSTANT display from localStorage, then verify async in background
  */
 async function updateHeaderWithUserInfo() {
   try {
-    const { authenticated, user } = await checkAuthStatus();
     const headerActions = document.querySelector('.header-actions');
-    
     if (!headerActions) return;
     
-    // ❌ ALWAYS remove old signin/signup buttons first
-    const oldSignIn = headerActions.querySelector('.btn-signin');
-    const oldSignUp = headerActions.querySelector('.btn-signup');
-    if (oldSignIn) oldSignIn.remove();
-    if (oldSignUp) oldSignUp.remove();
+    // Step 1: Check localStorage INSTANTLY (no await)
+    const storedUser = localStorage.getItem('currentUser');
+    const storedAuth = localStorage.getItem('supabase.auth.token');
     
-    // ❌ Remove old user menu
-    const oldUserMenu = headerActions.querySelector('.user-menu');
-    if (oldUserMenu) oldUserMenu.remove();
+    let displayUser = null;
+    let hasValidStorage = false;
     
-    if (authenticated && user) {
-      // Create user profile menu
-      const userMenu = document.createElement('div');
-      userMenu.className = 'user-menu';
-      userMenu.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-      `;
+    if (storedUser && storedAuth) {
+      try {
+        displayUser = JSON.parse(storedUser);
+        hasValidStorage = true;
+      } catch (e) {
+        console.warn('Invalid stored user data');
+      }
+    }
+    
+    // Step 2: Display user from localStorage INSTANTLY
+    if (hasValidStorage && displayUser) {
+      showUserMenuInHeader(headerActions, displayUser);
       
-      const userEmail = user.email || 'Student';
-      const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
-      
-      userMenu.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-user-circle" style="font-size: 1.5rem; color: white;"></i>
-          <div style="color: white;">
-            <div style="font-weight: 700; font-size: 0.9rem;">${userName}</div>
-            <div style="font-size: 0.75rem; opacity: 0.9;">${userEmail}</div>
-          </div>
-        </div>
-        <button id="logoutBtnHeader" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
-      `;
-      
-      headerActions.appendChild(userMenu);
-      
-      // Add logout handler
-      document.getElementById('logoutBtnHeader').addEventListener('click', async () => {
-        if (confirm('Ești sigur că vrei să te deconectezi?')) {
-          await logoutUser();
+      // Step 3: Verify authentication async in background (non-blocking)
+      checkAuthStatus().then(({ authenticated, user }) => {
+        if (!authenticated) {
+          // Session expired, redirect
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('supabase.auth.token');
+          window.location.href = 'login.html';
         }
+      }).catch(err => {
+        console.warn('Background auth check failed:', err);
+        // Silently fail - user can continue if stored session is still valid
       });
     } else {
-      // User not logged in - add login buttons
-      const signInBtn = document.createElement('button');
-      signInBtn.className = 'btn-signin';
-      signInBtn.textContent = 'Conectare';
-      signInBtn.addEventListener('click', () => window.location.href = 'login.html');
-      headerActions.appendChild(signInBtn);
+      // No stored session - show login buttons
+      showLoginButtonsInHeader(headerActions);
       
-      const signUpBtn = document.createElement('button');
-      signUpBtn.className = 'btn-signup';
-      signUpBtn.textContent = 'Înregistrare';
-      signUpBtn.addEventListener('click', () => window.location.href = 'register.html');
-      headerActions.appendChild(signUpBtn);
+      // Still verify in background
+      checkAuthStatus().then(({ authenticated, user }) => {
+        if (authenticated && user) {
+          showUserMenuInHeader(headerActions, user);
+        }
+      }).catch(err => {
+        console.warn('Auth check failed:', err);
+      });
     }
   } catch (error) {
     console.error('Error updating header:', error);
   }
+}
+
+/**
+ * Display login/signup buttons in header
+ */
+function showLoginButtonsInHeader(headerActions) {
+  // Remove existing menu if any
+  const oldMenu = headerActions.querySelector('.user-menu');
+  if (oldMenu) oldMenu.remove();
+  
+  // Remove old buttons
+  const oldSignIn = headerActions.querySelector('.btn-signin');
+  const oldSignUp = headerActions.querySelector('.btn-signup');
+  if (oldSignIn) oldSignIn.remove();
+  if (oldSignUp) oldSignUp.remove();
+  
+  // Add new buttons
+  const signIn = document.createElement('button');
+  signIn.className = 'btn-signin';
+  signIn.textContent = 'Conectare';
+  signIn.addEventListener('click', () => window.location.href = 'login.html');
+  
+  const signUp = document.createElement('button');
+  signUp.className = 'btn-signup';
+  signUp.textContent = 'Înregistrare';
+  signUp.addEventListener('click', () => window.location.href = 'register.html');
+  
+  headerActions.appendChild(signIn);
+  headerActions.appendChild(signUp);
+}
+
+/**
+ * Display user menu in header with profile info
+ */
+function showUserMenuInHeader(headerActions, user) {
+  // Remove login buttons if any
+  const oldSignIn = headerActions.querySelector('.btn-signin');
+  const oldSignUp = headerActions.querySelector('.btn-signup');
+  if (oldSignIn) oldSignIn.remove();
+  if (oldSignUp) oldSignUp.remove();
+  
+  // Remove old menu if any
+  const oldMenu = headerActions.querySelector('.user-menu');
+  if (oldMenu) oldMenu.remove();
+  
+  // Create user profile menu
+  const userMenu = document.createElement('div');
+  userMenu.className = 'user-menu';
+  userMenu.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+  `;
+  
+  const userEmail = user.email || 'Student';
+  const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
+  
+  userMenu.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-user-circle" style="font-size: 1.5rem; color: white;"></i>
+      <div style="color: white;">
+        <div style="font-weight: 700; font-size: 0.9rem;">${escapeHtml(userName)}</div>
+        <div style="font-size: 0.75rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>
+      </div>
+    </div>
+    <i class="fas fa-chevron-down" style="color: white; font-size: 0.8rem;"></i>
+  `;
+  
+  // Create dropdown menu
+  const dropdownMenu = document.createElement('div');
+  dropdownMenu.className = 'user-dropdown-menu';
+  dropdownMenu.style.cssText = `
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    min-width: 200px;
+    margin-top: 0.5rem;
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+  `;
+  
+  dropdownMenu.innerHTML = `
+    <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: var(--text); text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+      <i class="fas fa-user"></i> Profilul Meu
+    </a>
+    <a href="settings.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: var(--text); text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+      <i class="fas fa-cog"></i> Setări
+    </a>
+    <hr style="margin: 0; border: none; border-top: 1px solid var(--border-color);">
+    <button id="logoutBtn" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; background: transparent; border: none; color: #e63946; font-weight: 600; cursor: pointer; transition: background 0.2s;" class="dropdown-item">
+      <i class="fas fa-sign-out-alt"></i> Deconectare
+    </button>
+  `;
+  
+  // Toggle dropdown on click
+  userMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = dropdownMenu.style.display !== 'none';
+    dropdownMenu.style.display = isVisible ? 'none' : 'block';
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    dropdownMenu.style.display = 'none';
+  });
+  
+  // Style dropdown items on hover
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      item.style.background = 'var(--light-gray)';
+    });
+    item.addEventListener('mouseleave', () => {
+      item.style.background = 'transparent';
+    });
+  });
+  
+  // Logout button
+  const logoutBtn = dropdownMenu.querySelector('#logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await logoutUser();
+    });
+  }
+  
+  userMenu.appendChild(dropdownMenu);
+  headerActions.appendChild(userMenu);
 }
 
 /**
@@ -569,6 +928,20 @@ async function initAuthOnPageLoad(protectPage = true) {
 }
 
 // Auto-initialize on page load for non-login/register pages
+/**
+ * Utility Functions
+ */
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text?.replace(/[&<>"']/g, m => map[m]) || '';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   

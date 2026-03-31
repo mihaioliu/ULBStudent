@@ -43,30 +43,11 @@
       </div>
 
       <!-- Post Original -->
-      <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; border-left: 4px solid var(--accent);">
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-          <div style="font-size: 2.5rem;">👨‍🎓</div>
-          <div>
-            <h3 style="margin: 0 0 0.25rem 0;">Alex Popescu</h3>
-            <p style="margin: 0; color: #888; font-size: 0.9rem;">Postat acum 2 ore</p>
-          </div>
-        </div>
-        <h2 style="color: var(--text); margin: 0 0 1rem 0;">Cum functioneaza Team Matching?</h2>
+      <div id="commentsPostContainer" style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; border-left: 4px solid var(--accent);">
+        <h2 style="color: var(--text); margin: 0 0 1rem 0;">Încă nu există detalii pentru această postare</h2>
         <p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">
-          Salut! Sunt nou pe platformă și aș vrea să înțeleg mai bine cum funcționează Team Matching. 
-          Pot găsi echipă pentru proiectul de Algoritmi? Sunt in anul 2, la Informatică.
+          Selectează o postare din comunitate pentru a vedea și adăuga comentarii.
         </p>
-        <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-          <button style="background: none; border: none; cursor: pointer; color: #888;">
-            <i class="fas fa-thumbs-up"></i> 24
-          </button>
-          <button style="background: none; border: none; cursor: pointer; color: #888;">
-            <i class="fas fa-comment"></i> 5 Comentarii
-          </button>
-          <button style="background: none; border: none; cursor: pointer; color: #888;">
-            <i class="fas fa-share"></i> Partajează
-          </button>
-        </div>
       </div>
 
       <!-- Formular Adaugare Comentariu -->
@@ -138,76 +119,9 @@
 
       <!-- Comentarii Existente -->
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <h3 style="color: var(--text); margin: 0 0 1rem 0;">💭 5 Comentarii</h3>
-
-        <!-- Comentariu 1 -->
-        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);">
-          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-            <div style="font-size: 1.8rem;">👩‍💻</div>
-            <div>
-              <h4 style="margin: 0; color: var(--text);">Maria Ionescu</h4>
-              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 1 oră</p>
-            </div>
-          </div>
-          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
-            Team Matching e super mișto! Am găsit o echipă de 3 persoane și deja am inceput proiectul. 
-            Incepe cu profilul tău, adaugă skills și asteaptă like-uri. Prioritate sunt compatibilitatile! 🚀
-          </p>
-          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-reply"></i> Răspunde
-            </button>
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-thumbs-up"></i> 12
-            </button>
-          </div>
-        </div>
-
-        <!-- Comentariu 2 -->
-        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid #10b981;">
-          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-            <div style="font-size: 1.8rem;">👨‍💼</div>
-            <div>
-              <h4 style="margin: 0; color: var(--text);">Ion Dumitru</h4>
-              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 45 minute</p>
-            </div>
-          </div>
-          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
-            La mine s-a descurcat bine. Sfatul meu: pune skills realiste și biomarketing bun. 
-            Oamenii căuta pe baza descrierii. Și răspunde prompt la mesaje! 💬
-          </p>
-          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-reply"></i> Răspunde
-            </button>
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-thumbs-up"></i> 8
-            </button>
-          </div>
-        </div>
-
-        <!-- Comentariu 3 -->
-        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid #8b5cf6;">
-          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-            <div style="font-size: 1.8rem;">👩‍🎨</div>
-            <div>
-              <h4 style="margin: 0; color: var(--text);">Sofia Micu</h4>
-              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 30 minute</p>
-            </div>
-          </div>
-          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
-            Mie nu mi-a mers la inceput, dar am înțeles că filtru e important. Dacă cauți frontend, 
-            alege JavaScript / React. Fii specific! 🎯
-          </p>
-          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-reply"></i> Răspunde
-            </button>
-            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
-              <i class="fas fa-thumbs-up"></i> 5
-            </button>
-          </div>
-        </div>
+        <h3 id="commentsTitle" style="color: var(--text); margin: 0 0 1rem 0;">💭 0 Comentarii</h3>
+        <div id="commentsList"></div>
+        <p id="commentsEmptyState" style="color: #888; background: var(--light-gray); border: 1px dashed var(--border-color); border-radius: 10px; padding: 1rem;">Încă nu există comentarii.</p>
       </div>
 
       <!-- Ghid de Comentarii -->
@@ -276,36 +190,6 @@
       </div>
     </footer>
 
-    <script>
-      document.getElementById('commentForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const name = document.getElementById('commentName').value || 'Anonim';
-        const email = document.getElementById('commentEmail').value || '';
-        const comment = document.getElementById('commentText').value;
-        
-        if (!comment.trim()) {
-          alert('Te rog să scrii un comentariu!');
-          return;
-        }
-        
-        try {
-          // Salvez comentariul în baza de date
-          // Post ID = 1 (pentru testare, va trebui schimbat dinamic)
-          const result = await saveComment(1, name, email, comment);
-          
-          if (!result.success) {
-            alert('❌ Eroare la salvarea comentariului!');
-            return;
-          }
-          
-          alert('✅ Mulțumim pentru comentariu! A fost postat cu succes și salvat în baza de date. 🎉');
-          this.reset();
-        } catch (error) {
-          console.error('Error saving comment:', error);
-          alert('❌ Eroare: ' + error.message);
-        }
-      });
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script src="interactive.js"></script>

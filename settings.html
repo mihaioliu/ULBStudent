@@ -1,0 +1,354 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Setări - ULBStudent" />
+    
+    <title>Setări - ULBStudent</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="header-content">
+        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo">
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
+    </header>
+
+    <main class="container" style="max-width: 900px; margin: 2rem auto; padding: 0 1rem;">
+      <div class="settings-page">
+        <!-- Page Header -->
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+          <h1 style="margin: 0; font-size: 2rem;">⚙️ Setări</h1>
+          <a href="profile.html" style="color: var(--accent); text-decoration: none;">← Înapoi la Profil</a>
+        </div>
+
+        <!-- Settings Navigation -->
+        <div class="settings-nav" style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); flex-wrap: wrap;">
+          <button class="settings-nav-btn active" data-section="general" style="padding: 1rem; border: none; background: none; cursor: pointer; color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: 600;">
+            <i class="fas fa-cog"></i> General
+          </button>
+          <button class="settings-nav-btn" data-section="notifications" style="padding: 1rem; border: none; background: none; cursor: pointer; color: var(--text-secondary);">
+            <i class="fas fa-bell"></i> Notificări
+          </button>
+          <button class="settings-nav-btn" data-section="privacy" style="padding: 1rem; border: none; background: none; cursor: pointer; color: var(--text-secondary);">
+            <i class="fas fa-shield-alt"></i> Confidențialitate
+          </button>
+          <button class="settings-nav-btn" data-section="appearance" style="padding: 1rem; border: none; background: none; cursor: pointer; color: var(--text-secondary);">
+            <i class="fas fa-palette"></i> Aspect
+          </button>
+        </div>
+
+        <!-- Settings Content -->
+        
+        <!-- General Settings -->
+        <div id="general" class="settings-section">
+          <h2 style="margin-top: 0;">Setări Generale</h2>
+          
+          <div class="settings-card">
+            <div class="setting-item">
+              <div>
+                <h4>Limba Interfață</h4>
+                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Selectează limba preferată</p>
+              </div>
+              <select id="languageSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
+                <option value="ro" selected>Română</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <h4>Regiune Oras</h4>
+                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Setupeaza locatia ta</p>
+              </div>
+              <select id="regionSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
+                <option value="bucharesti" selected>București</option>
+                <option value="cluj">Cluj-Napoca</option>
+                <option value="timisoara">Timișoara</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <h4>Zona Orar (Timezone)</h4>
+                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Pentru sincronizare corectă</p>
+              </div>
+              <select id="timezoneSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
+                <option value="EET" selected>EET (UTC+2)</option>
+                <option value="EEST">EEST (UTC+3)</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div id="notifications" class="settings-section" style="display: none;">
+          <h2 style="margin-top: 0;">Setări Notificări</h2>
+          
+          <div class="settings-card">
+            <div class="setting-toggle">
+              <div>
+                <h4>Notificări Email</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Primește notificări prin email</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="emailNotifSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Notificări Comentarii</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Când cineva comentează o postare a ta</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="commentNotifSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Notificări Privat</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Când primești mesaje private</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="dmNotifSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Notificări Potriviri (Team Matching)</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Când ai o potrivire nouă</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="matchNotifSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy Settings -->
+        <div id="privacy" class="settings-section" style="display: none;">
+          <h2 style="margin-top: 0;">Confidențialitate și Securitate</h2>
+          
+          <div class="settings-card">
+            <div class="setting-toggle">
+              <div>
+                <h4>Profil Public</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Permite altora să-ți vadă profilul</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="profilePublicSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Arată Activitate</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Permite altora să-ți vadă postări și comentarii</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="activityVisibleSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <h4>Cine Te Poate Contacta</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Selectează cine poate trimite mesaje</p>
+              </div>
+              <select id="contactSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
+                <option value="all">Toți</option>
+                <option value="friends" selected>Doar conexiuni</option>
+                <option value="none">Nimeni</option>
+              </select>
+            </div>
+
+            <div style="padding: 1rem; background: var(--light-gray); border-radius: 8px; margin-top: 1rem;">
+              <h4>Sesiuni Active</h4>
+              <p style="color: var(--text-secondary); margin: 0.5rem 0;">Deconectează de pe alte dispozitive</p>
+              <button class="btn-danger" style="margin-top: 0.5rem; padding: 0.6rem 1.2rem;">Deconectează toate sesiunile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div id="appearance" class="settings-section" style="display: none;">
+          <h2 style="margin-top: 0;">Aspect și Temă</h2>
+          
+          <div class="settings-card">
+            <div class="setting-item">
+              <div>
+                <h4>Temă</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Selectează temă preferată</p>
+              </div>
+              <div style="display: flex; gap: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="radio" name="theme" value="light" id="themeLight" checked>
+                  <span>☀️ Clar</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="radio" name="theme" value="dark" id="themeDark">
+                  <span>🌙 Întunecat</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="radio" name="theme" value="night" id="themeNight">
+                  <span>⭐ Noapte</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Dimensiune Font</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Mărește textul pentru ușurință</p>
+              </div>
+              <select id="fontSizeSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
+                <option value="small">Mic</option>
+                <option value="normal" selected>Normal</option>
+                <option value="large">Mare</option>
+              </select>
+            </div>
+
+            <div class="setting-toggle">
+              <div>
+                <h4>Animații</h4>
+                <p style="color: var(--text-secondary); margin: 0;">Activează/dezactivează animații</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="animationsSetting" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+          <button class="btn-secondary" id="resetSettingsBtn">Resetare</button>
+          <button class="btn-primary" id="saveSettingsBtn">Salvează Setări</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB.</p>
+        </div>
+        <div class="footer-section">
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="profile.html">Profilul Meu</a></li>
+            <li><a href="subreddit.html">Comunitate</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>❓ Ajutor</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="politica-confidentialitate.html">Politică Confidențialitate</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">
+        <p>&copy; 2026 ULBStudent. Toate drepturile rezervate.</p>
+      </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+    <script>
+      // Settings Page Initialization
+      async function initializeSettingsPage() {
+        // Protect this page
+        await protectPage();
+        
+        // Settings Navigation
+      document.querySelectorAll('.settings-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const section = btn.getAttribute('data-section');
+          
+          // Update button styles
+          document.querySelectorAll('.settings-nav-btn').forEach(b => {
+            b.style.color = 'var(--text-secondary)';
+            b.style.borderBottom = 'none';
+          });
+          btn.style.color = 'var(--accent)';
+          btn.style.borderBottom = '3px solid var(--accent)';
+          
+          // Update section visibility
+          document.querySelectorAll('.settings-section').forEach(s => {
+            s.style.display = 'none';
+          });
+          document.getElementById(section).style.display = 'block';
+        });
+      });
+
+      // Settings Save
+      document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        // Save all settings to localStorage
+        localStorage.setItem('language', document.getElementById('languageSetting').value);
+        localStorage.setItem('region', document.getElementById('regionSetting').value);
+        localStorage.setItem('timezone', document.getElementById('timezoneSetting').value);
+        
+        showNotification('✅ Setări salvate!');
+      });
+
+      document.getElementById('resetSettingsBtn').addEventListener('click', () => {
+        if (confirm('Ești sigur? Se vor reseta toate setările la default.')) {
+          localStorage.removeItem('language');
+          localStorage.removeItem('region');
+          localStorage.removeItem('timezone');
+          window.location.reload();
+        }
+      });
+
+      // Load saved settings
+      window.addEventListener('load', () => {
+        const language = localStorage.getItem('language') || 'ro';
+        const region = localStorage.getItem('region') || 'bucharesti';
+        const timezone = localStorage.getItem('timezone') || 'EET';
+        
+        document.getElementById('languageSetting').value = language;
+        document.getElementById('regionSetting').value = region;
+        document.getElementById('timezoneSetting').value = timezone;
+      });
+      }
+      
+      document.addEventListener('DOMContentLoaded', initializeSettingsPage);
+    </script>
+  </body>
+</html>
