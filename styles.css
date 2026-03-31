@@ -1727,10 +1727,12 @@ body.dark-mode .doc-size {
 
 .sidebar-box.trending-box {
   order: 0; /* Trending FIRST */
+  position: static;
 }
 
 .sidebar-box.user-profile-card {
   order: 1; /* User Profile SECOND */
+  position: static;
 }
 
 .sidebar-box.about-box {

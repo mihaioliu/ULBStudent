@@ -99,11 +99,11 @@ function initializeAuthButtons() {
 }
 
 function showSignInModal() {
-  showNotification('🔐 Funcția de Sign In va fi disponibilă în curând!');
+  window.location.href = 'login.html';
 }
 
 function showSignUpModal() {
-  showNotification('📝 Funcția de Sign Up va fi disponibilă în curând!');
+  window.location.href = 'register.html';
 }
 
 /**
@@ -888,7 +888,7 @@ function initializePostCreation() {
   
   if (!postForm || !postSubmitBtn) return; // Nu suntem pe pagina subreddit
   
-  postForm.addEventListener('submit', function(e) {
+  postForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const content = postInput.value.trim();
@@ -898,50 +898,73 @@ function initializePostCreation() {
       return;
     }
     
-    // Creez element de postare nouă
-    const newPost = document.createElement('div');
-    newPost.className = 'post-card';
-    newPost.innerHTML = `
-      <div class="post-votes">
-        <i class="fa-solid fa-arrow-up"></i>
-        <span>0</span>
-        <i class="fa-solid fa-arrow-down"></i>
-      </div>
-      <div class="post-body">
-        <span class="post-meta">Postat de u/Tu • acum câteva secunde</span>
-        <h4>${escapeHtml(content)}</h4>
-        <div class="post-actions">
-          <button class="action-btn">💬 Comentează</button>
-          <button class="action-btn">↗️ Share</button>
-          <button class="action-btn">⋯ Alte opțiuni</button>
-        </div>
-      </div>
-    `;
-    
-    // Adaug la începutul listei de postări
-    const postContainer = document.querySelector('.posts-container');
-    const existingPosts = postContainer.querySelectorAll('.post-card');
-    
-    if (existingPosts.length > 0) {
-      existingPosts[0].before(newPost);
-    } else {
-      postContainer.appendChild(newPost);
+    // Verific dacă utilizatorul e logat
+    const user = getCurrentUser();
+    if (!user) {
+      showNotification('❌ Trebuie să fi logat pentru a posta!');
+      return;
     }
     
-    // Animație pentru noua postare
-    newPost.style.opacity = '0';
-    newPost.style.transform = 'translateY(-20px)';
-    setTimeout(() => {
-      newPost.style.transition = 'all 0.4s ease-out';
-      newPost.style.opacity = '1';
-      newPost.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // Golesc input
-    postInput.value = '';
-    
-    // Notificare
-    showNotification('✅ Postare adăugată cu succes!');
+    try {
+      // Salvez postarea în baza de date
+      const result = await savePost('Post din subreddit', content);
+      
+      if (!result.success) {
+        showNotification('❌ Eroare la salvarea postării!');
+        return;
+      }
+      
+      const postId = result.data[0]?.id;
+      
+      // Creez element de postare nouă
+      const newPost = document.createElement('div');
+      newPost.className = 'post-card';
+      newPost.setAttribute('data-post-id', postId); // Salvez ID-ul din DB
+      newPost.innerHTML = `
+        <div class="post-votes">
+          <i class="fa-solid fa-arrow-up"></i>
+          <span>0</span>
+          <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <div class="post-body">
+          <span class="post-meta">Postat de u/${user.email?.split('@')[0]} • acum câteva secunde</span>
+          <h4>${escapeHtml(content)}</h4>
+          <div class="post-actions">
+            <button class="action-btn">💬 Comentează</button>
+            <button class="action-btn">↗️ Share</button>
+            <button class="action-btn">⋯ Alte opțiuni</button>
+          </div>
+        </div>
+      `;
+      
+      // Adaug la începutul listei de postări
+      const postContainer = document.querySelector('.posts-container');
+      const existingPosts = postContainer.querySelectorAll('.post-card');
+      
+      if (existingPosts.length > 0) {
+        existingPosts[0].before(newPost);
+      } else {
+        postContainer.appendChild(newPost);
+      }
+      
+      // Animație pentru noua postare
+      newPost.style.opacity = '0';
+      newPost.style.transform = 'translateY(-20px)';
+      setTimeout(() => {
+        newPost.style.transition = 'all 0.4s ease-out';
+        newPost.style.opacity = '1';
+        newPost.style.transform = 'translateY(0)';
+      }, 10);
+      
+      // Golesc input
+      postInput.value = '';
+      
+      // Notificare
+      showNotification('✅ Postare adăugată cu succes în baza de date!');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      showNotification('❌ Eroare la postare: ' + error.message);
+    }
   });
   
   // Action buttons functionality
@@ -952,7 +975,8 @@ function initializePostCreation() {
       
       switch(true) {
         case text.includes('Comentează'):
-          showNotification('💬 Funcția de comentarii va fi disponibilă în curând!');
+          showNotification('💬 Redirecționare la comentarii...');
+          // TODO: Redirect to comments page
           break;
         case text.includes('Share'):
           showNotification('↗️ Postarea a fost copiată în clipboard!');

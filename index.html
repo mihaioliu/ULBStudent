@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
 
+
   <body>
     <!-- Header: logo + meniu -->
     <header>
@@ -520,6 +521,41 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <script src="interactive.js"></script>
+    <script>
+  const supabaseUrl = 'https://wjxedaygcaoktwhucagn.supabase.co'; 
+  const supabaseKey = 'sb_publishable_1Qa6uuCo8hKdMwXLDMF8Nw_KTgpbm9K'; 
+  
+  // AICI ESTE MODIFICAREA: Am redenumit variabila în "clientSupabase"
+  const clientSupabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // Test de verificare
+  console.log("Conectat la Supabase cu succes! 🚀");
+  async function adaugaStudentTest() {
+    const { data, error } = await clientSupabase
+      .from('utilizatori') // Numele tabelului creat de noi
+      .insert([
+        { 
+          nume_complet: 'Gabriel Test', 
+          email: 'gabriel.test@ulbsibiu.ro', 
+          an_studiu: 2, 
+          specializare: 'Calculatoare' 
+        }
+      ]);
+
+    if (error) {
+      console.error("A apărut o eroare:", error.message);
+    } else {
+      console.log("Datele au fost trimise cu succes în Supabase!");
+    }
+  }
+
+  // Rulăm funcția automat când se încarcă pagina
+  adaugaStudentTest();
+</script>
+
+
   </body>
 </html>

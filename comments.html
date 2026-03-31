@@ -1,0 +1,313 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Discuții și comentarii - ULBStudent. Participă la conversații și schimburi de idei." />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    
+    <title>Discuții - ULBStudent | Comunitate Studenți</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <!-- Header: logo + meniu -->
+    <header>
+      <div class="header-content">
+        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo">
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
+    </header>
+
+    <main class="container" style="max-width: 1000px; margin: 3rem auto; padding: 2rem;">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h1>💬 Discuții și Comentarii</h1>
+        <p>Participă la conversații, află răspunsuri și schimbă idei cu ceilalți studenți.</p>
+      </div>
+
+      <!-- Post Original -->
+      <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; border-left: 4px solid var(--accent);">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="font-size: 2.5rem;">👨‍🎓</div>
+          <div>
+            <h3 style="margin: 0 0 0.25rem 0;">Alex Popescu</h3>
+            <p style="margin: 0; color: #888; font-size: 0.9rem;">Postat acum 2 ore</p>
+          </div>
+        </div>
+        <h2 style="color: var(--text); margin: 0 0 1rem 0;">Cum functioneaza Team Matching?</h2>
+        <p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">
+          Salut! Sunt nou pe platformă și aș vrea să înțeleg mai bine cum funcționează Team Matching. 
+          Pot găsi echipă pentru proiectul de Algoritmi? Sunt in anul 2, la Informatică.
+        </p>
+        <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+          <button style="background: none; border: none; cursor: pointer; color: #888;">
+            <i class="fas fa-thumbs-up"></i> 24
+          </button>
+          <button style="background: none; border: none; cursor: pointer; color: #888;">
+            <i class="fas fa-comment"></i> 5 Comentarii
+          </button>
+          <button style="background: none; border: none; cursor: pointer; color: #888;">
+            <i class="fas fa-share"></i> Partajează
+          </button>
+        </div>
+      </div>
+
+      <!-- Formular Adaugare Comentariu -->
+      <div style="background: var(--surface); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+        <h3 style="margin-top: 0; color: var(--accent);">✍️ Adaugă un Comentariu</h3>
+        <form id="commentForm" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div>
+            <label for="commentName" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+              Nume (opțional)
+            </label>
+            <input 
+              type="text" 
+              id="commentName"
+              name="name"
+              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              placeholder="Cum dorești să fii creditat?"
+            >
+          </div>
+
+          <div>
+            <label for="commentText" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+              Comentariul tău *
+            </label>
+            <textarea 
+              id="commentText"
+              name="comment"
+              required
+              style="width: 100%; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; min-height: 150px; resize: vertical;"
+              placeholder="Partajează-ți gândurile, răspunsurile sau întrebările..."
+            ></textarea>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+              Fii respectuos și constructiv. Comentariile nepotrivite vor fi șterse.
+            </p>
+          </div>
+
+          <div>
+            <label for="commentEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+              Email (pentru notificări)
+            </label>
+            <input 
+              type="email" 
+              id="commentEmail"
+              name="email"
+              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              placeholder="email@exemple.ro"
+            >
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button 
+              type="submit"
+              style="flex: 1; padding: 0.75rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+              onmouseover="this.style.background='#d63447'"
+              onmouseout="this.style.background='var(--accent)'"
+            >
+              <i class="fas fa-paper-plane"></i> Postează Comentariu
+            </button>
+            <button 
+              type="reset"
+              style="flex: 0 1 150px; padding: 0.75rem 1.5rem; background: var(--light-gray); color: var(--text); border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+              onmouseover="this.style.background='#e8eef0'"
+              onmouseout="this.style.background='var(--light-gray)'"
+            >
+              Șterge
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Comentarii Existente -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <h3 style="color: var(--text); margin: 0 0 1rem 0;">💭 5 Comentarii</h3>
+
+        <!-- Comentariu 1 -->
+        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);">
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="font-size: 1.8rem;">👩‍💻</div>
+            <div>
+              <h4 style="margin: 0; color: var(--text);">Maria Ionescu</h4>
+              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 1 oră</p>
+            </div>
+          </div>
+          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
+            Team Matching e super mișto! Am găsit o echipă de 3 persoane și deja am inceput proiectul. 
+            Incepe cu profilul tău, adaugă skills și asteaptă like-uri. Prioritate sunt compatibilitatile! 🚀
+          </p>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-reply"></i> Răspunde
+            </button>
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-thumbs-up"></i> 12
+            </button>
+          </div>
+        </div>
+
+        <!-- Comentariu 2 -->
+        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid #10b981;">
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="font-size: 1.8rem;">👨‍💼</div>
+            <div>
+              <h4 style="margin: 0; color: var(--text);">Ion Dumitru</h4>
+              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 45 minute</p>
+            </div>
+          </div>
+          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
+            La mine s-a descurcat bine. Sfatul meu: pune skills realiste și biomarketing bun. 
+            Oamenii căuta pe baza descrierii. Și răspunde prompt la mesaje! 💬
+          </p>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-reply"></i> Răspunde
+            </button>
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-thumbs-up"></i> 8
+            </button>
+          </div>
+        </div>
+
+        <!-- Comentariu 3 -->
+        <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="font-size: 1.8rem;">👩‍🎨</div>
+            <div>
+              <h4 style="margin: 0; color: var(--text);">Sofia Micu</h4>
+              <p style="margin: 0; color: #888; font-size: 0.85rem;">Acum 30 minute</p>
+            </div>
+          </div>
+          <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
+            Mie nu mi-a mers la inceput, dar am înțeles că filtru e important. Dacă cauți frontend, 
+            alege JavaScript / React. Fii specific! 🎯
+          </p>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-reply"></i> Răspunde
+            </button>
+            <button style="background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem;">
+              <i class="fas fa-thumbs-up"></i> 5
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ghid de Comentarii -->
+      <div style="margin-top: 4rem; padding: 2rem; background: var(--light-gray); border-radius: 12px;">
+        <h3 style="color: var(--accent); margin-top: 0;">📋 Ghid de Comentarii Bune</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div>
+            <h4 style="color: #10b981;">✅ Ce să faci</h4>
+            <ul style="color: var(--text-secondary);">
+              <li>Fii respectuos și constructiv</li>
+              <li>Pune întrebări clarificatoare</li>
+              <li>Oferi ajutor și resurse</li>
+              <li>Citeaza surse atunci când relevante</li>
+              <li>Recunoaște-ți greșelile</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: #ef4444;">❌ Ce să eviti</h4>
+            <ul style="color: var(--text-secondary);">
+              <li>Spam și promovare excesivă</li>
+              <li>Mesaje jignitoare sau ofensatoare</li>
+              <li>Misinformații deliberate</li>
+              <li>Advertoriale ascunse</li>
+              <li>Flood-uri sau mesaje lungi inutile</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <img src="assets/logo5.jpeg" alt="ULBStudent Logo" style="height: 60px; width: auto; margin-bottom: 1rem;">
+          <h4>📚 ULBStudent</h4>
+          <p>Platformă de suport pentru comunitatea studenților ULB.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4>🔗 Linkuri Rapide</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="documente.html">Documente</a></li>
+            <li><a href="subreddit.html">Subreddit</a></li>
+            <li><a href="team-matching.html">Team Matching</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>❓ Ajutor</h4>
+          <ul style="list-style: none; padding: 0;">
+            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="comments.html">Discuții</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>📞 Contact</h4>
+          <p>Email: <strong>support@ulbstudent.ro</strong></p>
+          <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('commentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('commentName').value || 'Anonim';
+        const email = document.getElementById('commentEmail').value || '';
+        const comment = document.getElementById('commentText').value;
+        
+        if (!comment.trim()) {
+          alert('Te rog să scrii un comentariu!');
+          return;
+        }
+        
+        try {
+          // Salvez comentariul în baza de date
+          // Post ID = 1 (pentru testare, va trebui schimbat dinamic)
+          const result = await saveComment(1, name, email, comment);
+          
+          if (!result.success) {
+            alert('❌ Eroare la salvarea comentariului!');
+            return;
+          }
+          
+          alert('✅ Mulțumim pentru comentariu! A fost postat cu succes și salvat în baza de date. 🎉');
+          this.reset();
+        } catch (error) {
+          console.error('Error saving comment:', error);
+          alert('❌ Eroare: ' + error.message);
+        }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+  </body>
+</html>
