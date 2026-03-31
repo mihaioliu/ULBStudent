@@ -818,38 +818,48 @@ function showUserMenuInHeader(headerActions, user) {
   // Create user profile menu
   const userMenu = document.createElement('div');
   userMenu.className = 'user-menu';
+  
+  const isMobileScreen = window.innerWidth <= 768;
+  
   userMenu.style.cssText = `
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: ${isMobileScreen ? '0.5rem' : '1rem'};
     background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
-    padding: 0.5rem 1rem;
+    padding: ${isMobileScreen ? '0.5rem 0.75rem' : '0.5rem 1rem'};
     border-radius: 8px;
     cursor: pointer;
     position: relative;
+    font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};
   `;
   
   const userEmail = user.email || 'Student';
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
   
+  const showEmail = window.innerWidth > 480; // Hide email on very small screens
+  
   userMenu.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <i class="fas fa-user-circle" style="font-size: 1.5rem; color: white;"></i>
-      <div style="color: white;">
-        <div style="font-weight: 700; font-size: 0.9rem;">${escapeHtml(userName)}</div>
-        <div style="font-size: 0.75rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>
+      <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.2rem' : '1.5rem'}; color: white;"></i>
+      <div style="color: white; display: flex; flex-direction: column;">
+        <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};">${escapeHtml(userName)}</div>
+        ${showEmail ? `<div style="font-size: 0.7rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>
-    <i class="fas fa-chevron-down" style="color: white; font-size: 0.8rem;"></i>
+    <i class="fas fa-chevron-down" style="color: white; font-size: 0.7rem;"></i>
   `;
   
   // Create dropdown menu
   const dropdownMenu = document.createElement('div');
   dropdownMenu.className = 'user-dropdown-menu';
+  
+  // Check if we're on mobile/tablet
+  const isMobile = window.innerWidth <= 768;
+  
   dropdownMenu.style.cssText = `
     position: absolute;
     top: 100%;
-    right: 0;
+    ${isMobile ? 'left: 50%; transform: translateX(-50%);' : 'right: 0;'}
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -859,6 +869,7 @@ function showUserMenuInHeader(headerActions, user) {
     display: none;
     z-index: 1000;
     overflow: hidden;
+    max-width: 90vw;
   `;
   
   dropdownMenu.innerHTML = `

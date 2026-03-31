@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeBackToTop();            // ⬆️ Buton sus
   initializeSmoothScrollLinks();    // 📜 Smooth scroll pentru anchor links
   handleAnchorOnPageLoad();         // 🎯 Scroll la anchor dacă URL are #
+  initializePostActions();          // 🔗 Acțiuni pe postări (comentează, share)
   initializeAuthButtons();          // 🔐 Sign in/up
   initializeGamification();         // 🎮 Puncte și badges
   initializeReviewInteractions();   // ⭐ Click pe recenzii
@@ -621,6 +622,44 @@ function handleAnchorOnPageLoad() {
       }
     }, 500);
   }
+}
+
+// ============================================
+// 8.8 POST ACTIONS (Comments, Share)
+// ============================================
+/**
+ * Inițializează acțiunile pe postări (comentează, share)
+ * Folosește event delegation pentru eficiență
+ */
+function initializePostActions() {
+  // Intercept click pe action buttons din post-uri
+  document.addEventListener('click', (e) => {
+    const actionBtn = e.target.closest('.action-btn');
+    if (!actionBtn) return;
+    
+    const action = actionBtn.getAttribute('data-action');
+    const postCard = actionBtn.closest('[data-post-id]');
+    const postId = postCard?.getAttribute('data-post-id');
+    
+    if (action === 'comments' && postId) {
+      // Redirect la pagina de comentarii cu ID-ul post-ului
+      window.location.href = `comments.html?post=${postId}`;
+    } else if (action === 'share') {
+      // Share functionality - copia link in clipboard
+      const shareUrl = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        // Show visual feedback
+        const originalText = actionBtn.innerHTML;
+        actionBtn.innerHTML = '✅ Link copiat!';
+        setTimeout(() => {
+          actionBtn.innerHTML = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Link: ' + shareUrl);
+      });
+    }
+  });
 }
 
 // ============================================
