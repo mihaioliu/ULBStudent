@@ -9,7 +9,8 @@
     <meta name="theme-color" content="#e63946" />
     
     <title>Documente - ULBStudent | Resurse Studiu Gratuite</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="styles-documents.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
 
@@ -40,228 +41,175 @@
     </header>
 
     <main class="container">
-      <div class="professors-section">
+      <!-- Secțiune Documente și Materiale -->
+      <section class="documents-section">
         <div class="section-header">
-          <h2>📚 Documente și Profesori</h2>
-          <p>Caută profesori, cursuri și materiale de studiu. Filtrează după facultate, departament și specialitate.</p>
+          <h2>📚 Documente & Materiale de Studiu</h2>
+          <p>Caută cursuri, seminare, proiecte și alte materiale. Filtrează după facultate, disciplină și tip.</p>
         </div>
 
-        <div class="professors-layout">
+        <div class="documents-layout">
           <!-- Sidebar cu filtre -->
-          <aside class="filters-sidebar">
-            <!-- Nume profesor -->
+          <aside class="docs-filters-sidebar">
+            <!-- Căutare Documente -->
             <div class="filter-group">
-              <label for="profNameFilter" class="filter-title">Nume</label>
-              <select id="profNameFilter" class="filter-select">
-                <option value="">Joni</option>
-                <option value="">Toți profesorii</option>
-                <option value="popescu">Popescu</option>
-                <option value="ionescu">Ionescu</option>
-                <option value="stanescu">Ștefănescu</option>
-                <option value="varescu">Vărdescu</option>
-              </select>
-            </div>
-
-            <!-- Căutare -->
-            <div class="filter-group">
-              <label for="searchProf" class="filter-title">Căutare</label>
-              <input type="text" id="searchProf" class="filter-input" placeholder="Ce doriți să-i cereți?">
+              <label for="docSearch" class="filter-title">Căutare</label>
+              <input type="text" id="docSearch" class="filter-input" placeholder="Caută documente...">
             </div>
 
             <!-- Buton reset -->
-            <button id="resetFiltersBtn" class="reset-filters-btn">RESETARE FILTRU</button>
+            <button id="resetDocsFiltersBtn" class="reset-filters-btn">RESETARE FILTRU</button>
 
             <!-- Facultate -->
             <div class="filter-group">
               <label class="filter-title">Facultatea</label>
               <div class="faculties-list">
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-drept" value="drept">
-                  <label for="fac-drept">Facultatea de Drept</label>
+                  <input type="checkbox" id="doc-fac-drept" value="drept">
+                  <label for="doc-fac-drept">Facultatea de Drept</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-inginerie" value="inginerie">
-                  <label for="fac-inginerie">Facultatea de Inginerie</label>
+                  <input type="checkbox" id="doc-fac-inginerie" value="inginerie">
+                  <label for="doc-fac-inginerie">Facultatea de Inginerie</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-litere" value="litere">
-                  <label for="fac-litere">Facultatea de Litere și Arte</label>
+                  <input type="checkbox" id="doc-fac-litere" value="litere">
+                  <label for="doc-fac-litere">Facultatea de Litere și Arte</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-medicina" value="medicina">
-                  <label for="fac-medicina">Facultatea de Medicină</label>
+                  <input type="checkbox" id="doc-fac-medicina" value="medicina">
+                  <label for="doc-fac-medicina">Facultatea de Medicină</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-stiinte" value="stiinte">
-                  <label for="fac-stiinte">Facultatea de Științe</label>
+                  <input type="checkbox" id="doc-fac-stiinte" value="stiinte">
+                  <label for="doc-fac-stiinte">Facultatea de Științe</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="fac-economie" value="economie">
-                  <label for="fac-economie">Facultatea de Științe Economice</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="fac-agricultura" value="agricultura">
-                  <label for="fac-agricultura">Facultatea de Agronomie și Industrie Alimentară și Protecție</label>
+                  <input type="checkbox" id="doc-fac-economie" value="economie">
+                  <label for="doc-fac-economie">Facultatea de Științe Economice</label>
                 </div>
               </div>
             </div>
 
-            <!-- Modulul -->
+            <!-- Tip Document -->
             <div class="filter-group">
-              <label for="modulFilter" class="filter-title">Modulul</label>
-              <select id="modulFilter" class="filter-select">
-                <option value="">Toate</option>
+              <label for="docTypeFilter" class="filter-title">Tip Document</label>
+              <select id="docTypeFilter" class="filter-select">
+                <option value="">Toate Tipurile</option>
+                <option value="curs">Curs</option>
+                <option value="seminar">Seminar</option>
+                <option value="laborator">Laborator</option>
+                <option value="proiect">Proiect</option>
+                <option value="examen">Examen</option>
+                <option value="referat">Referat</option>
+              </select>
+            </div>
+
+            <!-- Disciplina -->
+            <div class="filter-group">
+              <label for="discipleFilter" class="filter-title">Disciplina</label>
+              <select id="discipleFilter" class="filter-select">
+                <option value="">Toate Disciplinele</option>
+                <option value="matematica">Matematică</option>
+                <option value="fizica">Fizică</option>
                 <option value="informatica">Informatică</option>
-                <option value="automatica">Automatică</option>
-                <option value="telecomunicatii">Telecomunicații</option>
-                <option value="electronica">Electronică</option>
+                <option value="chimie">Chimie</option>
+                <option value="biologie">Biologie</option>
+                <option value="literatura">Literatură</option>
               </select>
             </div>
 
-            <!-- Departament -->
+            <!-- Año Program -->
             <div class="filter-group">
-              <label for="departmentFilter" class="filter-title">Departamentul</label>
-              <select id="departmentFilter" class="filter-select">
-                <option value="">Toate</option>
-                <option value="dept1">Departament 1</option>
-                <option value="dept2">Departament 2</option>
-                <option value="dept3">Departament 3</option>
-              </select>
-            </div>
-
-            <!-- Conducător Docent -->
-            <div class="filter-group">
-              <label for="conductorFilter" class="filter-title">Conducător Docent</label>
-              <select id="conductorFilter" class="filter-select">
-                <option value="">Joni</option>
-                <option value="">Toți conducătorii</option>
-                <option value="cond1">Conducătorul 1</option>
-                <option value="cond2">Conducătorul 2</option>
-              </select>
-            </div>
-
-            <!-- Scade Docenti -->
-            <div class="filter-group">
-              <label for="numDocentiFilter" class="filter-title">Scade Docenti</label>
-              <select id="numDocentiFilter" class="filter-select">
-                <option value="">Toate</option>
-                <option value="1">1 Docent</option>
-                <option value="2">2 Docenți</option>
-                <option value="many">Mulți docenți</option>
+              <label for="yearFilter" class="filter-title">Anul</label>
+              <select id="yearFilter" class="filter-select">
+                <option value="">Toate Anii</option>
+                <option value="1">Anul I</option>
+                <option value="2">Anul II</option>
+                <option value="3">Anul III</option>
+                <option value="4">Anul IV</option>
               </select>
             </div>
           </aside>
 
-          <!-- Zona principală cu profesori -->
-          <div class="professors-main">
-            <div class="professors-grid" id="professorsGrid">
-              <div class="professor-card">
-                <div class="prof-header">
-                  <div class="prof-avatar">
-                    <i class="fas fa-user-circle"></i>
-                  </div>
-                  <div class="prof-header-info">
-                    <h3>Prof. Dr. Ion Popescu</h3>
-                    <p class="prof-faculty">Facultatea de Inginerie</p>
-                    <p class="prof-department">Departament: Informatică</p>
-                  </div>
+          <!-- Zona principală cu documente -->
+          <div class="docs-main">
+            <div class="docs-grid" id="docsGrid">
+              <div class="doc-card">
+                <div class="doc-header">
+                  <i class="fas fa-file-pdf"></i>
+                  <h3>Calcul Integral - Curs Complet</h3>
                 </div>
-                <div class="prof-specialties">
-                  <span class="specialty-tag">Algoritmi</span>
-                  <span class="specialty-tag">Programare</span>
-                  <span class="specialty-tag">Baze de Date</span>
+                <p class="doc-meta">📚 Matematică | Anul I | Curs</p>
+                <p class="doc-faculty">Facultatea de Științe</p>
+                <p class="doc-description">Materialul complet al cursului de Calcul Integral cu exemple practice și exerciții rezolvate.</p>
+                <div class="doc-stats">
+                  <span class="doc-stat">📥 423 descărcări</span>
+                  <span class="doc-stat">⭐ 4.7/5</span>
                 </div>
-                <div class="prof-stats">
-                  <span class="stat-item">⭐ 4.8/5 (245 recenzii)</span>
-                  <span class="stat-item">📚 12 cursuri</span>
-                </div>
-                <div class="prof-actions">
-                  <button class="view-profile-btn">Vezi Profil</button>
-                  <button class="view-reviews-btn">Recenzii</button>
+                <div class="doc-actions">
+                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
+                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
                 </div>
               </div>
 
-              <div class="professor-card">
-                <div class="prof-header">
-                  <div class="prof-avatar">
-                    <i class="fas fa-user-circle"></i>
-                  </div>
-                  <div class="prof-header-info">
-                    <h3>Prof. Dr. Maria Ionescu</h3>
-                    <p class="prof-faculty">Facultatea de Științe</p>
-                    <p class="prof-department">Departament: Matematică</p>
-                  </div>
+              <div class="doc-card">
+                <div class="doc-header">
+                  <i class="fas fa-file-pdf"></i>
+                  <h3>Programare C++ - Seminar</h3>
                 </div>
-                <div class="prof-specialties">
-                  <span class="specialty-tag">Analiză Matematică</span>
-                  <span class="specialty-tag">Ecuații Diferențiale</span>
-                  <span class="specialty-tag">Calcul Numeric</span>
+                <p class="doc-meta">💻 Informatică | Anul I | Seminar</p>
+                <p class="doc-faculty">Facultatea de Inginerie</p>
+                <p class="doc-description">Exerciții și probleme de programare în C++ cu soluții complete și explicații detaliate.</p>
+                <div class="doc-stats">
+                  <span class="doc-stat">📥 512 descărcări</span>
+                  <span class="doc-stat">⭐ 4.9/5</span>
                 </div>
-                <div class="prof-stats">
-                  <span class="stat-item">⭐ 4.6/5 (189 recenzii)</span>
-                  <span class="stat-item">📚 8 cursuri</span>
-                </div>
-                <div class="prof-actions">
-                  <button class="view-profile-btn">Vezi Profil</button>
-                  <button class="view-reviews-btn">Recenzii</button>
+                <div class="doc-actions">
+                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
+                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
                 </div>
               </div>
 
-              <div class="professor-card">
-                <div class="prof-header">
-                  <div class="prof-avatar">
-                    <i class="fas fa-user-circle"></i>
-                  </div>
-                  <div class="prof-header-info">
-                    <h3>Prof. Dr. Radu Ștefănescu</h3>
-                    <p class="prof-faculty">Facultatea de Inginerie</p>
-                    <p class="prof-department">Departament: Sisteme</p>
-                  </div>
+              <div class="doc-card">
+                <div class="doc-header">
+                  <i class="fas fa-file-pdf"></i>
+                  <h3>Fizică II - Schițe Examene</h3>
                 </div>
-                <div class="prof-specialties">
-                  <span class="specialty-tag">Sisteme de Control</span>
-                  <span class="specialty-tag">Robotică</span>
-                  <span class="specialty-tag">Automatizare</span>
+                <p class="doc-meta">🔬 Fizică | Anul I | Examen</p>
+                <p class="doc-faculty">Facultatea de Inginerie</p>
+                <p class="doc-description">Colecție de schițe din examenele precedente cu soluții și explicații pentru fiecare problemă.</p>
+                <div class="doc-stats">
+                  <span class="doc-stat">📥 678 descărcări</span>
+                  <span class="doc-stat">⭐ 4.6/5</span>
                 </div>
-                <div class="prof-stats">
-                  <span class="stat-item">⭐ 4.7/5 (167 recenzii)</span>
-                  <span class="stat-item">📚 10 cursuri</span>
-                </div>
-                <div class="prof-actions">
-                  <button class="view-profile-btn">Vezi Profil</button>
-                  <button class="view-reviews-btn">Recenzii</button>
+                <div class="doc-actions">
+                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
+                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
                 </div>
               </div>
 
-              <div class="professor-card">
-                <div class="prof-header">
-                  <div class="prof-avatar">
-                    <i class="fas fa-user-circle"></i>
-                  </div>
-                  <div class="prof-header-info">
-                    <h3>Prof. Dr. Elena Vărdescu</h3>
-                    <p class="prof-faculty">Facultatea de Litere și Arte</p>
-                    <p class="prof-department">Departament: Filologie</p>
-                  </div>
+              <div class="doc-card">
+                <div class="doc-header">
+                  <i class="fas fa-file-pdf"></i>
+                  <h3>Literatură Română - Analiză Opere</h3>
                 </div>
-                <div class="prof-specialties">
-                  <span class="specialty-tag">Literatură Română</span>
-                  <span class="specialty-tag">Lingvistică</span>
-                  <span class="specialty-tag">Traducere</span>
+                <p class="doc-meta">📖 Literatură | Anul II | Laborator</p>
+                <p class="doc-faculty">Facultatea de Litere și Arte</p>
+                <p class="doc-description">Analize aprofundate ale principalelor opere de literatură română din programa școlară.</p>
+                <div class="doc-stats">
+                  <span class="doc-stat">📥 345 descărcări</span>
+                  <span class="doc-stat">⭐ 4.8/5</span>
                 </div>
-                <div class="prof-stats">
-                  <span class="stat-item">⭐ 4.5/5 (142 recenzii)</span>
-                  <span class="stat-item">📚 9 cursuri</span>
-                </div>
-                <div class="prof-actions">
-                  <button class="view-profile-btn">Vezi Profil</button>
-                  <button class="view-reviews-btn">Recenzii</button>
+                <div class="doc-actions">
+                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
+                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </main>
 
     <!-- Footer cu Info & Links -->

@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeQuestionFilters();      // 🎯 Filtrare întrebări
   initializeLikeButton();           // ❤️ Favorite questions
   initializeBackToTop();            // ⬆️ Buton sus
+  initializeAIChat();               // 🤖 Chat AI
   initializeSmoothScrollLinks();    // 📜 Smooth scroll pentru anchor links
   handleAnchorOnPageLoad();         // 🎯 Scroll la anchor dacă URL are #
   initializePostActions();          // 🔗 Acțiuni pe postări (comentează, share)
@@ -490,53 +491,151 @@ function showNotification(message) {
 }
 
 // ============================================
-// 8. BACK TO TOP BUTTON
+// 8. FLOATING ACTION BUTTONS (Back to Top + AI Chat)
 // ============================================
 function initializeBackToTop() {
+  // Creare container FAB
+  const fabContainer = document.createElement('div');
+  fabContainer.id = 'fab-container';
+  
+  // Creare buton Back to Top
   const backToTopBtn = document.createElement('button');
   backToTopBtn.id = 'backToTop';
+  backToTopBtn.className = 'fab-button';
   backToTopBtn.innerHTML = '↑';
-  backToTopBtn.style.cssText = `
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 24px;
-    cursor: pointer;
-    display: none;
-    z-index: 999;
-    box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
-    transition: all 0.3s ease;
-  `;
+  backToTopBtn.title = 'Mergi sus';
   
-  document.body.appendChild(backToTopBtn);
+  // Adăugare în container
+  fabContainer.appendChild(backToTopBtn);
+  document.body.appendChild(fabContainer);
   
+  // Scroll event listener
   window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
-      backToTopBtn.style.display = 'flex';
-      backToTopBtn.style.alignItems = 'center';
-      backToTopBtn.style.justifyContent = 'center';
+      backToTopBtn.classList.add('show');
     } else {
-      backToTopBtn.style.display = 'none';
+      backToTopBtn.classList.remove('show');
     }
   });
   
+  // Click handler
   backToTopBtn.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+}
+
+// ============================================
+// 8.1 AI CHAT BUTTON & MODAL
+// ============================================
+function initializeAIChat() {
+  // Obținere container FAB (deja creat de initializeBackToTop)
+  let fabContainer = document.getElementById('fab-container');
+  if (!fabContainer) {
+    fabContainer = document.createElement('div');
+    fabContainer.id = 'fab-container';
+    document.body.appendChild(fabContainer);
+  }
   
-  backToTopBtn.addEventListener('mouseenter', () => {
-    backToTopBtn.style.transform = 'scale(1.1)';
+  // Creare buton AI Chat
+  const aiChatBtn = document.createElement('button');
+  aiChatBtn.id = 'aiChatBtn';
+  aiChatBtn.className = 'fab-button show';
+  aiChatBtn.innerHTML = '<i class="fas fa-comments"></i>';
+  aiChatBtn.title = 'Deschide chat AI';
+  
+  fabContainer.insertBefore(aiChatBtn, fabContainer.firstChild);
+  
+  // Creare modal chat
+  const chatModal = document.createElement('div');
+  chatModal.id = 'chatModal';
+  chatModal.innerHTML = `
+    <div class="chat-window">
+      <div class="chat-header">
+        <h3><i class="fas fa-robot" style="margin-right: 8px;"></i>ULBStudent AI</h3>
+        <button class="chat-close-btn" id="chatCloseBtn">&times;</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-message ai">
+          <div class="message-bubble">Salut! Sunt asistentul AI al ULBStudent. Cum te pot ajuta astazi?</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Scrie mesajul tau..." 
+          autocomplete="off"
+        />
+        <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(chatModal);
+  
+  // Event listeners
+  aiChatBtn.addEventListener('click', () => {
+    chatModal.classList.add('active');
+    document.getElementById('chatInput').focus();
   });
   
-  backToTopBtn.addEventListener('mouseleave', () => {
-    backToTopBtn.style.transform = 'scale(1)';
+  document.getElementById('chatCloseBtn').addEventListener('click', () => {
+    chatModal.classList.remove('active');
   });
+  
+  // Închidere modal pe click în afara (background overlay)
+  chatModal.addEventListener('click', (e) => {
+    if (e.target === chatModal) {
+      chatModal.classList.remove('active');
+    }
+  });
+  
+  // Trimitere mesaj cu buton
+  document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+  
+  // Trimitere mesaj cu Enter
+  document.getElementById('chatInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+  
+  // Funcție trimitere mesaj
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (message === '') return;
+    
+    // Adăugare mesaj utilizator
+    addChatMessage(message, 'user');
+    input.value = '';
+    
+    // Simulare răspuns AI (în viitor se va integra cu AI real)
+    setTimeout(() => {
+      const responses = [
+        'Interesant! Doresti mai multe informatii?',
+        'Am inteles. Cum pot continua sa te ajut?',
+        'Buna intrebare! Iti pot oferi detalii mai specifice.',
+        'Sigur! Sa ma gandesc la cea mai buna solutie pentru tine.',
+        'Este o observatie foarte buna. Vreau sa iti explic mai bine.'
+      ];
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      addChatMessage(randomResponse, 'ai');
+    }, 500);
+  }
+  
+  // Funcție adăugare mesaj în chat
+  function addChatMessage(text, sender) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}`;
+    messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+    messagesContainer.appendChild(messageDiv);
+    
+    // Scroll automat la ultimul mesaj
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
 }
 
 // ============================================

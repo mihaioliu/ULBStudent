@@ -1,0 +1,676 @@
+/* ============================================== */
+/* PROFESSORS & DOCUMENTS FILTERING STYLES */
+/* ============================================== */
+
+.professors-section {
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.professors-layout {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.filters-sidebar {
+  flex: 0 0 320px;
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.filter-group {
+  margin-bottom: 2rem;
+}
+
+.filter-title {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.filter-select,
+.filter-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--light-gray);
+  color: var(--text);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.filter-select:hover,
+.filter-input:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+  background: var(--surface);
+}
+
+.faculties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.faculty-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.faculty-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.faculty-item label {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.faculty-item label:hover {
+  color: var(--accent);
+}
+
+.reset-filters-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 2rem;
+}
+
+.reset-filters-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+.professors-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.professors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.professor-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  border: 1px solid var(--border-color);
+}
+
+.professor-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.prof-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.prof-avatar {
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #e63946 0%, #a4161a 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+}
+
+.prof-header-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.prof-faculty,
+.prof-department {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.prof-specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.specialty-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #e63946 0%, #a4161a 100%);
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.prof-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--light-gray);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-item strong {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.stat-item small {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.prof-rating {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.05) 0%, rgba(218, 165, 32, 0.05) 100%);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.prof-rating h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.prof-rating p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--light-gray);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--muted));
+  transition: width 0.3s ease;
+}
+
+.prof-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btn-action,
+.view-profile-btn,
+.view-reviews-btn {
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.view-profile-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.26);
+}
+
+.view-reviews-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text);
+  border-color: var(--border-color);
+}
+
+.btn-action:hover,
+.view-profile-btn:hover,
+.view-reviews-btn:hover {
+  transform: translateY(-2px);
+}
+
+.view-profile-btn:hover {
+  box-shadow: 0 8px 18px rgba(230, 57, 70, 0.36);
+}
+
+.view-reviews-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 6px 14px rgba(230, 57, 70, 0.16);
+}
+
+.btn-action:focus-visible,
+.view-profile-btn:focus-visible,
+.view-reviews-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+}
+
+.btn-action:active,
+.view-profile-btn:active,
+.view-reviews-btn:active {
+  transform: translateY(0);
+}
+
+/* Review Cards Section */
+.reviews-section {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.05) 0%, rgba(0, 51, 102, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(230, 57, 70, 0.1);
+}
+
+.review-card {
+  background: var(--surface);
+  padding: 1.75rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--accent);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-left-color: var(--muted);
+}
+
+.review-header {
+  display: flex;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  gap: 0.75rem;
+}
+
+.review-header h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.professor-name {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.review-text {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.helpful-count {
+  display: inline-block;
+  background: rgba(230, 57, 70, 0.15);
+  color: var(--accent);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.helpful-count:hover {
+  background: rgba(230, 57, 70, 0.25);
+  transform: scale(1.05);
+}
+
+/* Leaderboard Section */
+.leaderboard-section {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(0, 51, 102, 0.05) 0%, rgba(218, 165, 32, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 51, 102, 0.1);
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  background: var(--surface);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.leaderboard-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.leaderboard-item.rank1 {
+  background: linear-gradient(90deg, rgba(253, 176, 34, 0.15), var(--surface));
+  border-left-color: #daa520;
+}
+
+.leaderboard-item.rank2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), var(--surface));
+  border-left-color: #a0aec0;
+}
+
+.leaderboard-item.rank3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), var(--surface));
+  border-left-color: #cd7f32;
+}
+
+.rank-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 50px;
+  text-align: center;
+}
+
+.rank-number.rank1 {
+  color: #daa520;
+}
+
+.rank-number.rank2 {
+  color: #a0aec0;
+}
+
+.rank-number.rank3 {
+  color: #cd7f32;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-info h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text);
+}
+
+.user-info p {
+  margin: 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+  border: 2px solid;
+}
+
+.badge.expert {
+  background: transparent;
+  color: #fdb022;
+  border-color: #fdb022;
+}
+
+.badge.active {
+  background: transparent;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.badge.curious {
+  background: transparent;
+  color: #63b3ed;
+  border-color: #63b3ed;
+}
+
+.stats-right {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  text-align: center;
+}
+
+.stats-right span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.stats-right small {
+  display: block;
+  color: #999;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Dark mode for professors */
+body.dark-mode .professors-layout .filter-sidebar {
+  background: #1a1f2e;
+  border-color: #3a4252;
+}
+
+body.dark-mode .filter-select {
+  background: #232d3f;
+  border-color: #3a4252;
+  color: #e0e6ed;
+}
+
+body.dark-mode .professor-card {
+  background: #1a1f2e;
+  border-color: #3a4252;
+}
+
+body.dark-mode .prof-rating {
+  background: rgba(230, 57, 70, 0.1);
+}
+
+body.dark-mode .progress-bar {
+  background: #2a2f3e;
+}
+
+body.dark-mode .btn-action,
+body.dark-mode .view-profile-btn,
+body.dark-mode .view-reviews-btn {
+  background: #232d3f;
+  border-color: #3a4252;
+  color: #e0e6ed;
+}
+
+body.dark-mode .view-profile-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e63946 100%);
+  border-color: transparent;
+  color: white;
+}
+
+body.dark-mode .view-reviews-btn {
+  background: linear-gradient(135deg, #1a1f2e 0%, #232d3f 100%);
+}
+
+body.dark-mode .btn-action:hover,
+body.dark-mode .view-profile-btn:hover,
+body.dark-mode .view-reviews-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+body.dark-mode .reviews-section {
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.1) 0%, rgba(0, 51, 102, 0.1) 100%);
+  border-color: #2d3748;
+}
+
+body.dark-mode .review-card {
+  background: #1a1f2e;
+  border-color: #2d3748;
+}
+
+body.dark-mode .review-card:hover {
+  border-color: #e63946;
+  box-shadow: 0 10px 24px rgba(230, 57, 70, 0.2);
+}
+
+body.dark-mode .review-header h4 {
+  color: #e0e6ed;
+}
+
+body.dark-mode .professor-name {
+  color: #a0aec0;
+}
+
+body.dark-mode .review-text {
+  color: #cbd5e0;
+}
+
+body.dark-mode .helpful-count {
+  background: #e6394620;
+  color: #ff9999;
+}
+
+body.dark-mode .helpful-count:hover {
+  background: #e6394640;
+}
+
+body.dark-mode .leaderboard-section {
+  background: linear-gradient(135deg, rgba(0, 51, 102, 0.1) 0%, rgba(218, 165, 32, 0.1) 100%);
+  border-color: #2d3748;
+}
+
+body.dark-mode .leaderboard-item {
+  background: #1a1f2e;
+  border-color: #2d3748;
+}
+
+body.dark-mode .leaderboard-item.rank1 {
+  background: linear-gradient(90deg, rgba(253, 176, 34, 0.15), #1a1f2e);
+  border-color: #daa520;
+}
+
+body.dark-mode .leaderboard-item.rank2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), #1a1f2e);
+  border-color: #a0aec0;
+}
+
+body.dark-mode .leaderboard-item.rank3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), #1a1f2e);
+  border-color: #cd7f32;
+}
+
+body.dark-mode .user-info h4 {
+  color: #e0e6ed;
+}
+
+body.dark-mode .badge.expert {
+  background: #1a1f2e;
+  color: #fdb022;
+  border-color: #fdb022;
+}
+
+body.dark-mode .badge.active {
+  background: #1a1f2e;
+  color: #ff9999;
+  border-color: #ff6b6b;
+}
+
+body.dark-mode .badge.curious {
+  background: #1a1f2e;
+  color: #90cdf4;
+  border-color: #63b3ed;
+}
+
+body.dark-mode .stats-right span {
+  color: #e0e6ed;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .professors-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .professors-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .prof-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-right {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .leaderboard-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .rank-number {
+    font-size: 1.5rem;
+  }
+}
