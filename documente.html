@@ -25,6 +25,7 @@
         <ul>
           <!-- Navigare catre sectiuni -->
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link active">Documente</a></li>
           <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
@@ -60,33 +61,21 @@
             <!-- Buton reset -->
             <button id="resetDocsFiltersBtn" class="reset-filters-btn">RESETARE FILTRU</button>
 
-            <!-- Facultate -->
+            <!-- Specializare -->
             <div class="filter-group">
-              <label class="filter-title">Facultatea</label>
+              <label class="filter-title">Specializarea</label>
               <div class="faculties-list">
                 <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-drept" value="drept">
-                  <label for="doc-fac-drept">Facultatea de Drept</label>
+                  <input type="checkbox" id="doc-spec-calc" value="calculatoare">
+                  <label for="doc-spec-calc">Calculatoare</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-inginerie" value="inginerie">
-                  <label for="doc-fac-inginerie">Facultatea de Inginerie</label>
+                  <input type="checkbox" id="doc-spec-ti" value="tehnologia-informatiei">
+                  <label for="doc-spec-ti">Tehnologia Informației</label>
                 </div>
                 <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-litere" value="litere">
-                  <label for="doc-fac-litere">Facultatea de Litere și Arte</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-medicina" value="medicina">
-                  <label for="doc-fac-medicina">Facultatea de Medicină</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-stiinte" value="stiinte">
-                  <label for="doc-fac-stiinte">Facultatea de Științe</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-fac-economie" value="economie">
-                  <label for="doc-fac-economie">Facultatea de Științe Economice</label>
+                  <input type="checkbox" id="doc-spec-ism" value="ingineria-sistemelor-multimedia">
+                  <label for="doc-spec-ism">Ingineria Sistemelor Multimedia</label>
                 </div>
               </div>
             </div>
@@ -110,12 +99,9 @@
               <label for="discipleFilter" class="filter-title">Disciplina</label>
               <select id="discipleFilter" class="filter-select">
                 <option value="">Toate Disciplinele</option>
-                <option value="matematica">Matematică</option>
-                <option value="fizica">Fizică</option>
-                <option value="informatica">Informatică</option>
-                <option value="chimie">Chimie</option>
-                <option value="biologie">Biologie</option>
-                <option value="literatura">Literatură</option>
+                <option value="calculatoare">Calculatoare</option>
+                <option value="tehnologia-informatiei">Tehnologia Informației</option>
+                <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
               </select>
             </div>
 
@@ -138,11 +124,11 @@
               <div class="doc-card">
                 <div class="doc-header">
                   <i class="fas fa-file-pdf"></i>
-                  <h3>Calcul Integral - Curs Complet</h3>
+                  <h3>Arhitectura Calculatoarelor - Curs Complet</h3>
                 </div>
-                <p class="doc-meta">📚 Matematică | Anul I | Curs</p>
-                <p class="doc-faculty">Facultatea de Științe</p>
-                <p class="doc-description">Materialul complet al cursului de Calcul Integral cu exemple practice și exerciții rezolvate.</p>
+                <p class="doc-meta">💻 Calculatoare | Anul I | Curs</p>
+                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
+                <p class="doc-description">Materialul complet al cursului de arhitectură cu exemple practice și exerciții rezolvate.</p>
                 <div class="doc-stats">
                   <span class="doc-stat">📥 423 descărcări</span>
                   <span class="doc-stat">⭐ 4.7/5</span>
@@ -158,8 +144,8 @@
                   <i class="fas fa-file-pdf"></i>
                   <h3>Programare C++ - Seminar</h3>
                 </div>
-                <p class="doc-meta">💻 Informatică | Anul I | Seminar</p>
-                <p class="doc-faculty">Facultatea de Inginerie</p>
+                <p class="doc-meta">🌐 Tehnologia Informației | Anul I | Seminar</p>
+                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
                 <p class="doc-description">Exerciții și probleme de programare în C++ cu soluții complete și explicații detaliate.</p>
                 <div class="doc-stats">
                   <span class="doc-stat">📥 512 descărcări</span>
@@ -174,11 +160,11 @@
               <div class="doc-card">
                 <div class="doc-header">
                   <i class="fas fa-file-pdf"></i>
-                  <h3>Fizică II - Schițe Examene</h3>
+                  <h3>Rețele de Date - Schițe Examene</h3>
                 </div>
-                <p class="doc-meta">🔬 Fizică | Anul I | Examen</p>
-                <p class="doc-faculty">Facultatea de Inginerie</p>
-                <p class="doc-description">Colecție de schițe din examenele precedente cu soluții și explicații pentru fiecare problemă.</p>
+                <p class="doc-meta">🌐 Tehnologia Informației | Anul I | Examen</p>
+                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
+                <p class="doc-description">Colecție de schițe din examenele precedente cu soluții și explicații pentru fiecare subiect.</p>
                 <div class="doc-stats">
                   <span class="doc-stat">📥 678 descărcări</span>
                   <span class="doc-stat">⭐ 4.6/5</span>
@@ -192,11 +178,11 @@
               <div class="doc-card">
                 <div class="doc-header">
                   <i class="fas fa-file-pdf"></i>
-                  <h3>Literatură Română - Analiză Opere</h3>
+                  <h3>Procesare Multimedia - Laborator</h3>
                 </div>
-                <p class="doc-meta">📖 Literatură | Anul II | Laborator</p>
-                <p class="doc-faculty">Facultatea de Litere și Arte</p>
-                <p class="doc-description">Analize aprofundate ale principalelor opere de literatură română din programa școlară.</p>
+                <p class="doc-meta">🎬 Ingineria Sistemelor Multimedia | Anul II | Laborator</p>
+                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
+                <p class="doc-description">Laboratoare cu aplicații multimedia, procesare audio-video și tehnici moderne de randare.</p>
                 <div class="doc-stats">
                   <span class="doc-stat">📥 345 descărcări</span>
                   <span class="doc-stat">⭐ 4.8/5</span>

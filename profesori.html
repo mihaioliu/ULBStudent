@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Lista profesorilor din Departamentul de Calculatoare si Inginerie Electrica." />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+
+    <title>Profesori - ULBStudent</title>
+    <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="styles-professors.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header-content">
+        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo" />
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="comments.html" class="nav-link">Discutii</a></li>
+          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Inregistrare</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="professors-section">
+        <div class="section-header">
+          <h2>Cauta Profesori - Departamentul de Calculatoare si Inginerie Electrica</h2>
+          <p style="color: #666; margin: 0;">Specializari disponibile: Calculatoare, Tehnologia Informatiei, Ingineria Sistemelor Multimedia</p>
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+          <button id="seedProfessorsBtn" class="btn-action btn-primary">Importa profesorii oficiali in Supabase</button>
+          <span id="seedStatus" style="color: #555; font-size: 0.92rem;"></span>
+        </div>
+
+        <div class="professors-layout">
+          <aside class="filters-sidebar">
+            <div class="filter-group">
+              <label for="profNameFilter" class="filter-title">Nume</label>
+              <select id="profNameFilter" class="filter-select">
+                <option value="">Toti profesorii</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="searchProf" class="filter-title">Cautare</label>
+              <input type="text" id="searchProf" class="filter-input" placeholder="Nume, email sau specializare" />
+            </div>
+
+            <button id="resetFiltersBtn" class="reset-filters-btn">RESETARE FILTRU</button>
+
+            <div class="filter-group">
+              <label class="filter-title">Specializarea</label>
+              <div class="faculties-list">
+                <div class="faculty-item">
+                  <input type="checkbox" id="fac-calc" value="calculatoare" />
+                  <label for="fac-calc">Calculatoare</label>
+                </div>
+                <div class="faculty-item">
+                  <input type="checkbox" id="fac-ti" value="tehnologia-informatiei" />
+                  <label for="fac-ti">Tehnologia Informatiei</label>
+                </div>
+                <div class="faculty-item">
+                  <input type="checkbox" id="fac-ism" value="ingineria-sistemelor-multimedia" />
+                  <label for="fac-ism">Ingineria Sistemelor Multimedia</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label for="modulFilter" class="filter-title">Modulul</label>
+              <select id="modulFilter" class="filter-select">
+                <option value="">Toate</option>
+                <option value="calculatoare">Calculatoare</option>
+                <option value="tehnologia-informatiei">Tehnologia Informatiei</option>
+                <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="departmentFilter" class="filter-title">Departamentul</label>
+              <select id="departmentFilter" class="filter-select">
+                <option value="">Toate</option>
+                <option value="calculatoare">Calculatoare</option>
+                <option value="tehnologia-informatiei">Tehnologia Informatiei</option>
+                <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
+              </select>
+            </div>
+          </aside>
+
+          <div class="professors-main">
+            <div class="professors-grid" id="professorsGrid"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>ULBStudent</h4>
+          <p>Platforma de suport pentru comunitatea studentilor ULB.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+    <script src="professors-filtering.js"></script>
+  </body>
+</html>

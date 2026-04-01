@@ -499,6 +499,62 @@ async function getComments(postId) {
 }
 
 /**
+ * Get all professors from database
+ */
+async function getProfessors() {
+  try {
+    const client = await initSupabaseClient();
+
+    const { data, error } = await client
+      .from('professors')
+      .select('*')
+      .order('full_name', { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ Error fetching professors:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Upsert professors list into database
+ */
+async function upsertProfessors(professors) {
+  try {
+    const client = await initSupabaseClient();
+    const user = getCurrentUser();
+
+    if (!user?.id) {
+      throw new Error('Trebuie să fii autentificat ca să imporți profesori');
+    }
+
+    const payload = (professors || []).map((row) => ({
+      academic_title: row.academic_title,
+      full_name: row.full_name,
+      institutional_email: row.institutional_email,
+      specialization: row.specialization,
+      department: row.department || 'Departamentul de Calculatoare și Inginerie Electrică',
+      rating: row.rating || 4.6,
+      reviews_count: row.reviews_count || 0,
+      courses_count: row.courses_count || 0
+    }));
+
+    const { data, error } = await client
+      .from('professors')
+      .upsert(payload, { onConflict: 'institutional_email' })
+      .select();
+
+    if (error) throw new Error(error.message);
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ Error upserting professors:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
  * Save Team Match to Database
  * Preferred table: team_matches
  * Fallback table: matches

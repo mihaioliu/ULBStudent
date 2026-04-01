@@ -831,7 +831,7 @@ function initializeGamification() {
   // Initialize user reputation from localStorage
   let userReputation = JSON.parse(localStorage.getItem('userReputation')) || {
     points: 450,
-    badges: ['Boboc Curios', 'Salvator', 'Expert Math'],
+    badges: ['Boboc Curios', 'Salvator', 'Expert Calculatoare'],
     helpfulUpvotes: 0
   };
 
@@ -844,7 +844,7 @@ function initializeGamification() {
         const badgeInfo = {
           'Boboc Curios': 'Ai dat deja 10 răspunsuri! 🎓 Bine ai în comunitate!',
           'Salvator': 'Ai ajutat alți studenți cu 50 upvote-uri! 🆘 Ești un erou!',
-          'Expert Math': 'Ai postări despre Matematică cu peste 100 upvote-uri! 🔢'
+          'Expert Calculatoare': 'Ai postări despre Calculatoare cu peste 100 upvote-uri! 💻'
         };
         
         if (badgeInfo[badgeName]) {
@@ -944,13 +944,13 @@ function initializeGlobalSearch() {
   // Sample data for search
   const searchableData = {
     professors: [
-      { name: 'Prof. Dr. Alexandru Dinu', subject: 'Matematică I', rating: 4.5 },
-      { name: 'Prof. Dr. Maria Popescu', subject: 'Fizică II', rating: 4.0 },
+      { name: 'Prof. Dr. Alexandru Dinu', subject: 'Arhitectura Calculatoarelor', rating: 4.5 },
+      { name: 'Prof. Dr. Maria Popescu', subject: 'Rețele de Date', rating: 4.0 },
       { name: 'Prof. Dr. Ion Cristian', subject: 'Programare I', rating: 4.8 }
     ],
     documents: [
-      { title: 'Curs Matematică - Capitolul 1', type: 'PDF', size: '2.5MB' },
-      { title: 'Laboratoare Fizică - Soluții', type: 'PDF', size: '1.8MB' },
+      { title: 'Curs Arhitectura Calculatoarelor - Capitolul 1', type: 'PDF', size: '2.5MB' },
+      { title: 'Laboratoare Rețele de Date - Soluții', type: 'PDF', size: '1.8MB' },
       { title: 'Probleme Programare C++', type: 'PDF', size: '3.2MB' }
     ],
     posts: [
@@ -959,12 +959,12 @@ function initializeGlobalSearch() {
       { title: 'Tutorial: Pointeri în C', author: 'Ioan', comments: 8 }
     ],
     announcements: [
-      { title: 'S-a mutat sala de curs!', type: 'urgent', source: 'Matematică I' },
+      { title: 'S-a mutat sala de curs!', type: 'urgent', source: 'Arhitectura Calculatoarelor' },
       { title: 'Termenul pentru proiect a fost prelungit', type: 'important', source: 'Programare I' }
     ],
     reviews: [
-      { title: 'Recenzie Matematică I', difficulty: 8, utility: 9 },
-      { title: 'Recenzie Fizică II', difficulty: 6, utility: 7 },
+      { title: 'Recenzie Arhitectura Calculatoarelor', difficulty: 8, utility: 9 },
+      { title: 'Recenzie Rețele de Date', difficulty: 6, utility: 7 },
       { title: 'Recenzie Programare I', difficulty: 7, utility: 10 }
     ]
   };

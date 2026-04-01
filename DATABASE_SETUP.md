@@ -14,6 +14,17 @@ Pentru ca aplicația să funcționeze complet, trebuie să creezi următoarele t
 
 ## 🗄️ Tabele necesare:
 
+### 0️⃣ Tabel pentru PROFESORI + Seed oficial
+
+Rulează fișierul SQL din proiect: `supabase_professors_seed.sql`.
+
+Acest script:
+- creează tabelul `professors`
+- adaugă politicile RLS necesare
+- inserează lista oficială de profesori (upsert după email)
+
+---
+
 ### 1️⃣ Tabel pentru ÎNTREBĂRI (index.html)
 
 ```sql
