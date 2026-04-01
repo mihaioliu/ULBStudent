@@ -77,9 +77,15 @@ function mapDbProfessor(row) {
 
 async function loadProfessorsData() {
   const dbResult = await getProfessors();
+  let source = 'fallback';
+  let dbError = dbResult.error || '';
 
   if (dbResult.success && dbResult.data.length > 0) {
     professorsData = dbResult.data.map(mapDbProfessor);
+    source = 'database';
+  } else if (dbResult.success && dbResult.data.length === 0) {
+    professorsData = [];
+    source = 'database-empty';
   } else {
     professorsData = OFFICIAL_PROFESSORS.map((p, index) => ({
       id: index + 1,
@@ -95,7 +101,23 @@ async function loadProfessorsData() {
     }));
   }
 
+  if (source === 'database-empty') {
+    professorsData = OFFICIAL_PROFESSORS.map((p, index) => ({
+      id: index + 1,
+      title: p.academic_title,
+      name: p.full_name,
+      email: p.institutional_email,
+      specialization: normalizeSpecialization(p.specialization),
+      department: 'Departamentul de Calculatoare si Inginerie Electrica',
+      rating: 4.6,
+      reviews: 0,
+      courses: 0,
+      specialties: [normalizeSpecialization(p.specialization)]
+    }));
+  }
+
   filteredProfessors = [...professorsData];
+  return { source, count: professorsData.length, dbError };
 }
 
 function fillProfessorSelect() {
@@ -254,7 +276,14 @@ async function seedOfficialProfessorsToDatabase() {
     fillProfessorSelect();
     renderProfessors();
   } else {
-    if (statusBox) statusBox.textContent = `Import esuat: ${result.error || 'eroare necunoscuta'}`;
+    const errorText = result.error || 'eroare necunoscuta';
+    if (statusBox) {
+      if (errorText.toLowerCase().includes('relation') && errorText.toLowerCase().includes('professors')) {
+        statusBox.textContent = 'Import esuat: tabelul professors nu exista. Ruleaza supabase_professors_seed.sql in SQL Editor.';
+      } else {
+        statusBox.textContent = `Import esuat: ${errorText}`;
+      }
+    }
   }
 
   if (seedBtn) seedBtn.disabled = false;
@@ -263,10 +292,24 @@ async function seedOfficialProfessorsToDatabase() {
 document.addEventListener('DOMContentLoaded', async function () {
   if (!document.getElementById('professorsGrid')) return;
 
-  await loadProfessorsData();
+  const loadInfo = await loadProfessorsData();
   fillProfessorSelect();
   initializeProfessorFilters();
   renderProfessors();
+
+  const statusBox = document.getElementById('seedStatus');
+  if (statusBox) {
+    if (loadInfo.source === 'database') {
+      statusBox.textContent = `Date active din Supabase: ${loadInfo.count} profesori.`;
+    } else if (loadInfo.source === 'database-empty') {
+      statusBox.textContent = 'Supabase este conectat, dar tabelul professors este gol. Poti folosi butonul de import.';
+    } else {
+      statusBox.textContent = 'Se afiseaza lista oficiala locala. Pentru DB, ruleaza supabase_professors_seed.sql.';
+      if (loadInfo.dbError) {
+        console.warn('Professors DB fallback reason:', loadInfo.dbError);
+      }
+    }
+  }
 
   const seedBtn = document.getElementById('seedProfessorsBtn');
   if (seedBtn) {
