@@ -1,8 +1,8 @@
 // ============================================
-// TEAM MATCHING - TINDER FOR PROJECTS
+// TEAM MATCHING - PROFILE SWIPE + SUPABASE
 // ============================================
 
-const studentProfiles = [
+const fallbackProfiles = [
   {
     id: 1,
     name: 'Alex',
@@ -10,17 +10,17 @@ const studentProfiles = [
     specialization: 'Calculatoare',
     skills: ['JavaScript', 'React', 'CSS', 'Design'],
     lookingFor: 'Backend Developer',
-    bio: 'Pasionat de front-end, caut cineva care să scrie backend',
+    bio: 'Pasionat de front-end, caut pe cineva pentru backend.',
     matches: 95
   },
   {
     id: 2,
     name: 'Elena',
     year: '2',
-    specialization: 'Tehnologia Informației',
+    specialization: 'Tehnologia Informatiei',
     skills: ['Python', 'SQL', 'Backend', 'API Design'],
     lookingFor: 'Frontend Developer',
-    bio: 'Expert în baze de date și server, caut developer front-end',
+    bio: 'Lucrez pe backend si baze de date, caut coleg front-end.',
     matches: 92
   },
   {
@@ -28,51 +28,51 @@ const studentProfiles = [
     name: 'Bogdan',
     year: '3',
     specialization: 'Calculatoare',
-    skills: ['C++', 'Algoritmi', 'Low-level', 'Git'],
-    lookingFor: 'Team pentru Algorithmic Programming',
-    bio: 'Specialized în algoritmi complecși, ador competitive programming',
+    skills: ['C++', 'Algoritmi', 'Git'],
+    lookingFor: 'Team pentru proiect de algoritmica',
+    bio: 'Imi plac problemele grele si proiectele tehnice.',
     matches: 88
-  },
-  {
-    id: 4,
-    name: 'Miruna',
-    year: '1',
-    specialization: 'Ingineria Sistemelor Multimedia',
-    skills: ['Networking', 'System Design', 'Linux', 'DevOps'],
-    lookingFor: 'Developers pentru IoT Project',
-    bio: 'Newest in the team, super motivated și eager to learn',
-    matches: 85
-  },
-  {
-    id: 5,
-    name: 'Călin',
-    year: '2',
-    specialization: 'Tehnologia Informației',
-    skills: ['Mobile App', 'Flutter', 'Firebase', 'UI/UX'],
-    lookingFor: 'Partner pentru Mobile Development',
-    bio: 'Create beautiful mobile apps, looking for backend support',
-    matches: 90
   }
 ];
 
+let allProfiles = [];
+let filteredProfiles = [];
 let currentProfileIndex = 0;
 let matches = JSON.parse(localStorage.getItem('teamMatches')) || [];
-let filteredProfiles = [...studentProfiles];
+
+function normalizeDbProfile(row, index) {
+  const rawSkills = row.skilluri || row.skills || row.profil_skilluri || [];
+  return {
+    id: Number(row.id || row.profile_id || index + 1),
+    name: row.nume || row.name || row.profil_nume || 'Student',
+    year: String(row.an_studiu || row.year || row.profil_an || '-'),
+    specialization: row.specializare || row.specialization || row.profil_specializare || 'Specializare necompletata',
+    skills: Array.isArray(rawSkills)
+      ? rawSkills
+      : String(rawSkills)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+    lookingFor: row.cauta || row.looking_for || 'Colegi de echipa',
+    bio: row.bio || row.descriere || 'Profil fara descriere.',
+    matches: Number(row.compatibilitate || row.match_score || 80)
+  };
+}
 
 function mapDbMatchToUi(row) {
-  if (row.profile_name) {
+  if (row.profile_name || row.profil_nume) {
     return {
-      id: Number(row.profile_id || Date.now()),
-      name: row.profile_name,
-      year: row.profile_year || '-',
-      specialization: row.profile_specialization || 'Specializare necompletată',
-      skills: Array.isArray(row.profile_skills) ? row.profile_skills : [],
-      matchType: row.match_type,
+      id: Number(row.profile_id || row.id || Date.now()),
+      name: row.profile_name || row.profil_nume,
+      year: row.profile_year || row.profil_an || '-',
+      specialization: row.profile_specialization || row.profil_specializare || 'Specializare necompletata',
+      skills: Array.isArray(row.profile_skills || row.profil_skilluri) ? (row.profile_skills || row.profil_skilluri) : [],
+      matchType: row.match_type || row.tip_match || 'like',
       matchedAt: row.created_at
     };
   }
 
-  const parsed = (row.match_type || '').split(':');
+  const parsed = String(row.match_type || '').split(':');
   return {
     id: Number(row.id || Date.now()),
     name: parsed[1] || 'Student',
@@ -84,13 +84,31 @@ function mapDbMatchToUi(row) {
   };
 }
 
-async function initializeTeamMatching() {
-  await loadMatchesFromDatabase();
-  renderProfileCard();
-  renderMatches();
-  addSwipeListeners();
-  initializeFilters();
-  updateMatchStats();
+async function loadProfilesFromDatabase() {
+  if (typeof initSupabaseClient !== 'function') {
+    allProfiles = [...fallbackProfiles];
+    filteredProfiles = [...allProfiles];
+    return;
+  }
+
+  try {
+    const client = await initSupabaseClient();
+    const { data, error } = await client
+      .from('profiluri_matching')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !Array.isArray(data) || data.length === 0) {
+      allProfiles = [...fallbackProfiles];
+    } else {
+      allProfiles = data.map(normalizeDbProfile);
+    }
+  } catch (err) {
+    console.warn('Nu s-au putut incarca profilurile din DB:', err.message);
+    allProfiles = [...fallbackProfiles];
+  }
+
+  filteredProfiles = [...allProfiles];
 }
 
 async function loadMatchesFromDatabase() {
@@ -103,33 +121,39 @@ async function loadMatchesFromDatabase() {
   }
 }
 
-/**
- * Filtrare profile după an, specializare și abilități
- */
+async function initializeTeamMatching() {
+  await Promise.all([loadProfilesFromDatabase(), loadMatchesFromDatabase()]);
+  renderProfileCard();
+  renderMatches();
+  initializeFilters();
+  addSwipeListeners();
+  updateMatchStats();
+}
+
 function initializeFilters() {
   const yearFilter = document.getElementById('yearFilterTeam');
   const specFilter = document.getElementById('specFilterTeam');
   const skillFilter = document.getElementById('skillFilterTeam');
-  
-  if (!yearFilter) return; // Nu suntem pe pagina team-matching
-  
+
+  if (!yearFilter || !specFilter || !skillFilter) return;
+
   function applyFilters() {
     const year = yearFilter.value;
-    const spec = specFilter.value;
-    const skill = skillFilter.value;
-    
-    filteredProfiles = studentProfiles.filter(profile => {
+    const spec = specFilter.value.toLowerCase();
+    const skill = skillFilter.value.toLowerCase();
+
+    filteredProfiles = allProfiles.filter((profile) => {
       const matchYear = !year || profile.year === year;
       const matchSpec = !spec || profile.specialization.toLowerCase().includes(spec);
-      const matchSkill = !skill || profile.skills.some(s => s.toLowerCase().includes(skill));
-      
+      const matchSkill = !skill || profile.skills.some((s) => s.toLowerCase().includes(skill));
       return matchYear && matchSpec && matchSkill;
     });
-    
+
     currentProfileIndex = 0;
     renderProfileCard();
+    addSwipeListeners();
   }
-  
+
   yearFilter.addEventListener('change', applyFilters);
   specFilter.addEventListener('change', applyFilters);
   skillFilter.addEventListener('change', applyFilters);
@@ -137,10 +161,12 @@ function initializeFilters() {
 
 function renderProfileCard() {
   const container = document.querySelector('.profile-card-stack');
+  if (!container) return;
+
   container.innerHTML = '';
 
   if (currentProfileIndex >= filteredProfiles.length) {
-    container.innerHTML = '<div class="no-more-profiles"><h3>Nu mai sunt profile disponibile! 🎉</h3><p>Revino mai târziu pentru mai mulți parteneri potențiali.</p></div>';
+    container.innerHTML = '<div class="no-more-profiles"><h3>Nu mai sunt profile disponibile! 🎉</h3><p>Revino mai tarziu pentru mai multi parteneri potentiali.</p></div>';
     return;
   }
 
@@ -151,48 +177,33 @@ function renderProfileCard() {
 
   card.innerHTML = `
     <div class="profile-image">
-      <div class="profile-avatar">
-        <i class="fas fa-user"></i>
-      </div>
+      <div class="profile-avatar"><i class="fas fa-user"></i></div>
       <div class="profile-badge">${profile.matches}% compatibilitate</div>
     </div>
     <div class="profile-info">
       <h3>${profile.name}, An ${profile.year}</h3>
       <p class="specialization">${profile.specialization}</p>
       <p class="bio">${profile.bio}</p>
-      
       <div class="skills-section">
-        <h4>Abilități:</h4>
+        <h4>Abilitati:</h4>
         <div class="skills-tags">
-          ${profile.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+          ${profile.skills.map((skill) => `<span class="skill-tag">${skill}</span>`).join('')}
         </div>
       </div>
-
       <div class="looking-for">
-        <span class="looking-label">Caută:</span>
+        <span class="looking-label">Cauta:</span>
         <span class="looking-value">${profile.lookingFor}</span>
       </div>
     </div>
-
     <div class="card-actions">
-      <button class="btn-pass" title="Pass">
-        <i class="fas fa-times"></i>
-        <span>Pass</span>
-      </button>
-      <button class="btn-like" title="Like">
-        <i class="fas fa-heart"></i>
-        <span>Like</span>
-      </button>
-      <button class="btn-super-like" title="Super Like">
-        <i class="fas fa-star"></i>
-        <span>Super Like</span>
-      </button>
+      <button class="btn-pass" title="Pass"><i class="fas fa-times"></i><span>Pass</span></button>
+      <button class="btn-like" title="Like"><i class="fas fa-heart"></i><span>Like</span></button>
+      <button class="btn-super-like" title="Super Like"><i class="fas fa-star"></i><span>Super Like</span></button>
     </div>
   `;
 
   container.appendChild(card);
 
-  // Add drag listeners
   let startX = 0;
   let currentX = 0;
 
@@ -213,11 +224,8 @@ function renderProfileCard() {
     card.style.cursor = 'grab';
 
     if (Math.abs(currentX) > 50) {
-      if (currentX > 0) {
-        likeProfile(profile);
-      } else {
-        passProfile(profile);
-      }
+      if (currentX > 0) likeProfile(profile);
+      else passProfile(profile);
     } else {
       card.style.transform = 'translateX(0) rotate(0)';
       card.style.opacity = '1';
@@ -230,26 +238,12 @@ function renderProfileCard() {
 
 function addSwipeListeners() {
   const card = document.querySelector('.profile-card');
-  if (!card) return;
+  if (!card || currentProfileIndex >= filteredProfiles.length) return;
 
-  const passBtn = card.querySelector('.btn-pass');
-  const likeBtn = card.querySelector('.btn-like');
-  const superLikeBtn = card.querySelector('.btn-super-like');
-
-  passBtn.addEventListener('click', () => {
-    const profile = studentProfiles[currentProfileIndex];
-    passProfile(profile);
-  });
-
-  likeBtn.addEventListener('click', () => {
-    const profile = studentProfiles[currentProfileIndex];
-    likeProfile(profile);
-  });
-
-  superLikeBtn.addEventListener('click', () => {
-    const profile = studentProfiles[currentProfileIndex];
-    superLikeProfile(profile);
-  });
+  const profile = filteredProfiles[currentProfileIndex];
+  card.querySelector('.btn-pass')?.addEventListener('click', () => passProfile(profile));
+  card.querySelector('.btn-like')?.addEventListener('click', () => likeProfile(profile));
+  card.querySelector('.btn-super-like')?.addEventListener('click', () => superLikeProfile(profile));
 }
 
 function passProfile(profile) {
@@ -268,25 +262,19 @@ function superLikeProfile(profile) {
 
 function animateCardExit(direction, profile) {
   const card = document.querySelector('#profile-' + profile.id);
-  
-  switch(direction) {
-    case 'left':
-      card.style.transform = 'translateX(-500px) rotate(-20deg)';
-      break;
-    case 'right':
-      card.style.transform = 'translateX(500px) rotate(20deg)';
-      break;
-    case 'up':
-      card.style.transform = 'translateY(-500px) scale(1.1)';
-      break;
-  }
-  
+  if (!card) return;
+
+  if (direction === 'left') card.style.transform = 'translateX(-500px) rotate(-20deg)';
+  if (direction === 'right') card.style.transform = 'translateX(500px) rotate(20deg)';
+  if (direction === 'up') card.style.transform = 'translateY(-500px) scale(1.1)';
+
   card.style.opacity = '0';
 
   setTimeout(() => {
-    currentProfileIndex++;
+    currentProfileIndex += 1;
     renderProfileCard();
     renderMatches();
+    addSwipeListeners();
   }, 300);
 }
 
@@ -300,71 +288,60 @@ function addMatch(profile, type) {
   matches.unshift(match);
   localStorage.setItem('teamMatches', JSON.stringify(matches));
 
-  // Persist to DB (non-blocking)
   if (typeof saveTeamMatch === 'function') {
     saveTeamMatch(profile, type).then((result) => {
       if (!result.success) {
-        console.warn('Team match not saved in DB, kept locally.');
+        console.warn('Match-ul nu a fost salvat in DB. A ramas local.');
       }
     });
   }
 
-  if (type === 'like') {
-    showNotification(`${profile.name} adăugat la potriviri! ❤️`);
-  } else if (type === 'superLike') {
-    showNotification(`Super Like pentru ${profile.name}! ⭐ Aceștia vor fi notificați!`);
-  }
+  if (type === 'like') showNotification(`${profile.name} adaugat la potriviri! ❤️`);
+  if (type === 'superLike') showNotification(`Super Like pentru ${profile.name}! ⭐`);
 }
 
 function renderMatches() {
   const matchesList = document.getElementById('matchesList');
   if (!matchesList) return;
-  
+
   if (matches.length === 0) {
-    matchesList.innerHTML = '<p style="text-align: center; color: #888;">Nu există încă potriviri pentru contul tău.</p>';
+    matchesList.innerHTML = '<p style="text-align: center; color: #888;">Nu exista inca potriviri pentru contul tau.</p>';
+    updateMatchStats();
     return;
   }
 
-  matchesList.innerHTML = matches.map((match, index) => `
+  matchesList.innerHTML = matches.map((match) => `
     <div class="match-item ${match.matchType}">
-      <div class="match-avatar">
-        <i class="fas fa-user"></i>
-      </div>
+      <div class="match-avatar"><i class="fas fa-user"></i></div>
       <div class="match-info">
         <h5>${match.name}</h5>
         <p>${match.specialization}</p>
         <span class="match-type-label">${match.matchType === 'superLike' ? '⭐ Super Like' : '❤️ Like'}</span>
       </div>
-      <button class="btn-contact" onclick="contactMatch(${match.id})">Contactează</button>
+      <button class="btn-contact" onclick="contactMatch(${match.id})">Contacteaza</button>
     </div>
   `).join('');
-  
+
   updateMatchStats();
 }
 
 function contactMatch(profileId) {
-  const match = matches.find(m => m.id === profileId);
+  const match = matches.find((m) => m.id === profileId);
   if (!match) return;
-  showNotification(`Conversație inițiată cu ${match.name}.`);
+  showNotification(`Conversatie initiata cu ${match.name}.`);
 }
 
-/**
- * Update contoare pentru Like și Super Like
- */
 function updateMatchStats() {
-  const likeCount = matches.filter(m => m.matchType === 'like').length;
-  const superLikeCount = matches.filter(m => m.matchType === 'superLike').length;
-  
+  const likeCount = matches.filter((m) => m.matchType === 'like').length;
+  const superLikeCount = matches.filter((m) => m.matchType === 'superLike').length;
+
   const likeBadge = document.querySelector('.like-count');
   const superLikeBadge = document.querySelector('.super-like-count');
-  
+
   if (likeBadge) likeBadge.textContent = `${likeCount} Like`;
   if (superLikeBadge) superLikeBadge.textContent = `${superLikeCount} Super`;
 }
 
-/**
- * Afișez notificări toast
- */
 function showNotification(message) {
   const notification = document.createElement('div');
   notification.style.cssText = `
@@ -383,14 +360,13 @@ function showNotification(message) {
   `;
   notification.textContent = message;
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     notification.style.animation = 'slideOutRight 0.3s ease-out';
     setTimeout(() => notification.remove(), 300);
   }, 3000);
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
   await initializeTeamMatching();
 });

@@ -39,6 +39,195 @@ const OFFICIAL_PROFESSORS = [
 
 let professorsData = [];
 let filteredProfessors = [];
+let activeReviewProfessor = null;
+
+function calculateProfessorRating(reviews) {
+  const ratingRows = Array.isArray(reviews) ? reviews : [];
+  const numarRecenzii = ratingRows.length;
+  const sumaNote = ratingRows.reduce((acc, recenzie) => acc + Number(recenzie.rating || 0), 0);
+  const media = numarRecenzii > 0 ? Number((sumaNote / numarRecenzii).toFixed(1)) : 0;
+
+  return { media, numarRecenzii };
+}
+
+async function loadProfessors() {
+  const { data: profesori, error } = await getProfessors();
+
+  if (error) {
+    console.error('Eroare la încărcare:', error);
+    return;
+  }
+
+  console.log('Date primite de la Supabase:', profesori);
+
+  const container = document.getElementById('professors-container') || document.getElementById('professorsGrid');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  (profesori || []).forEach((prof) => {
+    const recenzii = Array.isArray(prof.recenzii_profesori) ? prof.recenzii_profesori : [];
+    const { media, numarRecenzii } = calculateProfessorRating(recenzii);
+
+    const title = prof.academic_title || prof.titlu_academic || prof.titlu || prof.title || 'Prof.';
+    const firstName = prof.prenume || '';
+    const lastName = prof.nume || '';
+    const fullName = `${firstName} ${lastName}`.trim() || prof.full_name || prof.nume_complet || prof.name || 'Profesor';
+    const department = prof.departament || prof.department || '-';
+    const subject = prof.materie || prof.taught_subject || prof.materie_predata || prof.specialization || '-';
+    const email = prof.email || prof.institutional_email || '-';
+
+    container.innerHTML += `
+      <div class="professor-card">
+        <div class="prof-header">
+          <div class="prof-avatar"><i class="fas fa-user-circle"></i></div>
+          <div class="prof-header-info">
+            <h3>${title} ${fullName}</h3>
+            <p class="prof-faculty">${department}</p>
+            <p class="prof-department">Specializare: ${subject}</p>
+            <p class="prof-department">Email: ${email}</p>
+          </div>
+        </div>
+        <div class="prof-specialties">
+          <span class="specialty-tag">${subject}</span>
+        </div>
+        <div class="prof-stats">
+          <span class="stat-item">⭐ ${media}/5 (${numarRecenzii} recenzii)</span>
+          <span class="stat-item">📚 ${Number(prof.courses_count || prof.courses || 0)} cursuri</span>
+        </div>
+        <div class="prof-actions">
+          <button class="btn-action btn-primary" onclick="copyEmail('${email}')">Copiaza email</button>
+          <button class="btn-action btn-secondary" onclick="showProfessorProfile(${prof.id}, '${encodeURIComponent(fullName)}', '${encodeURIComponent(subject)}')">Detalii</button>
+          <button class="btn-action btn-secondary" onclick="addProfessorReview(${prof.id})">Adauga recenzie</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function ensureProfessorReviewModal() {
+  if (document.getElementById('professorReviewModal')) {
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'professorReviewModal';
+  modal.className = 'review-modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="review-modal-content professor-review-modal" role="dialog" aria-modal="true" aria-labelledby="professorReviewModalTitle">
+      <button type="button" class="review-modal-close" id="closeProfessorReviewModal" aria-label="Inchide">&times;</button>
+      <div class="review-modal-header">
+        <p class="review-modal-kicker">Recenzie profesor</p>
+        <h3 id="professorReviewModalTitle">Adaugă o recenzie</h3>
+        <p id="professorReviewModalSubtitle">Spune cum a fost experiența ta la curs.</p>
+      </div>
+
+      <form id="professorReviewModalForm" class="review-modal-form">
+        <label class="review-field">
+          <span>Rating</span>
+          <select id="professorReviewModalRating" required>
+            <option value="">Alege un rating</option>
+            <option value="1">1 - Foarte slab</option>
+            <option value="2">2 - Slab</option>
+            <option value="3">3 - Acceptabil</option>
+            <option value="4">4 - Bun</option>
+            <option value="5">5 - Excelent</option>
+          </select>
+        </label>
+
+        <label class="review-field">
+          <span>Comentariu</span>
+          <textarea id="professorReviewModalComment" rows="5" required placeholder="Scrie ce ți-a plăcut și ce ar trebui știut înainte de curs."></textarea>
+        </label>
+
+        <div class="review-modal-actions">
+          <button type="button" class="btn-action btn-secondary" id="cancelProfessorReviewModal">Renunță</button>
+          <button type="submit" class="btn-action btn-primary">Salvează recenzia</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    activeReviewProfessor = null;
+  };
+
+  const form = modal.querySelector('#professorReviewModalForm');
+  const closeBtn = modal.querySelector('#closeProfessorReviewModal');
+  const cancelBtn = modal.querySelector('#cancelProfessorReviewModal');
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!activeReviewProfessor?.id) {
+      if (typeof showNotification === 'function') {
+        showNotification('Profesor invalid.');
+      }
+      return;
+    }
+
+    const rating = Number(modal.querySelector('#professorReviewModalRating').value);
+    const comment = modal.querySelector('#professorReviewModalComment').value.trim();
+
+    if (!rating || rating < 1 || rating > 5 || !comment) {
+      if (typeof showNotification === 'function') {
+        showNotification('Completeaza corect rating-ul si comentariul.');
+      }
+      return;
+    }
+
+    const saved = await saveProfessorReview(activeReviewProfessor.id, rating, comment);
+    if (!saved.success) {
+      if (typeof showNotification === 'function') {
+        showNotification(saved.error || 'Nu s-a putut salva recenzia.');
+      }
+      return;
+    }
+
+    form.reset();
+    closeModal();
+    await loadProfessorsData();
+    fillProfessorSelect();
+    applyFilters();
+    if (typeof showNotification === 'function') {
+      showNotification('Recenzie salvata cu succes!');
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+}
+
+async function attachProfessorReviews() {
+  professorsData = professorsData.map((prof) => {
+    const rows = Array.isArray(prof.recenzii_profesori) ? prof.recenzii_profesori : [];
+    if (rows.length === 0) return prof;
+
+    const avg = rows.reduce((sum, item) => sum + Number(item.rating || 0), 0) / rows.length;
+    return {
+      ...prof,
+      rating: Number(avg.toFixed(1)),
+      reviews: rows.length
+    };
+  });
+}
 
 function normalizeSpecialization(value) {
   const v = (value || '').toLowerCase();
@@ -54,13 +243,18 @@ function toDbPayload(items) {
     institutional_email: p.institutional_email,
     specialization: normalizeSpecialization(p.specialization),
     department: 'Departamentul de Calculatoare si Inginerie Electrica',
-    rating: p.rating || 4.6,
+    rating: p.rating || 0,
     reviews_count: p.reviews_count || 0,
     courses_count: p.courses_count || 0
   }));
 }
 
 function mapDbProfessor(row) {
+  const reviews = Array.isArray(row.recenzii_profesori) ? row.recenzii_profesori : [];
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
+    : 0;
+
   return {
     id: row.id,
     title: row.academic_title || 'Cadru didactic',
@@ -68,10 +262,11 @@ function mapDbProfessor(row) {
     email: row.institutional_email || '-',
     specialization: normalizeSpecialization(row.specialization),
     department: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
-    rating: Number(row.rating || 4.6),
-    reviews: Number(row.reviews_count || 0),
+    rating: Number(avgRating.toFixed(1)),
+    reviews: reviews.length,
     courses: Number(row.courses_count || 0),
-    specialties: [normalizeSpecialization(row.specialization)]
+    specialties: [normalizeSpecialization(row.specialization)],
+    recenzii_profesori: reviews
   };
 }
 
@@ -94,7 +289,7 @@ async function loadProfessorsData() {
       email: p.institutional_email,
       specialization: normalizeSpecialization(p.specialization),
       department: 'Departamentul de Calculatoare si Inginerie Electrica',
-      rating: 4.6,
+      rating: 0,
       reviews: 0,
       courses: 0,
       specialties: [normalizeSpecialization(p.specialization)]
@@ -109,7 +304,7 @@ async function loadProfessorsData() {
       email: p.institutional_email,
       specialization: normalizeSpecialization(p.specialization),
       department: 'Departamentul de Calculatoare si Inginerie Electrica',
-      rating: 4.6,
+      rating: 0,
       reviews: 0,
       courses: 0,
       specialties: [normalizeSpecialization(p.specialization)]
@@ -245,52 +440,68 @@ function renderProfessors() {
       </div>
       <div class="prof-actions">
         <button class="btn-action btn-primary" onclick="copyEmail('${prof.email}')">Copiaza email</button>
-        <button class="btn-action btn-secondary" onclick="showProfessorProfile('${prof.name}', '${prof.specialization}')">Detalii</button>
+        <button class="btn-action btn-secondary" onclick="showProfessorProfile(${prof.id}, '${encodeURIComponent(prof.name)}', '${encodeURIComponent(prof.specialization)}')">Detalii</button>
+        <button class="btn-action btn-secondary" onclick="addProfessorReview(${prof.id})">Adauga recenzie</button>
       </div>
     </div>
   `).join('');
 }
 
-function copyEmail(email) {
-  if (!email || email === '-') return;
-  navigator.clipboard.writeText(email);
-  alert('Email copiat: ' + email);
-}
-
-function showProfessorProfile(name, specialization) {
-  alert(`Profesor: ${name}\nSpecializare: ${specialization}`);
-}
-
-async function seedOfficialProfessorsToDatabase() {
-  const seedBtn = document.getElementById('seedProfessorsBtn');
-  const statusBox = document.getElementById('seedStatus');
-
-  if (seedBtn) seedBtn.disabled = true;
-  if (statusBox) statusBox.textContent = 'Se importa profesorii in baza de date...';
-
-  const result = await upsertProfessors(toDbPayload(OFFICIAL_PROFESSORS));
-
-  if (result.success) {
-    if (statusBox) statusBox.textContent = `Import reusit: ${result.data.length} randuri procesate.`;
-    await loadProfessorsData();
-    fillProfessorSelect();
-    renderProfessors();
-  } else {
-    const errorText = result.error || 'eroare necunoscuta';
-    if (statusBox) {
-      if (errorText.toLowerCase().includes('relation') && errorText.toLowerCase().includes('professors')) {
-        statusBox.textContent = 'Import esuat: tabelul professors nu exista. Ruleaza supabase_professors_seed.sql in SQL Editor.';
-      } else {
-        statusBox.textContent = `Import esuat: ${errorText}`;
-      }
+async function addProfessorReview(professorId) {
+  if (typeof saveProfessorReview !== 'function') {
+    if (typeof showNotification === 'function') {
+      showNotification('Functia de recenzii nu este disponibila.');
     }
+    return;
   }
 
-  if (seedBtn) seedBtn.disabled = false;
+  ensureProfessorReviewModal();
+
+  const professor = professorsData.find((item) => Number(item.id) === Number(professorId)) || filteredProfessors.find((item) => Number(item.id) === Number(professorId));
+  activeReviewProfessor = professor || { id: professorId, name: 'Profesor' };
+
+  const modal = document.getElementById('professorReviewModal');
+  const title = document.getElementById('professorReviewModalTitle');
+  const subtitle = document.getElementById('professorReviewModalSubtitle');
+  const ratingInput = document.getElementById('professorReviewModalRating');
+  const commentInput = document.getElementById('professorReviewModalComment');
+
+  if (title) {
+    title.textContent = `Recenzie pentru ${activeReviewProfessor.title || 'Prof.'} ${activeReviewProfessor.name || 'Profesor'}`;
+  }
+  if (subtitle) {
+    subtitle.textContent = `${activeReviewProfessor.department || 'Departament'} • ${activeReviewProfessor.specialization || 'Specializare'}`;
+  }
+
+  if (ratingInput) ratingInput.value = '';
+  if (commentInput) commentInput.value = '';
+
+  modal?.classList.add('is-open');
+  modal?.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  setTimeout(() => ratingInput?.focus(), 50);
+}
+
+function copyEmail(email) {
+  if (!email || email === '-') return;
+  navigator.clipboard?.writeText(email).catch(() => {});
+  if (typeof showNotification === 'function') {
+    showNotification('Email copiat: ' + email);
+  }
+}
+
+function showProfessorProfile(professorId, encodedName, encodedSpecialization) {
+  const params = new URLSearchParams();
+  if (professorId) params.set('id', String(professorId));
+  if (encodedName) params.set('name', decodeURIComponent(encodedName));
+  if (encodedSpecialization) params.set('specializare', decodeURIComponent(encodedSpecialization));
+  window.location.href = `professor-profile.html?${params.toString()}`;
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
   if (!document.getElementById('professorsGrid')) return;
+
+  ensureProfessorReviewModal();
 
   const loadInfo = await loadProfessorsData();
   fillProfessorSelect();
@@ -301,18 +512,16 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (statusBox) {
     if (loadInfo.source === 'database') {
       statusBox.textContent = `Date active din Supabase: ${loadInfo.count} profesori.`;
+      statusBox.style.display = 'block';
     } else if (loadInfo.source === 'database-empty') {
-      statusBox.textContent = 'Supabase este conectat, dar tabelul professors este gol. Poti folosi butonul de import.';
+      statusBox.textContent = 'Supabase este conectat, dar tabelul profesori este gol.';
+      statusBox.style.display = 'block';
     } else {
-      statusBox.textContent = 'Se afiseaza lista oficiala locala. Pentru DB, ruleaza supabase_professors_seed.sql.';
+      statusBox.textContent = '';
+      statusBox.style.display = 'none';
       if (loadInfo.dbError) {
         console.warn('Professors DB fallback reason:', loadInfo.dbError);
       }
     }
-  }
-
-  const seedBtn = document.getElementById('seedProfessorsBtn');
-  if (seedBtn) {
-    seedBtn.addEventListener('click', seedOfficialProfessorsToDatabase);
   }
 });

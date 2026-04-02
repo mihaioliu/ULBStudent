@@ -48,6 +48,11 @@
   transition: var(--transition);
 }
 
+.filter-select option {
+  background: #ffffff;
+  color: var(--text);
+}
+
 .filter-select:hover,
 .filter-input:hover {
   border-color: var(--accent);
@@ -514,6 +519,13 @@ body.dark-mode .filter-select {
   background: #232d3f;
   border-color: #3a4252;
   color: #e0e6ed;
+  color-scheme: dark;
+}
+
+body.dark-mode .filter-select option,
+body.dark-mode .filter-select optgroup {
+  background: #232d3f;
+  color: #e0e6ed;
 }
 
 body.dark-mode .professor-card {
@@ -559,6 +571,134 @@ body.dark-mode .reviews-section {
   border-color: #2d3748;
 }
 
+.review-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(3, 6, 14, 0.65);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  z-index: 1000;
+}
+
+.review-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.review-modal-content {
+  width: min(560px, 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--light-gray) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.review-modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(230, 57, 70, 0.12);
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.review-modal-header {
+  padding-right: 3rem;
+  margin-bottom: 1.25rem;
+}
+
+.review-modal-kicker {
+  margin: 0 0 0.35rem 0;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.review-modal-header h3 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.45rem;
+}
+
+.review-modal-header p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.review-modal-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.review-field {
+  display: grid;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.review-field span {
+  font-size: 0.95rem;
+}
+
+.review-field input,
+.review-field select,
+.review-field textarea {
+  width: 100%;
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.95rem 1rem;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.review-field textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.review-field input:focus,
+.review-field select:focus,
+.review-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.12);
+}
+
+.review-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.professor-review-modal {
+  max-width: 640px;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 body.dark-mode .review-card {
   background: #1a1f2e;
   border-color: #2d3748;
@@ -579,6 +719,69 @@ body.dark-mode .professor-name {
 
 body.dark-mode .review-text {
   color: #cbd5e0;
+}
+
+body.dark-mode .review-modal-content {
+  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+  border-color: #30363d;
+}
+
+body.dark-mode .review-modal-close {
+  background: rgba(88, 166, 255, 0.12);
+  color: #e0e6ed;
+}
+
+body.dark-mode .review-field {
+  color: #e0e6ed;
+}
+
+body.dark-mode .review-field input,
+body.dark-mode .review-field select,
+body.dark-mode .review-field textarea {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #e0e6ed;
+  color-scheme: dark;
+}
+
+body.dark-mode .review-field input::placeholder,
+body.dark-mode .review-field textarea::placeholder {
+  color: #7f8a99;
+}
+
+body.dark-mode .review-modal-header p,
+body.dark-mode .review-modal-header h3 {
+  color: #e0e6ed;
+}
+
+body.dark-mode .professor-review-modal {
+  box-shadow: 0 28px 68px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .review-modal {
+    align-items: flex-end;
+    padding: 0.75rem;
+  }
+
+  .review-modal-content {
+    width: 100%;
+    border-radius: 18px 18px 12px 12px;
+    padding: 1.15rem;
+  }
+
+  .review-modal-header {
+    padding-right: 2.5rem;
+  }
+
+  .review-modal-actions {
+    justify-content: stretch;
+  }
+
+  .review-modal-actions .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 body.dark-mode .helpful-count {

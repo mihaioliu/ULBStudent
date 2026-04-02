@@ -107,6 +107,11 @@
   padding-right: 2.5rem;
 }
 
+.filter-select option {
+  background: #ffffff;
+  color: var(--text);
+}
+
 .filter-select:hover {
   border-color: var(--accent);
 }
@@ -411,6 +416,7 @@ body.dark-mode .filter-select {
   background: #232d3f;
   border-color: #3a4252;
   color: #e1e8ed;
+  color-scheme: dark;
 }
 
 body.dark-mode .filter-input:focus,
@@ -511,6 +517,12 @@ body.dark-mode .filter-input,
 body.dark-mode .filter-select {
   background: #1a1f2e;
   border-color: #2a3142;
+  color: #e1e8ed;
+}
+
+body.dark-mode .filter-select option,
+body.dark-mode .filter-select optgroup {
+  background: #1a1f2e;
   color: #e1e8ed;
 }
 

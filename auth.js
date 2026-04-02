@@ -1,8 +1,21 @@
-// Supabase Configuration
-const SUPABASE_URL = 'https://wjxedaygcaoktwhucagn.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_1Qa6uuCo8hKdMwXLDMF8Nw_KTgpbm9K';
-
+// Supabase Configuration (centralized through supabase-client.js)
 let supabaseClient = null;
+
+const TABLES = {
+  STUDENTS: 'studenti',
+  USERS: 'utilizatori',
+  PROFESSORS: 'profesori',
+  PROFESSORS_LEGACY: 'professors',
+  DOCUMENTS: 'documente',
+  FORUM_POSTS: 'postari_forum',
+  POSTS_LEGACY: 'posts',
+  COMMENTS: 'comments',
+  QUESTIONS: 'questions',
+  MATCH_PROFILES: 'profiluri_matching',
+  MATCHES: 'matches',
+  TEAM_MATCHES: 'team_matches',
+  PROFESSOR_REVIEWS: 'recenzii_profesori'
+};
 
 /**
  * Wait for Supabase to load from CDN
@@ -26,10 +39,23 @@ async function waitForSupabase() {
  */
 async function initSupabaseClient() {
   if (!supabaseClient) {
-    await waitForSupabase();
-    const { createClient } = window.supabase;
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase client initialized');
+    if (typeof window.getSupabaseClient === 'function') {
+      supabaseClient = await window.getSupabaseClient();
+    } else {
+      // Fallback de compatibilitate daca supabase-client.js nu este inca inclus
+      await waitForSupabase();
+      const fallbackUrl = window.SUPABASE_CONFIG?.url;
+      const fallbackAnonKey = window.SUPABASE_CONFIG?.anonKey;
+
+      if (!fallbackUrl || !fallbackAnonKey) {
+        throw new Error('Configuratia Supabase lipseste. Include supabase-client.js si completeaza cheile API.');
+      }
+
+      const { createClient } = window.supabase;
+      supabaseClient = createClient(fallbackUrl, fallbackAnonKey);
+    }
+
+    console.log('✅ Supabase client initialized (central config)');
   }
   return supabaseClient;
 }
@@ -144,32 +170,17 @@ async function isEmailAlreadyUsed(email, accountType = 'student') {
     return false;
   }
 
-  const checks = [];
+  const checks = [
+    client.from(TABLES.STUDENTS).select('email').eq('email', normalizedEmail).limit(1).maybeSingle(),
+    client.from(TABLES.USERS).select('email').eq('email', normalizedEmail).limit(1).maybeSingle(),
+    client.from(TABLES.PROFESSORS).select('email').eq('email', normalizedEmail).limit(1).maybeSingle(),
+    client.from(TABLES.PROFESSORS_LEGACY).select('institutional_email').eq('institutional_email', normalizedEmail).limit(1).maybeSingle()
+  ];
 
-  // Student profile table
-  checks.push(
-    client
-      .from('utilizatori')
-      .select('email')
-      .eq('email', normalizedEmail)
-      .limit(1)
-      .maybeSingle()
-  );
+  const [studentResult, userResult, professorResult, legacyProfessorResult] = await Promise.all(checks);
 
-  // Professors table
-  checks.push(
-    client
-      .from('professors')
-      .select('institutional_email')
-      .eq('institutional_email', normalizedEmail)
-      .limit(1)
-      .maybeSingle()
-  );
-
-  const [studentResult, professorResult] = await Promise.all(checks);
-
-  const hasStudentMatch = !studentResult.error && !!studentResult.data;
-  const hasProfessorMatch = !professorResult.error && !!professorResult.data;
+  const hasStudentMatch = (!studentResult.error && !!studentResult.data) || (!userResult.error && !!userResult.data);
+  const hasProfessorMatch = (!professorResult.error && !!professorResult.data) || (!legacyProfessorResult.error && !!legacyProfessorResult.data);
 
   // If the target table can be queried and has a match, block registration.
   if (accountType === 'professor' && hasProfessorMatch) {
@@ -236,59 +247,99 @@ async function registerNewUser(email, password, fullName, year, faculty, account
     // 🚀 PASUL 2: INSERARE ÎN TABELUL AFERENT TIPULUI DE CONT
     if (data?.user) {
       if (isProfessor) {
-        const baseProfessorRow = {
-          academic_title: 'Prof.',
-          full_name: normalizedFullName,
-            institutional_email: normalizedEmail,
-          specialization: professorData.specialization,
-          department: professorData.faculty
-        };
+        const professorRows = [
+          {
+            user_id: data.user.id,
+            nume_complet: normalizedFullName,
+            email: normalizedEmail,
+            specializare: professorData.specialization || null,
+            departament: professorData.faculty || null,
+            materie_predata: professorData.taughtSubject || null,
+            ani_predare: professorData.teachingYears || []
+          },
+          {
+            user_id: data.user.id,
+            full_name: normalizedFullName,
+            email: normalizedEmail,
+            specialization: professorData.specialization || null,
+            department: professorData.faculty || null,
+            taught_subject: professorData.taughtSubject || null,
+            teaching_years: professorData.teachingYears || []
+          }
+        ];
 
-        const extendedProfessorRow = {
-          ...baseProfessorRow,
-          taught_subject: professorData.taughtSubject,
-          teaching_years: professorData.teachingYears || []
-        };
+        let inserted = false;
 
-        let dbError = null;
-
-        const extendedInsert = await client
-          .from('professors')
-          .insert([extendedProfessorRow]);
-
-        if (extendedInsert.error) {
-          const fallbackInsert = await client
-            .from('professors')
-            .insert([baseProfessorRow]);
-
-          dbError = fallbackInsert.error;
+        for (const row of professorRows) {
+          const result = await client.from(TABLES.PROFESSORS).insert([row]);
+          if (!result.error) {
+            inserted = true;
+            break;
+          }
         }
 
-        if (dbError) {
-          if (String(dbError.message || '').toLowerCase().includes('duplicate')) {
-            throw new Error('Acest email este deja folosit');
+        // Fallback schema vechi (professors)
+        if (!inserted) {
+          const legacyRow = {
+            academic_title: 'Prof.',
+            full_name: normalizedFullName,
+            institutional_email: normalizedEmail,
+            specialization: professorData.specialization || null,
+            department: professorData.faculty || null,
+            taught_subject: professorData.taughtSubject || null,
+            teaching_years: professorData.teachingYears || []
+          };
+
+          const legacyResult = await client.from(TABLES.PROFESSORS_LEGACY).insert([legacyRow]);
+          if (legacyResult.error) {
+            if (String(legacyResult.error.message || '').toLowerCase().includes('duplicate')) {
+              throw new Error('Acest email este deja folosit');
+            }
+            console.error('❌ Eroare la salvarea profesorului:', legacyResult.error.message);
           }
-          console.error('❌ Eroare la salvarea profesorului în tabel:', dbError.message);
-        } else {
-          console.log('✅ Profesor salvat cu succes în tabelul professors!');
         }
       } else {
-        const { error: dbError } = await client
-          .from('utilizatori')
-          .insert([{
+        const studentRows = [
+          {
+            user_id: data.user.id,
             email: normalizedEmail,
             nume_complet: normalizedFullName,
-            an_studiu: parseInt(year),
-            specializare: faculty
-          }]);
+            an_studiu: year ? parseInt(year, 10) : null,
+            specializare: faculty || null
+          },
+          {
+            user_id: data.user.id,
+            email: normalizedEmail,
+            full_name: normalizedFullName,
+            study_year: year ? parseInt(year, 10) : null,
+            specialization: faculty || null
+          }
+        ];
 
-        if (dbError) {
-          if (String(dbError.message || '').toLowerCase().includes('duplicate')) {
+        let studentInserted = false;
+        for (const row of studentRows) {
+          const studentInsert = await client.from(TABLES.STUDENTS).insert([row]);
+          if (!studentInsert.error) {
+            studentInserted = true;
+            break;
+          }
+        }
+
+        // Dublam si in utilizatori pentru compatibilitatea cu paginile existente.
+        const userInsert = await client.from(TABLES.USERS).insert([{
+          user_id: data.user.id,
+          email: normalizedEmail,
+          nume_complet: normalizedFullName,
+          an_studiu: year ? parseInt(year, 10) : null,
+          specializare: faculty || null
+        }]);
+
+        if (!studentInserted && userInsert.error) {
+          const errMsg = String(userInsert.error.message || '').toLowerCase();
+          if (errMsg.includes('duplicate')) {
             throw new Error('Acest email este deja folosit');
           }
-          console.error('❌ Eroare la salvarea în tabel:', dbError.message);
-        } else {
-          console.log('✅ Datele au intrat cu succes în tabelul utilizatori!');
+          console.error('❌ Eroare la salvarea profilului student:', userInsert.error.message);
         }
       }
     }
@@ -487,37 +538,48 @@ async function getCurrentUserProfileData() {
     const accountType = user.user_metadata?.account_type || 'student';
 
     if (accountType === 'professor') {
-      const { data: professorRow, error: professorError } = await client
-        .from('professors')
-        .select('*')
-        .eq('institutional_email', user.email)
-        .limit(1)
-        .maybeSingle();
+      const professorChecks = [
+        client.from(TABLES.PROFESSORS).select('*').eq('email', user.email).limit(1).maybeSingle(),
+        client.from(TABLES.PROFESSORS).select('*').eq('user_id', user.id).limit(1).maybeSingle(),
+        client.from(TABLES.PROFESSORS_LEGACY).select('*').eq('institutional_email', user.email).limit(1).maybeSingle()
+      ];
 
-      if (!professorError && professorRow) {
-        return {
-          success: true,
-          data: {
-            source: 'professors',
-            account_type: 'professor',
-            email: user.email,
-            full_name: professorRow.full_name || user.user_metadata?.full_name || user.email,
-            faculty: professorRow.department || user.user_metadata?.faculty || 'Departament necunoscut',
-            specialization: professorRow.specialization || user.user_metadata?.specialization || '-',
-            academic_title: professorRow.academic_title || 'Prof.',
-            taught_subject: user.user_metadata?.taught_subject || '-',
-            teaching_years: user.user_metadata?.teaching_years || []
-          }
-        };
+      for (const check of professorChecks) {
+        const { data: professorRow, error: professorError } = await check;
+        if (!professorError && professorRow) {
+          return {
+            success: true,
+            data: {
+              source: TABLES.PROFESSORS,
+              account_type: 'professor',
+              email: user.email,
+              full_name: professorRow.full_name || professorRow.nume_complet || user.user_metadata?.full_name || user.email,
+              faculty: professorRow.department || professorRow.departament || user.user_metadata?.faculty || 'Departament necunoscut',
+              specialization: professorRow.specialization || professorRow.specializare || user.user_metadata?.specialization || '-',
+              academic_title: professorRow.academic_title || professorRow.titlu_academic || 'Prof.',
+              taught_subject: professorRow.taught_subject || professorRow.materie_predata || user.user_metadata?.taught_subject || '-',
+              teaching_years: professorRow.teaching_years || professorRow.ani_predare || user.user_metadata?.teaching_years || []
+            }
+          };
+        }
       }
     }
 
-    const { data, error } = await client
-      .from('utilizatori')
+    const { data: studentData, error: studentError } = await client
+      .from(TABLES.STUDENTS)
       .select('*')
       .eq('email', user.email)
       .limit(1)
       .maybeSingle();
+
+    const { data, error } = !studentError && studentData
+      ? { data: studentData, error: null }
+      : await client
+          .from(TABLES.USERS)
+          .select('*')
+          .eq('email', user.email)
+          .limit(1)
+          .maybeSingle();
 
     if (error) {
       console.warn('⚠️ Could not fetch utilizatori profile:', error.message);
@@ -567,18 +629,40 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
     const normalizedEmail = user.email.trim().toLowerCase();
 
     if (accountType === 'professor') {
-      const updatePayload = {};
+      const updatePayload = {
+        full_name: profileUpdates.full_name,
+        nume_complet: profileUpdates.full_name,
+        specialization: profileUpdates.specialization,
+        specializare: profileUpdates.specialization,
+        department: profileUpdates.faculty,
+        departament: profileUpdates.faculty,
+        taught_subject: profileUpdates.taught_subject,
+        materie_predata: profileUpdates.taught_subject,
+        teaching_years: profileUpdates.teaching_years,
+        ani_predare: profileUpdates.teaching_years
+      };
 
-      if (profileUpdates.full_name) updatePayload.full_name = profileUpdates.full_name;
-      if (profileUpdates.specialization) updatePayload.specialization = profileUpdates.specialization;
-      if (profileUpdates.faculty) updatePayload.department = profileUpdates.faculty;
+      const cleanPayload = Object.fromEntries(
+        Object.entries(updatePayload).filter(([, value]) => value !== undefined)
+      );
 
-      const { error: dbError } = await client
-        .from('professors')
-        .update(updatePayload)
-        .eq('institutional_email', normalizedEmail);
+      const dbUpdate = await client
+        .from(TABLES.PROFESSORS)
+        .update(cleanPayload)
+        .eq('email', normalizedEmail);
 
-      if (dbError) throw new Error(dbError.message);
+      if (dbUpdate.error) {
+        const legacyUpdate = await client
+          .from(TABLES.PROFESSORS_LEGACY)
+          .update({
+            full_name: profileUpdates.full_name,
+            specialization: profileUpdates.specialization,
+            department: profileUpdates.faculty
+          })
+          .eq('institutional_email', normalizedEmail);
+
+        if (legacyUpdate.error) throw new Error(legacyUpdate.error.message);
+      }
 
       const { error: authError } = await client.auth.updateUser({
         data: {
@@ -595,16 +679,36 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
       return { success: true };
     }
 
-    const { error: dbError } = await client
-      .from('utilizatori')
+    const studentPayload = {
+      nume_complet: profileUpdates.full_name,
+      full_name: profileUpdates.full_name,
+      an_studiu: profileUpdates.year ? parseInt(profileUpdates.year, 10) : null,
+      study_year: profileUpdates.year ? parseInt(profileUpdates.year, 10) : null,
+      specializare: profileUpdates.specialization,
+      specialization: profileUpdates.specialization
+    };
+
+    const cleanStudentPayload = Object.fromEntries(
+      Object.entries(studentPayload).filter(([, value]) => value !== undefined)
+    );
+
+    const studentUpdate = await client
+      .from(TABLES.STUDENTS)
+      .update(cleanStudentPayload)
+      .eq('email', normalizedEmail);
+
+    const userUpdate = await client
+      .from(TABLES.USERS)
       .update({
         nume_complet: profileUpdates.full_name,
-        an_studiu: profileUpdates.year ? parseInt(profileUpdates.year) : null,
+        an_studiu: profileUpdates.year ? parseInt(profileUpdates.year, 10) : null,
         specializare: profileUpdates.specialization
       })
       .eq('email', normalizedEmail);
 
-    if (dbError) throw new Error(dbError.message);
+    if (studentUpdate.error && userUpdate.error) {
+      throw new Error(userUpdate.error.message || studentUpdate.error.message);
+    }
 
     const { error: authError } = await client.auth.updateUser({
       data: {
@@ -641,7 +745,7 @@ async function saveQuestion(title, description) {
     }
 
     const { data, error } = await client
-      .from('questions')
+      .from(TABLES.QUESTIONS)
       .insert([{
         user_id: user.id,
         title: title,
@@ -672,15 +776,33 @@ async function savePost(title, content) {
       throw new Error('User not authenticated');
     }
 
-    const { data, error } = await client
-      .from('posts')
+    const primaryInsert = await client
+      .from(TABLES.FORUM_POSTS)
       .insert([{
         user_id: user.id,
-        title: title,
-        content: content,
+        title,
+        content,
         votes: 0
       }])
       .select();
+
+    let data = primaryInsert.data;
+    let error = primaryInsert.error;
+
+    // Fallback pentru schema veche
+    if (error) {
+      const fallbackInsert = await client
+        .from(TABLES.POSTS_LEGACY)
+        .insert([{
+          user_id: user.id,
+          title,
+          content,
+          votes: 0
+        }])
+        .select();
+      data = fallbackInsert.data;
+      error = fallbackInsert.error;
+    }
 
     if (error) throw new Error(error.message);
     
@@ -701,7 +823,7 @@ async function saveComment(postId, name, email, content) {
     const user = getCurrentUser();
 
     const { data, error } = await client
-      .from('comments')
+      .from(TABLES.COMMENTS)
       .insert([{
         post_id: postId,
         user_id: user?.id || null,
@@ -729,7 +851,7 @@ async function getQuestions() {
     const client = await initSupabaseClient();
 
     const { data, error } = await client
-      .from('questions')
+      .from(TABLES.QUESTIONS)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -750,10 +872,22 @@ async function getPosts() {
   try {
     const client = await initSupabaseClient();
 
-    const { data, error } = await client
-      .from('posts')
+    const primarySelect = await client
+      .from(TABLES.FORUM_POSTS)
       .select('*')
       .order('created_at', { ascending: false });
+
+    let data = primarySelect.data;
+    let error = primarySelect.error;
+
+    if (error) {
+      const fallbackSelect = await client
+        .from(TABLES.POSTS_LEGACY)
+        .select('*')
+        .order('created_at', { ascending: false });
+      data = fallbackSelect.data;
+      error = fallbackSelect.error;
+    }
 
     if (error) throw new Error(error.message);
     
@@ -772,12 +906,26 @@ async function getPostById(postId) {
   try {
     const client = await initSupabaseClient();
 
-    const { data, error } = await client
-      .from('posts')
+    const primarySelect = await client
+      .from(TABLES.FORUM_POSTS)
       .select('*')
       .eq('id', postId)
       .limit(1)
       .maybeSingle();
+
+    let data = primarySelect.data;
+    let error = primarySelect.error;
+
+    if (error) {
+      const fallbackSelect = await client
+        .from(TABLES.POSTS_LEGACY)
+        .select('*')
+        .eq('id', postId)
+        .limit(1)
+        .maybeSingle();
+      data = fallbackSelect.data;
+      error = fallbackSelect.error;
+    }
 
     if (error) throw new Error(error.message);
 
@@ -796,7 +944,7 @@ async function getComments(postId) {
     const client = await initSupabaseClient();
 
     const { data, error } = await client
-      .from('comments')
+      .from(TABLES.COMMENTS)
       .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
@@ -817,12 +965,35 @@ async function getProfessors() {
   try {
     const client = await initSupabaseClient();
 
-    const { data, error } = await client
-      .from('professors')
-      .select('*')
-      .order('full_name', { ascending: true });
+    const primarySelect = await client
+      .from(TABLES.PROFESSORS)
+      .select('*, recenzii_profesori(rating)')
+      .order('nume_complet', { ascending: true });
+
+    let rawRows = primarySelect.data;
+    let error = primarySelect.error;
+
+    if (error) {
+      const fallbackSelect = await client
+        .from(TABLES.PROFESSORS_LEGACY)
+        .select('*')
+        .order('full_name', { ascending: true });
+      rawRows = fallbackSelect.data;
+      error = fallbackSelect.error;
+    }
 
     if (error) throw new Error(error.message);
+
+    const data = (rawRows || []).map((row) => ({
+      ...row,
+      full_name: row.full_name || row.nume_complet || 'Profesor',
+      institutional_email: row.institutional_email || row.email || '',
+      specialization: row.specialization || row.specializare || '-',
+      department: row.department || row.departament || '',
+      academic_title: row.academic_title || row.titlu_academic || 'Prof.',
+      recenzii_profesori: Array.isArray(row.recenzii_profesori) ? row.recenzii_profesori : []
+    }));
+
     return { success: true, data };
   } catch (error) {
     console.error('❌ Error fetching professors:', error.message);
@@ -843,20 +1014,49 @@ async function upsertProfessors(professors) {
     }
 
     const payload = (professors || []).map((row) => ({
+      user_id: row.user_id || null,
+      titlu_academic: row.academic_title,
       academic_title: row.academic_title,
+      nume_complet: row.full_name,
       full_name: row.full_name,
-      institutional_email: row.institutional_email,
+      email: row.institutional_email || row.email,
+      institutional_email: row.institutional_email || row.email,
+      specializare: row.specialization,
       specialization: row.specialization,
-      department: row.department || 'Departamentul de Calculatoare și Inginerie Electrică',
+      departament: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
+      department: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
       rating: row.rating || 4.6,
       reviews_count: row.reviews_count || 0,
       courses_count: row.courses_count || 0
     }));
 
-    const { data, error } = await client
-      .from('professors')
-      .upsert(payload, { onConflict: 'institutional_email' })
+    const primaryUpsert = await client
+      .from(TABLES.PROFESSORS)
+      .upsert(payload, { onConflict: 'email' })
       .select();
+
+    let data = primaryUpsert.data;
+    let error = primaryUpsert.error;
+
+    if (error) {
+      const fallbackPayload = payload.map((row) => ({
+        academic_title: row.academic_title,
+        full_name: row.full_name,
+        institutional_email: row.institutional_email,
+        specialization: row.specialization,
+        department: row.department,
+        rating: row.rating,
+        reviews_count: row.reviews_count,
+        courses_count: row.courses_count
+      }));
+
+      const fallbackUpsert = await client
+        .from(TABLES.PROFESSORS_LEGACY)
+        .upsert(fallbackPayload, { onConflict: 'institutional_email' })
+        .select();
+      data = fallbackUpsert.data;
+      error = fallbackUpsert.error;
+    }
 
     if (error) throw new Error(error.message);
     return { success: true, data };
@@ -890,9 +1090,26 @@ async function saveTeamMatch(profile, matchType) {
       match_type: matchType
     };
 
+    // Tabelul cerut in proiect: profiluri_matching
+    const matchingInsert = await client
+      .from(TABLES.MATCH_PROFILES)
+      .insert([{
+        user_id: user.id,
+        profil_nume: profile.name,
+        profil_an: profile.year,
+        profil_specializare: profile.specialization,
+        profil_skilluri: profile.skills,
+        tip_match: matchType
+      }])
+      .select();
+
+    if (!matchingInsert.error) {
+      return { success: true, data: matchingInsert.data, source: TABLES.MATCH_PROFILES };
+    }
+
     // Try team_matches first (rich payload)
     const preferredInsert = await client
-      .from('team_matches')
+      .from(TABLES.TEAM_MATCHES)
       .insert([preferredPayload])
       .select();
 
@@ -908,7 +1125,7 @@ async function saveTeamMatch(profile, matchType) {
     };
 
     const fallbackInsert = await client
-      .from('matches')
+      .from(TABLES.MATCHES)
       .insert([fallbackPayload])
       .select();
 
@@ -931,30 +1148,36 @@ async function updatePostVotes(postId, voteDirection) {
   try {
     const client = await initSupabaseClient();
     
-    // Fetch current votes
-    const { data: currentPost, error: fetchError } = await client
-      .from('posts')
-      .select('votes')
-      .eq('id', postId)
-      .limit(1)
-      .maybeSingle();
-    
-    if (fetchError || !currentPost) {
-      throw new Error('Could not fetch current post');
+    const tryUpdate = async (tableName) => {
+      const { data: currentPost, error: fetchError } = await client
+        .from(tableName)
+        .select('votes')
+        .eq('id', postId)
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchError || !currentPost) {
+        return { error: fetchError || new Error('Post not found') };
+      }
+
+      const newVotes = Number(currentPost.votes || 0) + (voteDirection === 'up' ? 1 : -1);
+      const { data, error } = await client
+        .from(tableName)
+        .update({ votes: newVotes })
+        .eq('id', postId)
+        .select();
+
+      return { data: data?.[0], error, newVotes };
+    };
+
+    let result = await tryUpdate(TABLES.FORUM_POSTS);
+    if (result.error) {
+      result = await tryUpdate(TABLES.POSTS_LEGACY);
     }
+
+    if (result.error) throw new Error(result.error.message || 'Nu s-a putut actualiza votul');
     
-    const newVotes = currentPost.votes + (voteDirection === 'up' ? 1 : -1);
-    
-    // Update the votes in database
-    const { data, error } = await client
-      .from('posts')
-      .update({ votes: newVotes })
-      .eq('id', postId)
-      .select();
-    
-    if (error) throw new Error(error.message);
-    
-    return { success: true, data: data?.[0], newVotes };
+    return { success: true, data: result.data, newVotes: result.newVotes };
   } catch (error) {
     console.error('❌ Error updating post votes:', error.message);
     return { success: false, error: error.message };
@@ -971,7 +1194,7 @@ async function updateQuestionVotes(questionId, voteDirection) {
     
     // Fetch current votes
     const { data: currentQuestion, error: fetchError } = await client
-      .from('questions')
+      .from(TABLES.QUESTIONS)
       .select('upvotes')
       .eq('id', questionId)
       .limit(1)
@@ -985,7 +1208,7 @@ async function updateQuestionVotes(questionId, voteDirection) {
     
     // Update the votes in database
     const { data, error } = await client
-      .from('questions')
+      .from(TABLES.QUESTIONS)
       .update({ upvotes: newVotes })
       .eq('id', questionId)
       .select();
@@ -1011,9 +1234,20 @@ async function getTeamMatches() {
       return { success: false, data: [] };
     }
 
-    // Try team_matches first
+    // 1) Tabel principal din proiect
+    const matchingSelect = await client
+      .from(TABLES.MATCH_PROFILES)
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!matchingSelect.error) {
+      return { success: true, data: matchingSelect.data, source: TABLES.MATCH_PROFILES };
+    }
+
+    // 2) Fallback team_matches
     const preferredSelect = await client
-      .from('team_matches')
+      .from(TABLES.TEAM_MATCHES)
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
@@ -1024,7 +1258,7 @@ async function getTeamMatches() {
 
     // Fallback to matches
     const fallbackSelect = await client
-      .from('matches')
+      .from(TABLES.MATCHES)
       .select('*')
       .eq('user_id_1', user.id)
       .order('created_at', { ascending: false });
@@ -1037,6 +1271,124 @@ async function getTeamMatches() {
   } catch (error) {
     console.error('❌ Error loading team matches:', error.message);
     return { success: false, data: [] };
+  }
+}
+
+/**
+ * Documente (tabel: documente)
+ */
+async function getDocuments() {
+  try {
+    const client = await initSupabaseClient();
+    const { data, error } = await client
+      .from(TABLES.DOCUMENTS)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return { success: true, data: data || [] };
+  } catch (error) {
+    console.error('❌ Error fetching documente:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Recenzii profesori (tabel: recenzii_profesori)
+ */
+async function getProfessorReviews(professorId) {
+  try {
+    const client = await initSupabaseClient();
+    const base = client
+      .from(TABLES.PROFESSOR_REVIEWS)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!professorId) {
+      const { data, error } = await base;
+      if (error) throw new Error(error.message);
+      return { success: true, data: data || [] };
+    }
+
+    const primary = await client
+      .from(TABLES.PROFESSOR_REVIEWS)
+      .select('*')
+      .eq('profesor_id', professorId)
+      .order('created_at', { ascending: false });
+
+    if (!primary.error) {
+      return { success: true, data: primary.data || [] };
+    }
+
+    const fallback = await client
+      .from(TABLES.PROFESSOR_REVIEWS)
+      .select('*')
+      .eq('professor_id', professorId)
+      .order('created_at', { ascending: false });
+
+    if (fallback.error) throw new Error(fallback.error.message);
+    return { success: true, data: fallback.data || [] };
+  } catch (error) {
+    console.error('❌ Error fetching recenzii_profesori:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+async function saveProfessorReview(professorId, rating, reviewText) {
+  try {
+    const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(true);
+
+    const normalizedProfessorId = String(professorId || '').trim();
+    const normalizedReviewText = String(reviewText || '').trim();
+    const normalizedRating = Number(rating);
+    const userId = user?.id || null;
+
+    const payloadVariants = [
+      {
+        id_profesor: normalizedProfessorId,
+        user_id: userId,
+        rating: normalizedRating,
+        comentariu: normalizedReviewText
+      },
+      {
+        id_profesor: normalizedProfessorId,
+        user_id: userId,
+        rating: normalizedRating,
+        review_text: normalizedReviewText
+      },
+      {
+        profesor_id: normalizedProfessorId,
+        user_id: userId,
+        rating: normalizedRating,
+        comentariu: normalizedReviewText
+      },
+      {
+        professor_id: normalizedProfessorId,
+        user_id: userId,
+        rating: normalizedRating,
+        comment: normalizedReviewText
+      }
+    ];
+
+    let lastError = null;
+    for (const payload of payloadVariants) {
+      const result = await client
+        .from(TABLES.PROFESSOR_REVIEWS)
+        .insert([payload])
+        .select();
+
+      if (!result.error) {
+        return { success: true, data: result.data || [] };
+      }
+
+      lastError = result.error;
+    }
+
+    throw new Error(lastError?.message || 'Nu s-a putut salva recenzia.');
+  } catch (error) {
+    console.error('❌ Error saving recenzie_profesor:', error.message);
+    return { success: false, data: [], error: error.message };
   }
 }
 

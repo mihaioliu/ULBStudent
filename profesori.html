@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="styles-global.css" />
     <link rel="stylesheet" href="styles-professors.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
   </head>
 
   <body>
@@ -25,7 +27,7 @@
           <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
-          <li><a href="comments.html" class="nav-link">Discutii</a></li>
+          
           <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
       </nav>
@@ -46,7 +48,6 @@
         </div>
 
         <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-          <button id="seedProfessorsBtn" class="btn-action btn-primary">Importa profesorii oficiali in Supabase</button>
           <span id="seedStatus" style="color: #555; font-size: 0.92rem;"></span>
         </div>
 
@@ -127,4 +128,7 @@
     <script src="professors-filtering.js"></script>
   </body>
 </html>
+
+
+
 
