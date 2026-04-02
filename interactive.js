@@ -28,6 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeQuestionsData();        // ❓ Întrebări din baza de date
   initializeSubredditData();        // 👤 Profil + postări din baza de date
   initializeCommentsData();         // 💬 Comentarii din baza de date
+  initializeFeaturedProfessors();    // 👨‍🏫 Nume profesori din baza de date
+
+  // Show page only after initialization to avoid flash between navigations
+  document.body.classList.add('page-ready');
 });
 
 /**
@@ -39,18 +43,13 @@ function initializeThemeToggle() {
   
   // Restaurez tema salvată din localStorage (default: light)
   const savedTheme = localStorage.getItem('theme') || 'light';
-  applyTheme(savedTheme);
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark');
   
   if (themeToggle) {
     themeToggle.addEventListener('click', function() {
-      // Determinez next theme: light → dark → night → light
+      // Determinez next theme: light -> dark -> light
       const isDarkMode = document.body.classList.contains('dark-mode');
-      const isNightMode = document.body.classList.contains('night-mode');
-      
-      let newTheme;
-      if (!isDarkMode) newTheme = 'dark';
-      else if (isDarkMode && !isNightMode) newTheme = 'night';
-      else newTheme = 'light';
+      const newTheme = isDarkMode ? 'light' : 'dark';
       
       applyTheme(newTheme);
       localStorage.setItem('theme', newTheme); // Salvez preferința
@@ -65,23 +64,15 @@ function applyTheme(theme) {
   const themeToggle = document.getElementById('themeToggle');
   
   if (theme === 'dark') {
-    // Dark mode: culori medii, ușor de citit pe durata zilei
+    // Dark mode
     document.body.classList.add('dark-mode');
-    document.body.classList.remove('night-mode');
     if (themeToggle) {
       themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
       themeToggle.title = 'Mod clar';
     }
-  } else if (theme === 'night') {
-    // Night mode: ultra-dark, pentru studiat noaptea
-    document.body.classList.add('dark-mode', 'night-mode');
-    if (themeToggle) {
-      themeToggle.innerHTML = '<i class="fas fa-star"></i>';
-      themeToggle.title = 'Mod noapte';
-    }
   } else {
     // Light mode: implicit, culori vive și luminoase
-    document.body.classList.remove('dark-mode', 'night-mode');
+    document.body.classList.remove('dark-mode');
     if (themeToggle) {
       themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
       themeToggle.title = 'Mod întunecat';
@@ -300,9 +291,18 @@ function initializeSearchBar() {
       const specialization = document.getElementById('specialization')?.value || '';
       const subject = document.getElementById('subject')?.value || '';
       const year = document.getElementById('year')?.value || '';
+      const terms = [professor, specialization, subject, year].filter(Boolean);
       
       console.log('Searching for:', { professor, specialization, subject, year });
-      showNotification('Căutare efectuată pentru: ' + [professor, specialization, subject, year].filter(Boolean).join(', '));
+
+      if (terms.length === 0) {
+        showNotification('⚠️ Completează cel puțin un filtru de căutare.');
+        return;
+      }
+
+      const query = terms.join(' ');
+      localStorage.setItem('advancedSearchQuery', query);
+      window.location.href = `comments.html?q=${encodeURIComponent(query)}`;
     });
   }
 }
@@ -741,11 +741,11 @@ function initializePostActions() {
     const postId = postCard?.getAttribute('data-post-id');
     
     if (action === 'comments' && postId) {
-      // Redirect la pagina de comentarii cu ID-ul post-ului
-      window.location.href = `comments.html?post=${postId}`;
+      // Redirect la pagina dedicata discutiei pentru postarea selectata
+      window.location.href = `discutie.html?post=${encodeURIComponent(postId)}`;
     } else if (action === 'share') {
-      // Share functionality - copia link in clipboard
-      const shareUrl = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+      // Share functionality - copia link direct catre discutia postarii
+      const shareUrl = new URL(`discutie.html?post=${encodeURIComponent(postId)}`, window.location.href).toString();
       navigator.clipboard.writeText(shareUrl).then(() => {
         // Show visual feedback
         const originalText = actionBtn.innerHTML;
@@ -941,33 +941,64 @@ function initializeGlobalSearch() {
   const searchQuery = document.getElementById('searchQuery');
   const closeResults = document.querySelector('.btn-close-results');
 
-  // Sample data for search
+  if (!globalSearchInput || !globalSearchBtn || !searchResults || !resultsList || !searchQuery || !closeResults) {
+    return;
+  }
+
   const searchableData = {
-    professors: [
-      { name: 'Prof. Dr. Alexandru Dinu', subject: 'Arhitectura Calculatoarelor', rating: 4.5 },
-      { name: 'Prof. Dr. Maria Popescu', subject: 'Rețele de Date', rating: 4.0 },
-      { name: 'Prof. Dr. Ion Cristian', subject: 'Programare I', rating: 4.8 }
-    ],
-    documents: [
-      { title: 'Curs Arhitectura Calculatoarelor - Capitolul 1', type: 'PDF', size: '2.5MB' },
-      { title: 'Laboratoare Rețele de Date - Soluții', type: 'PDF', size: '1.8MB' },
-      { title: 'Probleme Programare C++', type: 'PDF', size: '3.2MB' }
-    ],
-    posts: [
-      { title: 'Cum se rezolvă exerciții de derivate?', author: 'Andrei', comments: 12 },
-      { title: 'Sfaturi pentru examenul final', author: 'Maria', comments: 25 },
-      { title: 'Tutorial: Pointeri în C', author: 'Ioan', comments: 8 }
-    ],
-    announcements: [
-      { title: 'S-a mutat sala de curs!', type: 'urgent', source: 'Arhitectura Calculatoarelor' },
-      { title: 'Termenul pentru proiect a fost prelungit', type: 'important', source: 'Programare I' }
-    ],
-    reviews: [
-      { title: 'Recenzie Arhitectura Calculatoarelor', difficulty: 8, utility: 9 },
-      { title: 'Recenzie Rețele de Date', difficulty: 6, utility: 7 },
-      { title: 'Recenzie Programare I', difficulty: 7, utility: 10 }
-    ]
+    professors: [],
+    documents: [],
+    posts: [],
+    announcements: [],
+    reviews: []
   };
+
+  function collectDomContent() {
+    searchableData.documents = Array.from(document.querySelectorAll('.doc-card, .document-card')).map((card) => ({
+      title: card.querySelector('h3, h4')?.textContent?.trim() || 'Document',
+      type: card.querySelector('.doc-type')?.textContent?.trim() || 'Document',
+      size: card.querySelector('.doc-size')?.textContent?.trim() || ''
+    }));
+
+    searchableData.announcements = Array.from(document.querySelectorAll('.announcement-card')).map((card) => ({
+      title: card.querySelector('h4, h3')?.textContent?.trim() || 'Anunț',
+      type: card.querySelector('.announcement-tag')?.textContent?.trim() || 'info',
+      source: card.querySelector('.announcement-meta')?.textContent?.trim() || 'Comunitate'
+    }));
+
+    searchableData.reviews = Array.from(document.querySelectorAll('.review-card')).map((card) => ({
+      title: card.querySelector('h4')?.textContent?.trim() || 'Recenzie',
+      difficulty: card.querySelector('.stats .stat-item')?.textContent?.trim() || '-',
+      utility: card.querySelectorAll('.stats .stat-item')?.[1]?.textContent?.trim() || '-'
+    }));
+  }
+
+  async function collectDatabaseContent() {
+    try {
+      if (typeof getProfessors === 'function') {
+        const professorsResult = await getProfessors();
+        searchableData.professors = (professorsResult.data || []).map((item) => ({
+          name: item.full_name || 'Profesor',
+          subject: item.specialization || 'Specializare',
+          rating: item.rating || '-'
+        }));
+      }
+
+      if (typeof getPosts === 'function') {
+        const postsResult = await getPosts();
+        searchableData.posts = (postsResult.data || []).map((item) => ({
+          title: item.title || 'Postare',
+          author: item.user_id || 'user',
+          comments: 0
+        }));
+      }
+    } catch (error) {
+      console.warn('Search DB preload failed:', error.message);
+    }
+  }
+
+  collectDomContent();
+  collectDatabaseContent();
 
   function performSearch() {
     const query = globalSearchInput.value.toLowerCase().trim();
@@ -982,10 +1013,10 @@ function initializeGlobalSearch() {
     let hasResults = false;
 
     // Search in selected categories
-    selectedFilters.forEach(category => {
+    selectedFilters.forEach((category) => {
       const items = searchableData[category] || [];
       
-      items.forEach(item => {
+      items.forEach((item) => {
         const itemText = JSON.stringify(item).toLowerCase();
         if (itemText.includes(query)) {
           hasResults = true;
@@ -1046,9 +1077,14 @@ function initializeGlobalSearch() {
   }
 
   // Event listeners
-  globalSearchBtn.addEventListener('click', performSearch);
+  globalSearchBtn.addEventListener('click', async () => {
+    await collectDatabaseContent();
+    performSearch();
+  });
   globalSearchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performSearch();
+    if (e.key === 'Enter') {
+      collectDatabaseContent().then(performSearch);
+    }
   });
 
   closeResults.addEventListener('click', () => {
@@ -1295,7 +1331,11 @@ async function initializeSubredditData() {
 
 function initializePostCreation() {
   const postForm = document.getElementById('postCreateForm');
+  const postTitleInput = document.getElementById('postTitleInput');
   const postInput = document.getElementById('postContentInput');
+  const postCategoryInput = document.getElementById('postCategoryInput');
+  const postTagsInput = document.getElementById('postTagsInput');
+  const postTestBtn = document.getElementById('postTestBtn');
   const postSubmitBtn = document.querySelector('.post-submit-btn');
   const postsFeed = document.getElementById('postsFeed');
   const emptyState = document.getElementById('postsEmptyState');
@@ -1304,7 +1344,10 @@ function initializePostCreation() {
 
   postForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    const title = (postTitleInput?.value || '').trim() || 'Postare comunitate';
     const content = (postInput?.value || '').trim();
+    const category = (postCategoryInput?.value || 'general').trim();
+    const tags = (postTagsInput?.value || '').trim();
 
     if (!content) {
       showNotification('⚠️ Scrie ceva înainte de a posta!');
@@ -1318,7 +1361,7 @@ function initializePostCreation() {
     }
 
     try {
-      const saved = await savePost('Postare comunitate', content);
+      const saved = await savePost(`[${category}] ${title}`, tags ? `${content}\n\n#taguri: ${tags}` : content);
       const newPost = saved?.data?.[0];
       if (!newPost) {
         showNotification('❌ Eroare la salvarea postării.');
@@ -1340,6 +1383,32 @@ function initializePostCreation() {
     }
   });
 
+  if (postTestBtn) {
+    postTestBtn.addEventListener('click', () => {
+      const title = (postTitleInput?.value || '').trim() || 'Postare test';
+      const content = (postInput?.value || '').trim();
+
+      if (!content) {
+        showNotification('⚠️ Scrie ceva înainte de test.');
+        return;
+      }
+
+      const tempPost = {
+        id: `test-${Date.now()}`,
+        title: `[TEST] ${title}`,
+        content,
+        votes: 0,
+        created_at: new Date().toISOString(),
+        user_id: 'test-user'
+      };
+
+      if (emptyState && postsFeed) emptyState.style.display = 'none';
+      if (postsFeed) postsFeed.prepend(renderPostCard(tempPost, getCurrentUser() || { email: 'test@ulbstudent.ro' }));
+      postForm.reset();
+      showNotification('🧪 Postare test afișată local. Dispare la refresh.');
+    });
+  }
+
   // Handle action buttons on posts
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('.action-btn');
@@ -1350,7 +1419,7 @@ function initializePostCreation() {
     const postId = postCard?.getAttribute('data-post-id');
 
     if (action === 'comments' && postId) {
-      window.location.href = `comments.html?post=${encodeURIComponent(postId)}`;
+      window.location.href = `discutie.html?post=${encodeURIComponent(postId)}`;
       return;
     }
 
@@ -1440,6 +1509,31 @@ async function initializeCommentsData() {
       showNotification('❌ Eroare la salvarea comentariului.');
     }
   });
+}
+
+async function initializeFeaturedProfessors() {
+  const targets = [
+    document.getElementById('featuredProfessorName1'),
+    document.getElementById('featuredProfessorName2'),
+    document.getElementById('featuredProfessorName3')
+  ].filter(Boolean);
+
+  if (targets.length === 0 || typeof getProfessors !== 'function') {
+    return;
+  }
+
+  try {
+    const result = await getProfessors();
+    if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
+      return;
+    }
+
+    result.data.slice(0, targets.length).forEach((professor, index) => {
+      targets[index].textContent = `${professor.academic_title || 'Prof.'} ${professor.full_name || 'Profesor'}`;
+    });
+  } catch (error) {
+    console.warn('Could not load featured professors from database:', error.message);
+  }
 }
 
 /**

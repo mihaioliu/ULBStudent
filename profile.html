@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -9,6 +9,126 @@
     <title>Profilul Meu - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      .profile-page {
+        padding: 1.5rem 0 2rem;
+      }
+
+      .profile-role-panels {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0 1.5rem;
+      }
+
+      .role-panel {
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1rem;
+        background: var(--surface);
+      }
+
+      .role-panel h3 {
+        margin: 0 0 0.4rem;
+      }
+
+      .role-panel p {
+        margin: 0;
+        color: var(--text-secondary);
+      }
+
+      .role-panel.student {
+        border-left: 4px solid #0ea5e9;
+      }
+
+      .role-panel.professor {
+        border-left: 4px solid #f97316;
+      }
+
+      .role-panel.hidden {
+        display: none;
+      }
+
+      .profile-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.2rem;
+      }
+
+      .profile-main,
+      .profile-sidebar {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .profile-section,
+      .sidebar-card {
+        border: 1px solid var(--border-color);
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 1rem;
+      }
+
+      .section-title {
+        margin-top: 0;
+      }
+
+      .info-grid,
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.8rem;
+      }
+
+      .info-item {
+        background: var(--light-gray);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem;
+      }
+
+      .info-item label {
+        display: block;
+        color: var(--text-secondary);
+        margin-bottom: 0.35rem;
+        font-size: 0.85rem;
+      }
+
+      .info-item p {
+        margin: 0;
+        font-weight: 700;
+      }
+
+      .btn-edit-profile,
+      .btn-secondary,
+      .btn-danger {
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.55rem 0.8rem;
+        background: var(--light-gray);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .btn-danger {
+        color: #fff;
+        background: #dc2626;
+        border-color: #dc2626;
+      }
+
+      .preference-item {
+        display: flex;
+        gap: 0.45rem;
+        align-items: center;
+        margin-bottom: 0.45rem;
+      }
+
+      @media (max-width: 900px) {
+        .profile-content {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -23,7 +143,7 @@
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="comments.html" class="nav-link">Discu?ii</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
           <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
@@ -32,8 +152,6 @@
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
           <i class="fas fa-moon"></i>
         </button>
-        <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Înregistrare</button>
       </div>
     </header>
 
@@ -47,6 +165,7 @@
             <div class="profile-header-info">
               <h1 id="profileFullName">Nume Student</h1>
               <p id="profileEmail" style="color: var(--text-secondary); margin: 0;">email@ulb.ro</p>
+              <p id="profileRole" style="color: var(--accent); margin: 0.35rem 0 0; font-weight: 700; letter-spacing: 0.02em;">Cont conectat</p>
               <div class="profile-badges" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                 <span class="profile-badge" style="background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">Activ</span>
               </div>
@@ -57,12 +176,23 @@
           </div>
         </div>
 
+        <div class="profile-role-panels">
+          <div id="studentProfilePanel" class="role-panel student hidden">
+            <h3>Profil Student</h3>
+            <p>Accent pe an de studiu, specializare, activitate și colaborări.</p>
+          </div>
+          <div id="professorProfilePanel" class="role-panel professor hidden">
+            <h3>Profil Profesor</h3>
+            <p>Accent pe departament, materie predată și anii de predare.</p>
+          </div>
+        </div>
+
         <!-- Profile Content -->
         <div class="profile-content">
           <div class="profile-main">
             <!-- Personal Info Section -->
             <section class="profile-section">
-              <h2 class="section-title">Informații Personale</h2>
+              <h2 class="section-title" id="personalSectionTitle">Informații Personale</h2>
               <div class="info-grid">
                 <div class="info-item">
                   <label>Nume Complet</label>
@@ -73,19 +203,31 @@
                   <p id="infoEmail">-</p>
                 </div>
                 <div class="info-item">
-                  <label>An de Studiu</label>
+                  <label id="yearLabel">An de Studiu</label>
                   <p id="infoYear">-</p>
                 </div>
                 <div class="info-item">
                   <label>Specializare</label>
                   <p id="infoSpecialization">-</p>
                 </div>
+                <div class="info-item" id="facultyInfoItem" style="display: none;">
+                  <label>Facultate / Departament</label>
+                  <p id="infoFaculty">-</p>
+                </div>
+                <div class="info-item" id="subjectInfoItem" style="display: none;">
+                  <label>Materie predată</label>
+                  <p id="infoSubject">-</p>
+                </div>
+                <div class="info-item" id="teachingYearsInfoItem" style="display: none;">
+                  <label>Anii de predare</label>
+                  <p id="infoTeachingYears">-</p>
+                </div>
               </div>
             </section>
 
             <!-- Activity Section -->
             <section class="profile-section">
-              <h2 class="section-title">Activitate</h2>
+              <h2 class="section-title" id="activitySectionTitle">Activitate</h2>
               <div class="stats-grid">
                 <div class="stat-card">
                   <div class="stat-value" id="statPosts">0</div>
@@ -108,7 +250,7 @@
 
             <!-- Recent Activity -->
             <section class="profile-section">
-              <h2 class="section-title">Activitate Recentă</h2>
+              <h2 class="section-title" id="recentSectionTitle">Activitate Recentă</h2>
               <div id="recentActivity" class="activity-list">
                 <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Nicio activitate recentă.</p>
               </div>
@@ -165,23 +307,49 @@
           <button class="modal-close" id="closeEditModal">&times;</button>
         </div>
         <form id="editProfileForm" class="modal-body">
-          <div class="form-group">
-            <label>Nume Complet</label>
-            <input type="text" id="editFullName" placeholder="Introdu numele tău complet" required>
+          <div id="studentEditFields" style="display: none;">
+            <div class="form-group">
+              <label>Nume Complet (Student)</label>
+              <input type="text" id="studentEditFullName" placeholder="Introdu numele tău complet" required>
+            </div>
+            <div class="form-group" id="editYearGroup">
+              <label>An de Studiu</label>
+              <select id="studentEditYear" required>
+                <option value="">Selectează anul</option>
+                <option value="1">Anul I</option>
+                <option value="2">Anul II</option>
+                <option value="3">Anul III</option>
+                <option value="4">Anul IV</option>
+                <option value="5">Masterat</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Specializare</label>
+              <input type="text" id="studentEditSpecialization" placeholder="Ex: Calculatoare, Tehnologia Informației, Ingineria Sistemelor Multimedia">
+            </div>
           </div>
-          <div class="form-group">
-            <label>An de Studiu</label>
-            <select id="editYear" required>
-              <option value="">Selectează anul</option>
-              <option value="1">Anul I</option>
-              <option value="2">Anul II</option>
-              <option value="3">Anul III</option>
-              <option value="4">Anul IV</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Specializare</label>
-            <input type="text" id="editSpecialization" placeholder="Ex: Calculatoare, Tehnologia Informației, Ingineria Sistemelor Multimedia">
+
+          <div id="professorEditFields" style="display: none;">
+            <div class="form-group">
+              <label>Nume Complet (Profesor)</label>
+              <input type="text" id="professorEditFullName" placeholder="Nume profesor" required>
+            </div>
+            <div class="form-group" id="editFacultyGroup">
+              <label>Facultate / Departament</label>
+              <input type="text" id="professorEditFaculty" placeholder="Facultatea de Inginerie">
+            </div>
+            <div class="form-group">
+              <label>Specializare</label>
+              <input type="text" id="professorEditSpecialization" placeholder="Calculatoare">
+            </div>
+            <div class="form-group" id="editSubjectGroup">
+              <label>Materie predată</label>
+              <input type="text" id="professorEditSubject" placeholder="Programare Web">
+            </div>
+            <div class="form-group" id="editTeachingYearsGroup">
+              <label>Anii de predare</label>
+              <input type="text" id="professorEditTeachingYears" placeholder="1,2,3,4,master">
+            </div>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary">Salvează</button>
@@ -202,7 +370,7 @@
           <h4>🔗 Linkuri Rapide</h4>
           <ul style="list-style: none; padding: 0;">
             <li><a href="index.html">Pagina Principală</a></li>
-            <li><a href="subreddit.html">Comunitate</a></li>
+            <li><a href="comments.html">Discu?ii</a></li>
             <li><a href="team-matching.html">Team Matching</a></li>
           </ul>
         </div>
@@ -220,97 +388,206 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script src="interactive.js"></script>
     <script>
       // Profile Page Initialization
       async function initializeProfilePage() {
-        // Protect this page
-        await protectPage();
-        
-        const user = getCurrentUser();
-        const profileData = await getCurrentUserProfileData();
-        
-        if (!user) {
-          window.location.href = 'login.html';
-          return;
-        }
-        
-        const fullName = profileData.data?.nume_complet || user.user_metadata?.full_name || user.email;
-        const year = profileData.data?.an_studiu || '-';
-        const specialization = profileData.data?.specializare || '-';
-        
-        // Update header
-        document.getElementById('profileFullName').textContent = fullName;
-        document.getElementById('profileEmail').textContent = user.email;
-        
-        // Update info section
-        document.getElementById('infoFullName').textContent = fullName;
-        document.getElementById('infoEmail').textContent = user.email;
-        document.getElementById('infoYear').textContent = year || '-';
-        document.getElementById('infoSpecialization').textContent = specialization || '-';
-        
-        // Update avatar
-        const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-        document.getElementById('profileAvatarLarge').textContent = initials || 'ST';
-        
-        // Load stats
-        const postsResult = await getPosts();
-        document.getElementById('statPosts').textContent = postsResult.success ? postsResult.data.length : '0';
-        
-        const questionsResult = await getQuestions();
-        document.getElementById('statQuestions').textContent = questionsResult.success ? questionsResult.data.length : '0';
-        
-        // Edit profile modal
-        const editBtn = document.getElementById('editProfileBtn');
-        const modal = document.getElementById('editProfileModal');
-        const closeBtn = document.getElementById('closeEditModal');
-        const cancelBtn = document.getElementById('cancelEditBtn');
-        const form = document.getElementById('editProfileForm');
-        
-        editBtn.addEventListener('click', () => {
-          document.getElementById('editFullName').value = fullName;
-          document.getElementById('editYear').value = year || '';
-          document.getElementById('editSpecialization').value = specialization || '';
-          modal.style.display = 'flex';
-        });
-        
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
-        cancelBtn.addEventListener('click', () => modal.style.display = 'none');
-        
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const newFullName = document.getElementById('editFullName').value;
-          const newYear = document.getElementById('editYear').value;
-          const newSpec = document.getElementById('editSpecialization').value;
+        try {
+          // Protect this page
+          await protectPage();
           
-          // Update in localStorage
-          user.user_metadata = user.user_metadata || {};
-          user.user_metadata.full_name = newFullName;
-          localStorage.setItem('currentUser', JSON.stringify(user));
+          const user = await getAuthenticatedUser(false);
+          const profileData = await getCurrentUserProfileData();
           
-          // TODO: Save to Supabase utilizatori table
-          
-          showNotification('✅ Profil actualizat!');
-          modal.style.display = 'none';
-          
-          // Reload after 1 sec
-          setTimeout(() => window.location.reload(), 1000);
-        });
-        
-        // Account actions
-        document.getElementById('changePasswordBtn').addEventListener('click', () => {
-          showNotification('🔐 Funcție în dezvoltare');
-        });
-        
-        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
-          if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
-            showNotification('❌ Funcție în dezvoltare');
+          if (!user?.email) {
+            window.location.href = 'login.html';
+            return;
           }
-        });
+
+          const accountType = user.user_metadata?.account_type || profileData.data?.account_type || 'student';
+          const isProfessor = accountType === 'professor';
+        
+          const fullName = profileData.data?.full_name || profileData.data?.nume_complet || user.user_metadata?.full_name || user.email;
+          const year = profileData.data?.year || profileData.data?.an_studiu || '-';
+          const specialization = profileData.data?.specialization || profileData.data?.specializare || user.user_metadata?.specialization || '-';
+          const faculty = profileData.data?.faculty || user.user_metadata?.faculty || '-';
+          const subject = profileData.data?.taught_subject || user.user_metadata?.taught_subject || '-';
+          const teachingYears = Array.isArray(profileData.data?.teaching_years) ? profileData.data.teaching_years.join(', ') : (user.user_metadata?.teaching_years || []).join(', ');
+        
+          // Update header
+          document.getElementById('profileFullName').textContent = fullName;
+          document.getElementById('profileEmail').textContent = user.email;
+          document.getElementById('profileRole').textContent = isProfessor ? 'Cont Profesor conectat' : 'Cont Student conectat';
+
+          const studentPanel = document.getElementById('studentProfilePanel');
+          const professorPanel = document.getElementById('professorProfilePanel');
+          const yearLabel = document.getElementById('yearLabel');
+          const personalSectionTitle = document.getElementById('personalSectionTitle');
+          const activitySectionTitle = document.getElementById('activitySectionTitle');
+          const recentSectionTitle = document.getElementById('recentSectionTitle');
+          const editProfileBtn = document.getElementById('editProfileBtn');
+
+          if (isProfessor) {
+            if (studentPanel) studentPanel.classList.add('hidden');
+            if (professorPanel) professorPanel.classList.remove('hidden');
+            if (yearLabel) yearLabel.textContent = 'Ani de predare';
+            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Academic';
+            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Comunitate';
+            if (recentSectionTitle) recentSectionTitle.textContent = 'Interacțiuni Recente';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-chalkboard-teacher"></i> Editează Profil Profesor';
+          } else {
+            if (professorPanel) professorPanel.classList.add('hidden');
+            if (studentPanel) studentPanel.classList.remove('hidden');
+            if (yearLabel) yearLabel.textContent = 'An de Studiu';
+            if (personalSectionTitle) personalSectionTitle.textContent = 'Informații Personale';
+            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate';
+            if (recentSectionTitle) recentSectionTitle.textContent = 'Activitate Recentă';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-edit"></i> Editează Profil';
+          }
+        
+          // Update info section
+          document.getElementById('infoFullName').textContent = fullName;
+          document.getElementById('infoEmail').textContent = user.email;
+          document.getElementById('infoYear').textContent = isProfessor ? (teachingYears || '-') : (year || '-');
+          document.getElementById('infoSpecialization').textContent = specialization || '-';
+
+          const facultyInfoItem = document.getElementById('facultyInfoItem');
+          const subjectInfoItem = document.getElementById('subjectInfoItem');
+          const teachingYearsInfoItem = document.getElementById('teachingYearsInfoItem');
+
+          if (isProfessor) {
+            if (facultyInfoItem) facultyInfoItem.style.display = 'block';
+            if (subjectInfoItem) subjectInfoItem.style.display = 'block';
+            if (teachingYearsInfoItem) teachingYearsInfoItem.style.display = 'block';
+            document.getElementById('infoFaculty').textContent = faculty;
+            document.getElementById('infoSubject').textContent = subject;
+            document.getElementById('infoTeachingYears').textContent = teachingYears || '-';
+          }
+        
+          // Update avatar
+          const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          document.getElementById('profileAvatarLarge').textContent = initials || 'ST';
+        
+          // Load stats
+          const postsResult = await getPosts();
+          const userPosts = postsResult.success ? postsResult.data.filter((p) => p.user_id === user.id).length : 0;
+          document.getElementById('statPosts').textContent = String(userPosts);
+        
+          const questionsResult = await getQuestions();
+          const userQuestions = questionsResult.success ? questionsResult.data.filter((q) => q.user_id === user.id).length : 0;
+          document.getElementById('statQuestions').textContent = String(userQuestions);
+
+          try {
+            const client = await initSupabaseClient();
+            const { count: commentsCount } = await client
+              .from('comments')
+              .select('id', { count: 'exact', head: true })
+              .eq('email', user.email);
+            document.getElementById('statComments').textContent = String(commentsCount || 0);
+
+            const teamMatchesResult = await getTeamMatches();
+            document.getElementById('statMatches').textContent = String((teamMatchesResult.data || []).length || 0);
+          } catch {
+            document.getElementById('statComments').textContent = '0';
+            document.getElementById('statMatches').textContent = '0';
+          }
+        
+          // Edit profile modal
+          const editBtn = document.getElementById('editProfileBtn');
+          const modal = document.getElementById('editProfileModal');
+          const closeBtn = document.getElementById('closeEditModal');
+          const cancelBtn = document.getElementById('cancelEditBtn');
+          const form = document.getElementById('editProfileForm');
+          const studentEditFields = document.getElementById('studentEditFields');
+          const professorEditFields = document.getElementById('professorEditFields');
+        
+          editBtn.addEventListener('click', () => {
+          if (isProfessor) {
+            if (studentEditFields) studentEditFields.style.display = 'none';
+            if (professorEditFields) professorEditFields.style.display = 'block';
+            document.getElementById('professorEditFullName').value = fullName;
+            document.getElementById('professorEditFaculty').value = faculty || '';
+            document.getElementById('professorEditSpecialization').value = specialization || '';
+            document.getElementById('professorEditSubject').value = subject || '';
+            document.getElementById('professorEditTeachingYears').value = teachingYears || '';
+          } else {
+            if (professorEditFields) professorEditFields.style.display = 'none';
+            if (studentEditFields) studentEditFields.style.display = 'block';
+            document.getElementById('studentEditFullName').value = fullName;
+            document.getElementById('studentEditYear').value = year || '';
+            document.getElementById('studentEditSpecialization').value = specialization || '';
+          }
+
+          modal.style.display = 'flex';
+          });
+        
+          closeBtn.addEventListener('click', () => modal.style.display = 'none');
+          cancelBtn.addEventListener('click', () => modal.style.display = 'none');
+        
+          form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const newFullName = isProfessor
+            ? document.getElementById('professorEditFullName').value
+            : document.getElementById('studentEditFullName').value;
+          const newYear = isProfessor ? '' : document.getElementById('studentEditYear').value;
+          const newSpec = isProfessor
+            ? document.getElementById('professorEditSpecialization').value
+            : document.getElementById('studentEditSpecialization').value;
+          const newFaculty = isProfessor ? (document.getElementById('professorEditFaculty')?.value || faculty) : faculty;
+          const newSubject = isProfessor ? (document.getElementById('professorEditSubject')?.value || subject) : subject;
+          const newTeachingYears = isProfessor
+            ? (document.getElementById('professorEditTeachingYears')?.value || teachingYears || '').split(',').map(item => item.trim()).filter(Boolean)
+            : [];
+          
+          const updateResult = await updateCurrentUserProfileData({
+            full_name: newFullName,
+            year: newYear,
+            specialization: newSpec,
+            faculty: newFaculty,
+            taught_subject: newSubject,
+            teaching_years: newTeachingYears
+          });
+
+          if (updateResult.success) {
+            const freshUser = await getAuthenticatedUser(false);
+            if (!freshUser) {
+              showNotification('❌ Nu s-a putut actualiza sesiunea utilizatorului.');
+              return;
+            }
+
+            showNotification('✅ Profil actualizat!');
+            modal.style.display = 'none';
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showNotification('❌ ' + (updateResult.error || 'Nu s-au putut salva datele.'));
+          }
+          });
+        
+          // Account actions
+          document.getElementById('changePasswordBtn').addEventListener('click', () => {
+            showNotification('🔐 Funcție în dezvoltare');
+          });
+        
+          document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+            if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
+              showNotification('❌ Funcție în dezvoltare');
+            }
+          });
+        } catch (error) {
+          console.error('Profile initialization failed:', error);
+          const infoEmail = document.getElementById('infoEmail');
+          if (infoEmail) {
+            infoEmail.textContent = 'Sesiune invalidă sau conexiune Supabase indisponibilă';
+          }
+          showNotification('❌ Nu am putut încărca profilul din baza de date. Reîncarcă pagina.');
+        }
       }
       
       document.addEventListener('DOMContentLoaded', initializeProfilePage);
     </script>
   </body>
 </html>
+
+

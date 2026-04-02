@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -23,7 +23,7 @@
         <ul>
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="comments.html" class="nav-link">Discu?ii</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
           <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
@@ -150,7 +150,7 @@
           <ul style="list-style: none; padding: 0;">
             <li><a href="index.html">Pagina Principală</a></li>
             <li><a href="documente.html">Documente</a></li>
-            <li><a href="subreddit.html">Subreddit</a></li>
+            <li><a href="comments.html">Discu?ii</a></li>
           </ul>
         </div>
         
@@ -191,8 +191,11 @@
           if (rememberMe) {
             localStorage.setItem('rememberMe', 'true');
           }
-          // Redirect to home page
-          window.location.href = 'index.html';
+          // Redirect based on role (profesor/student)
+          await routeByUserRole({
+            professorDashboard: 'profile.html',
+            studentDashboard: 'index.html'
+          });
         } catch (error) {
           errorDiv.textContent = '❌ ' + error.message;
           errorDiv.style.display = 'block';
@@ -212,3 +215,5 @@
     <script src="interactive.js"></script>
   </body>
 </html>
+
+

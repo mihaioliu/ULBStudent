@@ -1,4 +1,4 @@
-/* ====== TEAM MATCHING SECTION ====== */
+﻿/* ====== TEAM MATCHING SECTION ====== */
 .team-matching-section {
   margin: 3rem 0;
   padding: 2rem;
@@ -547,25 +547,25 @@ body.dark-mode .super-like-count {
 }
 
 /* Night mode for team matching */
-body.dark-mode.night-mode .profile-card {
+body.dark-mode .profile-card {
   background: #161b22;
 }
 
-body.dark-mode.night-mode .skills-section h4,
-body.dark-mode.night-mode .profile-info h3 {
+body.dark-mode .skills-section h4,
+body.dark-mode .profile-info h3 {
   color: #c9d1d9;
 }
 
-body.dark-mode.night-mode .looking-for {
+body.dark-mode .looking-for {
   background: #0d1117;
 }
 
-body.dark-mode.night-mode .matches-sidebar {
+body.dark-mode .matches-sidebar {
   background: #161b22;
   color: #c9d1d9;
 }
 
-body.dark-mode.night-mode .match-item {
+body.dark-mode .match-item {
   background: #0d1117;
 }
 
@@ -603,3 +603,4 @@ body.dark-mode.night-mode .match-item {
     grid-template-columns: 1fr;
   }
 }
+

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -23,7 +23,7 @@
         <ul>
           <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="subreddit.html" class="nav-link">Subreddit</a></li>
+          <li><a href="comments.html" class="nav-link">Discu?ii</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
           <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
@@ -43,27 +43,139 @@
 
       <!-- Registration Form -->
       <form id="registerForm" style="display: flex; flex-direction: column; gap: 1.2rem;">
-        <!-- Full Name -->
         <div>
-          <label for="fullName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            👤 Nume Complet
+          <label style="display: block; margin-bottom: 0.75rem; font-weight: 700; color: var(--text);">
+            Tip cont
           </label>
-          <input 
-            type="text" 
-            id="fullName"
-            name="fullName"
-            required
-            style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
-            placeholder="Ionescu Ioan"
-            onfocus="this.style.borderColor='var(--accent)'"
-            onblur="this.style.borderColor='var(--border-color)'"
-          >
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <label for="accountTypeStudent" style="display: flex; align-items: center; gap: 0.5rem; border: 2px solid var(--border-color); border-radius: 10px; padding: 0.8rem 0.9rem; cursor: pointer;">
+              <input type="radio" id="accountTypeStudent" name="accountType" value="student" checked>
+              <span style="font-weight: 600;">Student</span>
+            </label>
+            <label for="accountTypeProfessor" style="display: flex; align-items: center; gap: 0.5rem; border: 2px solid var(--border-color); border-radius: 10px; padding: 0.8rem 0.9rem; cursor: pointer;">
+              <input type="radio" id="accountTypeProfessor" name="accountType" value="professor">
+              <span style="font-weight: 600;">Profesor</span>
+            </label>
+          </div>
         </div>
 
-        <!-- Email -->
+        <div id="studentFields" style="display: flex; flex-direction: column; gap: 1.2rem;">
+          <div>
+            <label for="fullName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              👤 Nume Complet
+            </label>
+            <input 
+              type="text" 
+              id="fullName"
+              name="fullName"
+              required
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
+              placeholder="Ionescu Ioan"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border-color)'"
+            >
+          </div>
+
+          <div>
+            <label for="year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              📖 An de Studiu
+            </label>
+            <select 
+              id="year"
+              name="year"
+              required
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); cursor: pointer; transition: all 0.3s ease;"
+            >
+              <option value="">Selectează anul de studiu</option>
+              <option value="1">Anul I</option>
+              <option value="2">Anul II</option>
+              <option value="3">Anul III</option>
+              <option value="4">Anul IV</option>
+              <option value="5">Masterat</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="studentSpecialization" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              🏫 Specializare
+            </label>
+            <select 
+              id="studentSpecialization"
+              name="studentSpecialization"
+              required
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); cursor: pointer; transition: all 0.3s ease;"
+            >
+              <option value="">Selectează specializarea</option>
+              <option value="calculatoare">Calculatoare</option>
+              <option value="tehnologia-informatiei">Tehnologia Informației</option>
+              <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="professorFields" style="display: none; flex-direction: column; gap: 1.2rem;">
+          <div>
+            <label for="professorFaculty" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              🏛️ Facultate
+            </label>
+            <input 
+              type="text" 
+              id="professorFaculty"
+              name="professorFaculty"
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
+              placeholder="Facultatea de Inginerie"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border-color)'"
+            >
+          </div>
+
+          <div>
+            <label for="professorSpecialization" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              🧠 Specializare
+            </label>
+            <input 
+              type="text" 
+              id="professorSpecialization"
+              name="professorSpecialization"
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
+              placeholder="Calculatoare"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border-color)'"
+            >
+          </div>
+
+          <div>
+            <label for="taughtSubject" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              📘 Materie predată
+            </label>
+            <input 
+              type="text" 
+              id="taughtSubject"
+              name="taughtSubject"
+              style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
+              placeholder="Programare Web"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border-color)'"
+            >
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
+              🗓️ Anii de predare
+            </label>
+            <div id="teachingYearsContainer" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem;">
+              <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="1"> 1</label>
+              <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="2"> 2</label>
+              <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="3"> 3</label>
+              <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="4"> 4</label>
+              <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="master"> master</label>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label for="registerEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            📧 Email Student
+            📧 Email
           </label>
           <input 
             type="email" 
@@ -71,49 +183,11 @@
             name="email"
             required
             style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
-            placeholder="student@ulbstudent.ro"
+            placeholder="utilizator@ulbstudent.ro"
             onfocus="this.style.borderColor='var(--accent)'"
             onblur="this.style.borderColor='var(--border-color)'"
           >
-          <small style="color: #888; margin-top: 0.25rem; display: block;">Usar email-ul tău student pentru accesul plin</small>
-        </div>
-
-        <!-- Year -->
-        <div>
-          <label for="year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            📖 An de Studiu
-          </label>
-          <select 
-            id="year"
-            name="year"
-            required
-            style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); cursor: pointer; transition: all 0.3s ease;"
-          >
-            <option value="">Selectează anul de studiu</option>
-            <option value="1">Anul I</option>
-            <option value="2">Anul II</option>
-            <option value="3">Anul III</option>
-            <option value="4">Anul IV</option>
-            <option value="5">Masterat</option>
-          </select>
-        </div>
-
-        <!-- Specializare -->
-        <div>
-          <label for="faculty" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            🏫 Specializare
-          </label>
-          <select 
-            id="faculty"
-            name="faculty"
-            required
-            style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; color: var(--text); background: var(--surface); cursor: pointer; transition: all 0.3s ease;"
-          >
-            <option value="">Selectează specializarea</option>
-            <option value="calculatoare">Calculatoare</option>
-            <option value="tehnologia-informatiei">Tehnologia Informației</option>
-            <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
-          </select>
+          <small style="color: #888; margin-top: 0.25rem; display: block;">Folosește email-ul instituțional dacă îl ai disponibil</small>
         </div>
 
         <!-- Password -->
@@ -211,7 +285,7 @@
           <ul style="list-style: none; padding: 0;">
             <li><a href="index.html">Pagina Principală</a></li>
             <li><a href="documente.html">Documente</a></li>
-            <li><a href="subreddit.html">Subreddit</a></li>
+            <li><a href="comments.html">Discu?ii</a></li>
           </ul>
         </div>
         
@@ -234,45 +308,107 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script>
-      document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      const registerForm = document.getElementById('registerForm');
+      const studentFields = document.getElementById('studentFields');
+      const professorFields = document.getElementById('professorFields');
+      const fullNameInput = document.getElementById('fullName');
+      const yearInput = document.getElementById('year');
+      const studentSpecializationInput = document.getElementById('studentSpecialization');
+      const professorFacultyInput = document.getElementById('professorFaculty');
+      const professorSpecializationInput = document.getElementById('professorSpecialization');
+      const taughtSubjectInput = document.getElementById('taughtSubject');
+
+      function getAccountType() {
+        return document.querySelector('input[name="accountType"]:checked')?.value || 'student';
+      }
+
+      function updateAccountTypeUI() {
+        const isProfessor = getAccountType() === 'professor';
+
+        studentFields.style.display = isProfessor ? 'none' : 'flex';
+        professorFields.style.display = isProfessor ? 'flex' : 'none';
+
+        fullNameInput.required = !isProfessor;
+        yearInput.required = !isProfessor;
+        studentSpecializationInput.required = !isProfessor;
+
+        professorFacultyInput.required = isProfessor;
+        professorSpecializationInput.required = isProfessor;
+        taughtSubjectInput.required = isProfessor;
+      }
+
+      document.querySelectorAll('input[name="accountType"]').forEach((radio) => {
+        radio.addEventListener('change', updateAccountTypeUI);
+      });
+
+      updateAccountTypeUI();
+
+      registerForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        const fullName = document.getElementById('fullName').value;
+
+        const accountType = getAccountType();
+        const isProfessor = accountType === 'professor';
+        const fullName = fullNameInput.value;
         const email = document.getElementById('registerEmail').value;
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
-        const year = document.getElementById('year').value;
-        const faculty = document.getElementById('faculty').value;
+        const year = yearInput.value;
+        const studentSpecialization = studentSpecializationInput.value;
+        const professorFaculty = professorFacultyInput.value;
+        const professorSpecialization = professorSpecializationInput.value;
+        const taughtSubject = taughtSubjectInput.value;
+        const teachingYears = Array.from(document.querySelectorAll('input[name="teachingYears"]:checked')).map(cb => cb.value);
         const agreeTerms = document.getElementById('agreeTerms').checked;
-        
+
         const errorDiv = document.getElementById('registerError');
         const loadingDiv = document.getElementById('registerLoading');
-        
+
         errorDiv.style.display = 'none';
-        
-        // Validation
+
         if (!agreeTerms) {
           errorDiv.textContent = '❌ Trebuie să accepți Termenii și Condițiile';
           errorDiv.style.display = 'block';
           return;
         }
-        
+
         if (password !== confirmPassword) {
           errorDiv.textContent = '❌ Parolele nu se potrivesc';
           errorDiv.style.display = 'block';
           return;
         }
-        
+
         if (password.length < 8) {
           errorDiv.textContent = '❌ Parola trebuie să conțină minim 8 caractere';
           errorDiv.style.display = 'block';
           return;
         }
-        
+
+        if (isProfessor && teachingYears.length === 0) {
+          errorDiv.textContent = '❌ Selectează cel puțin un an de predare';
+          errorDiv.style.display = 'block';
+          return;
+        }
+
         loadingDiv.style.display = 'block';
-        
+
         try {
-          await registerNewUser(email, password, fullName, year, faculty);
+          const professorData = isProfessor ? {
+            faculty: professorFaculty,
+            specialization: professorSpecialization,
+            taughtSubject: taughtSubject,
+            teachingYears: teachingYears
+          } : {};
+
+          await registerNewUser(
+            email,
+            password,
+            isProfessor ? 'Profesor ULB' : fullName,
+            year,
+            studentSpecialization,
+            accountType,
+            professorData
+          );
+
           alert('✅ Cont creat cu succes! Te-ai logat automat.');
           window.location.href = 'index.html';
         } catch (error) {
@@ -286,3 +422,5 @@
     <script src="interactive.js"></script>
   </body>
 </html>
+
+

@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   /* Culori & umbre globale */
   --bg: #f5f7fa; /* Light background */
   --surface: #ffffff; /* White */
@@ -45,6 +45,12 @@ body {
   font-weight: 400;
   margin: 0;
   padding: 0;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+body.page-ready {
+  opacity: 1;
 }
 
 /* Carduri principale */
@@ -578,7 +584,7 @@ body.dark-mode .trending-count {
 /* ============================= */
 /* NIGHT MODE (Ultra Dark) */
 /* ============================= */
-body.dark-mode.night-mode {
+body.dark-mode {
   --bg: #050609;
   --surface: #0d1117;
   --text: #c9d1d9;
@@ -586,145 +592,145 @@ body.dark-mode.night-mode {
   background: linear-gradient(135deg, #050609 0%, #0a0f15 100%);
 }
 
-body.dark-mode.night-mode header {
+body.dark-mode header {
   background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
 }
 
-body.dark-mode.night-mode .main {
+body.dark-mode .main {
   background: #0d1117;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
-body.dark-mode.night-mode .question,
-body.dark-mode.night-mode .post-card,
-body.dark-mode.night-mode .review-card,
-body.dark-mode.night-mode .leaderboard-item,
-body.dark-mode.night-mode .sidebar-box {
+body.dark-mode .question,
+body.dark-mode .post-card,
+body.dark-mode .review-card,
+body.dark-mode .leaderboard-item,
+body.dark-mode .sidebar-box {
   background: #161b22;
   border-color: #21262d;
 }
 
-body.dark-mode.night-mode .search-section {
+body.dark-mode .search-section {
   background: #0d1117;
 }
 
-body.dark-mode.night-mode .search-input,
-body.dark-mode.night-mode .sort-select,
-body.dark-mode.night-mode .post-input {
+body.dark-mode .search-input,
+body.dark-mode .sort-select,
+body.dark-mode .post-input {
   background: #0d1117;
   color: #c9d1d9;
   border-color: #30363d;
 }
 
-body.dark-mode.night-mode .search-input:focus,
-body.dark-mode.night-mode .sort-select:focus,
-body.dark-mode.night-mode .post-input:focus {
+body.dark-mode .search-input:focus,
+body.dark-mode .sort-select:focus,
+body.dark-mode .post-input:focus {
   border-color: #58a6ff;
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
-body.dark-mode.night-mode .stats {
+body.dark-mode .stats {
   background: #0d1117;
   border: 1px solid #21262d;
 }
 
-body.dark-mode.night-mode footer {
+body.dark-mode footer {
   background: linear-gradient(135deg, #0a0f15 0%, #050609 100%);
   border-top-color: #21262d;
 }
 
-body.dark-mode.night-mode .create-post-box,
-body.dark-mode.night-mode .user-profile-card {
+body.dark-mode .create-post-box,
+body.dark-mode .user-profile-card {
   background: #161b22 !important;
   border-color: #30363d !important;
 }
 
-body.dark-mode.night-mode .helpful-count {
+body.dark-mode .helpful-count {
   background: #21262d;
   color: #58a6ff;
 }
 
-body.dark-mode.night-mode .helpful-count:hover {
+body.dark-mode .helpful-count:hover {
   background: #30363d;
 }
 
-body.dark-mode.night-mode .btn-signin,
-body.dark-mode.night-mode .btn-signup {
+body.dark-mode .btn-signin,
+body.dark-mode .btn-signup {
   color: #c9d1d9;
   border-color: #30363d;
 }
 
-body.dark-mode.night-mode .btn-signin:hover,
-body.dark-mode.night-mode .btn-signup:hover {
+body.dark-mode .btn-signin:hover,
+body.dark-mode .btn-signup:hover {
   background: #21262d;
   border-color: #58a6ff;
 }
 
-body.dark-mode.night-mode .progress-bar {
+body.dark-mode .progress-bar {
   background: #21262d;
 }
 
-body.dark-mode.night-mode .leaderboard-item.rank1 {
+body.dark-mode .leaderboard-item.rank1 {
   background: linear-gradient(90deg, rgba(88, 166, 255, 0.1), #161b22);
   border-color: #58a6ff;
 }
 
-body.dark-mode.night-mode .leaderboard-item.rank2 {
+body.dark-mode .leaderboard-item.rank2 {
   background: linear-gradient(90deg, rgba(139, 148, 157, 0.1), #161b22);
   border-color: #8b949f;
 }
 
-body.dark-mode.night-mode .leaderboard-item.rank3 {
+body.dark-mode .leaderboard-item.rank3 {
   background: linear-gradient(90deg, rgba(230, 124, 115, 0.1), #161b22);
   border-color: #e67c73;
 }
 
-body.dark-mode.night-mode .badge-item {
+body.dark-mode .badge-item {
   background: linear-gradient(135deg, #161b22, #0d1117);
   border-color: #30363d;
   color: #c9d1d9;
 }
 
-body.dark-mode.night-mode .badge-item:hover:not(.locked) {
+body.dark-mode .badge-item:hover:not(.locked) {
   border-color: #58a6ff;
   box-shadow: 0 8px 16px rgba(88, 166, 255, 0.15);
 }
 
-body.dark-mode.night-mode .user-profile-card {
+body.dark-mode .user-profile-card {
   background: linear-gradient(135deg, #161b22, #0d1117) !important;
   border-color: #30363d !important;
 }
 
-body.dark-mode.night-mode .profile-header {
+body.dark-mode .profile-header {
   border-bottom-color: #21262d;
 }
 
-body.dark-mode.night-mode .avatar-circle {
+body.dark-mode .avatar-circle {
   background: linear-gradient(135deg, #58a6ff, #1f6feb);
   box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
 }
 
-body.dark-mode.night-mode .reputation-badge {
+body.dark-mode .reputation-badge {
   background: linear-gradient(135deg, #58a6ff, #1f6feb);
 }
 
-body.dark-mode.night-mode .user-stats {
+body.dark-mode .user-stats {
   background: #0d1117;
 }
 
-body.dark-mode.night-mode .trending-item {
+body.dark-mode .trending-item {
   border-bottom-color: #21262d;
 }
 
-body.dark-mode.night-mode .trending-item:hover {
+body.dark-mode .trending-item:hover {
   background: #0d1117;
 }
 
-body.dark-mode.night-mode .trending-tag {
+body.dark-mode .trending-tag {
   color: #58a6ff;
 }
 
-body.dark-mode.night-mode .trending-count {
+body.dark-mode .trending-count {
   color: #8b949f;
 }
 
@@ -1276,7 +1282,7 @@ footer {
   transform: scale(1.3);
 }
 
-/* Animații pentru apariție */
+/* AnimaÈ›ii pentru apariÈ›ie */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -1304,7 +1310,7 @@ footer {
   animation-delay: 0.3s;
 }
 
-/* ====== STATISTICI PLATFORMĂ ====== */
+/* ====== STATISTICI PLATFORMÄ‚ ====== */
 .statistics-section {
   margin: 3rem 0;
   padding: 2rem;
@@ -1361,7 +1367,7 @@ footer {
   font-weight: 500;
 }
 
-/* ====== ACTIVITATE RECENTĂ ====== */
+/* ====== ACTIVITATE RECENTÄ‚ ====== */
 .recent-activity-section {
   margin: 3rem 0;
   padding: 2rem;
@@ -1444,7 +1450,7 @@ footer {
   text-transform: uppercase;
 }
 
-/* ====== TESTIMONIALE STUDENȚI ====== */
+/* ====== TESTIMONIALE STUDENÈšI ====== */
 .testimonials-section {
   margin: 3rem 0;
   padding: 2rem;
@@ -1558,30 +1564,30 @@ body.dark-mode .testimonial-card {
 }
 
 /* ====== NIGHT MODE UPDATES ====== */
-body.night-mode .statistics-section {
+body.dark-mode .statistics-section {
   background: linear-gradient(135deg, rgba(218, 165, 32, 0.1) 0%, rgba(230, 57, 70, 0.1) 100%);
   border-color: rgba(218, 165, 32, 0.15);
 }
 
-body.night-mode .recent-activity-section {
+body.dark-mode .recent-activity-section {
   background: #0f1117;
   border-color: #1a1f2e;
 }
 
-body.night-mode .testimonials-section {
+body.dark-mode .testimonials-section {
   background: linear-gradient(135deg, rgba(0, 51, 102, 0.1) 0%, rgba(230, 57, 70, 0.1) 100%);
   border-color: rgba(0, 51, 102, 0.15);
 }
 
-body.night-mode .activity-item {
+body.dark-mode .activity-item {
   background: #1a1f2e;
 }
 
-body.night-mode .stat-card {
+body.dark-mode .stat-card {
   background: #1a1f2e;
 }
 
-body.night-mode .testimonial-card {
+body.dark-mode .testimonial-card {
   background: #1a1f2e;
 }
 
@@ -1621,7 +1627,7 @@ body.night-mode .testimonial-card {
   }
 }
 
-/* Initial state - sections start hidden și moved down */
+/* Initial state - sections start hidden È™i moved down */
 .statistics-section,
 .recent-activity-section,
 .testimonials-section {
@@ -2244,25 +2250,25 @@ body.dark-mode .chat-message.ai .message-bubble {
 }
 
 /* Night Mode Adjustments */
-body.night-mode .fab-button {
+body.dark-mode .fab-button {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-body.night-mode .chat-window {
+body.dark-mode .chat-window {
   background: #0f1419;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-body.night-mode .chat-message.ai .message-bubble {
+body.dark-mode .chat-message.ai .message-bubble {
   background: #1a1f2e;
 }
 
-body.night-mode #chatInput {
+body.dark-mode #chatInput {
   background: #1a1f2e;
   border-color: #2a3142;
 }
 
-body.night-mode #chatInput:focus {
+body.dark-mode #chatInput:focus {
   background: #1f2530;
 }
 
@@ -2332,7 +2338,7 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1) !important;
 }
 
-/* Smooth link underlines în footer */
+/* Smooth link underlines Ã®n footer */
 .footer-section a {
   position: relative;
 }
@@ -2607,3 +2613,4 @@ body.dark-mode .btn-mark-read {
   background: linear-gradient(90deg, var(--accent), var(--muted));
   transition: width 0.3s ease;
 }
+

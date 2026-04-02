@@ -76,27 +76,148 @@ async function loginWithEmail(email, password) {
     throw error;
   }
 }
+
+/**
+ * Detect role by checking whether current user exists in `profesori`/`professors` table.
+ */
+async function detectUserRole(userId) {
+  const client = await initSupabaseClient();
+
+  if (!userId) {
+    return 'student';
+  }
+
+  // Preferred table name requested by project notes
+  const profesoriResult = await client
+    .from('profesori')
+    .select('user_id')
+    .eq('user_id', userId)
+    .limit(1);
+
+  if (!profesoriResult.error && Array.isArray(profesoriResult.data) && profesoriResult.data.length > 0) {
+    return 'profesor';
+  }
+
+  // Fallback for current schema used in this project
+  const professorsResult = await client
+    .from('professors')
+    .select('id,user_id,institutional_email')
+    .or(`user_id.eq.${userId},institutional_email.eq.${(await getAuthenticatedUser(false))?.email || ''}`)
+    .limit(1);
+
+  if (!professorsResult.error && Array.isArray(professorsResult.data) && professorsResult.data.length > 0) {
+    return 'profesor';
+  }
+
+  return 'student';
+}
+
+/**
+ * Resolve role after login and redirect to role-specific page.
+ */
+async function routeByUserRole(options = {}) {
+  const professorDashboard = options.professorDashboard || 'profile.html';
+  const studentDashboard = options.studentDashboard || 'index.html';
+
+  const user = await getAuthenticatedUser(false);
+  if (!user?.id) {
+    throw new Error('Nu există sesiune activă după login.');
+  }
+
+  const role = await detectUserRole(user.id);
+  localStorage.setItem('role', role);
+
+  const destination = role === 'profesor' ? professorDashboard : studentDashboard;
+  window.location.href = destination;
+  return role;
+}
+
+/**
+ * Check if an email is already present in app tables.
+ * This is a guardrail before Supabase auth signUp.
+ */
+async function isEmailAlreadyUsed(email, accountType = 'student') {
+  const client = await initSupabaseClient();
+  const normalizedEmail = (email || '').trim().toLowerCase();
+
+  if (!normalizedEmail) {
+    return false;
+  }
+
+  const checks = [];
+
+  // Student profile table
+  checks.push(
+    client
+      .from('utilizatori')
+      .select('email')
+      .eq('email', normalizedEmail)
+      .limit(1)
+      .maybeSingle()
+  );
+
+  // Professors table
+  checks.push(
+    client
+      .from('professors')
+      .select('institutional_email')
+      .eq('institutional_email', normalizedEmail)
+      .limit(1)
+      .maybeSingle()
+  );
+
+  const [studentResult, professorResult] = await Promise.all(checks);
+
+  const hasStudentMatch = !studentResult.error && !!studentResult.data;
+  const hasProfessorMatch = !professorResult.error && !!professorResult.data;
+
+  // If the target table can be queried and has a match, block registration.
+  if (accountType === 'professor' && hasProfessorMatch) {
+    return true;
+  }
+
+  if (accountType !== 'professor' && hasStudentMatch) {
+    return true;
+  }
+
+  // Also block if email already exists in the other profile table.
+  return hasStudentMatch || hasProfessorMatch;
+}
 /**
  * Register New User
  */
-async function registerNewUser(email, password, fullName, year, faculty) {
+async function registerNewUser(email, password, fullName, year, faculty, accountType = 'student', professorData = {}) {
   try {
     const client = await initSupabaseClient();
+    const isProfessor = accountType === 'professor';
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const normalizedFullName = (fullName || '').trim() || 'Profesor ULB';
+
+    const metadata = {
+      account_type: accountType,
+      full_name: normalizedFullName,
+      faculty: isProfessor ? professorData.faculty : faculty,
+      year: isProfessor ? null : year,
+      specialization: isProfessor ? professorData.specialization : faculty,
+      taught_subject: isProfessor ? professorData.taughtSubject : null,
+      teaching_years: isProfessor ? (professorData.teachingYears || []) : null
+    };
     
     if (!client) {
       throw new Error('Supabase client not initialized. Please check your configuration.');
     }
 
+    const alreadyUsed = await isEmailAlreadyUsed(normalizedEmail, accountType);
+    if (alreadyUsed) {
+      throw new Error('Acest email este deja folosit');
+    }
+
     // PASUL 1: Creează contul
     const { data, error } = await client.auth.signUp({
-      email: email,
+      email: normalizedEmail,
       password: password,
       options: {
-        data: {
-          full_name: fullName,
-          year: year,
-          faculty: faculty
-        },
+        data: metadata,
         emailRedirectTo: `${window.location.origin}/index.html`
       }
     });
@@ -107,21 +228,68 @@ async function registerNewUser(email, password, fullName, year, faculty) {
       throw new Error(error.message || 'Eroare la creare cont');
     }
 
-    // 🚀 PASUL 2: INSERAREA ÎN TABELUL TĂU "utilizatori"
-    if (data?.user) {
-      const { error: dbError } = await client
-        .from('utilizatori') 
-        .insert([{ 
-          email: email, 
-          nume_complet: fullName, 
-          an_studiu: parseInt(year), 
-          specializare: faculty 
-        }]);
+    // Supabase may not always return an explicit error for existing users.
+    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      throw new Error('Acest email este deja folosit');
+    }
 
-      if (dbError) {
-        console.error('❌ Eroare la salvarea în tabel:', dbError.message);
+    // 🚀 PASUL 2: INSERARE ÎN TABELUL AFERENT TIPULUI DE CONT
+    if (data?.user) {
+      if (isProfessor) {
+        const baseProfessorRow = {
+          academic_title: 'Prof.',
+          full_name: normalizedFullName,
+            institutional_email: normalizedEmail,
+          specialization: professorData.specialization,
+          department: professorData.faculty
+        };
+
+        const extendedProfessorRow = {
+          ...baseProfessorRow,
+          taught_subject: professorData.taughtSubject,
+          teaching_years: professorData.teachingYears || []
+        };
+
+        let dbError = null;
+
+        const extendedInsert = await client
+          .from('professors')
+          .insert([extendedProfessorRow]);
+
+        if (extendedInsert.error) {
+          const fallbackInsert = await client
+            .from('professors')
+            .insert([baseProfessorRow]);
+
+          dbError = fallbackInsert.error;
+        }
+
+        if (dbError) {
+          if (String(dbError.message || '').toLowerCase().includes('duplicate')) {
+            throw new Error('Acest email este deja folosit');
+          }
+          console.error('❌ Eroare la salvarea profesorului în tabel:', dbError.message);
+        } else {
+          console.log('✅ Profesor salvat cu succes în tabelul professors!');
+        }
       } else {
-        console.log('✅ Datele au intrat cu succes în tabelul utilizatori!');
+        const { error: dbError } = await client
+          .from('utilizatori')
+          .insert([{
+            email: normalizedEmail,
+            nume_complet: normalizedFullName,
+            an_studiu: parseInt(year),
+            specializare: faculty
+          }]);
+
+        if (dbError) {
+          if (String(dbError.message || '').toLowerCase().includes('duplicate')) {
+            throw new Error('Acest email este deja folosit');
+          }
+          console.error('❌ Eroare la salvarea în tabel:', dbError.message);
+        } else {
+          console.log('✅ Datele au intrat cu succes în tabelul utilizatori!');
+        }
       }
     }
 
@@ -129,7 +297,7 @@ async function registerNewUser(email, password, fullName, year, faculty) {
     
     // ✅ Auto-login după registrare
     try {
-      await loginWithEmail(email, password);
+      await loginWithEmail(normalizedEmail, password);
       console.log('✅ User auto-logged in successfully!');
     } catch (loginError) {
       console.warn('⚠️ Auto-login failed. User will need to login manually.');
@@ -282,15 +450,66 @@ function getCurrentUser() {
 }
 
 /**
+ * Resolve the currently authenticated user from Supabase session first.
+ * Optionally falls back to cached localStorage data.
+ */
+async function getAuthenticatedUser(allowCachedFallback = true) {
+  try {
+    const client = await initSupabaseClient();
+    const { data, error } = await client.auth.getSession();
+
+    if (!error && data?.session?.user) {
+      const sessionUser = data.session.user;
+      localStorage.setItem('currentUser', JSON.stringify(sessionUser));
+      localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+      return sessionUser;
+    }
+
+    return allowCachedFallback ? getCurrentUser() : null;
+  } catch (error) {
+    console.warn('⚠️ Could not resolve authenticated user from session:', error.message);
+    return allowCachedFallback ? getCurrentUser() : null;
+  }
+}
+
+/**
  * Get logged-in user's profile row from `utilizatori`
  */
 async function getCurrentUserProfileData() {
   try {
     const client = await initSupabaseClient();
-    const user = getCurrentUser();
+    const user = await getAuthenticatedUser(false);
 
     if (!user?.email) {
       return { success: false, data: null };
+    }
+
+    const accountType = user.user_metadata?.account_type || 'student';
+
+    if (accountType === 'professor') {
+      const { data: professorRow, error: professorError } = await client
+        .from('professors')
+        .select('*')
+        .eq('institutional_email', user.email)
+        .limit(1)
+        .maybeSingle();
+
+      if (!professorError && professorRow) {
+        return {
+          success: true,
+          data: {
+            source: 'professors',
+            account_type: 'professor',
+            email: user.email,
+            full_name: professorRow.full_name || user.user_metadata?.full_name || user.email,
+            faculty: professorRow.department || user.user_metadata?.faculty || 'Departament necunoscut',
+            specialization: professorRow.specialization || user.user_metadata?.specialization || '-',
+            academic_title: professorRow.academic_title || 'Prof.',
+            taught_subject: user.user_metadata?.taught_subject || '-',
+            teaching_years: user.user_metadata?.teaching_years || []
+          }
+        };
+      }
     }
 
     const { data, error } = await client
@@ -302,13 +521,106 @@ async function getCurrentUserProfileData() {
 
     if (error) {
       console.warn('⚠️ Could not fetch utilizatori profile:', error.message);
-      return { success: false, data: null };
+      return {
+        success: true,
+        data: {
+          source: 'auth_metadata',
+          account_type: accountType,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.email,
+          year: user.user_metadata?.year || '-',
+          specialization: user.user_metadata?.specialization || user.user_metadata?.faculty || '-'
+        }
+      };
     }
 
-    return { success: true, data };
+    return {
+      success: true,
+      data: {
+        source: 'utilizatori',
+        account_type: accountType,
+        email: user.email,
+        full_name: data?.nume_complet || user.user_metadata?.full_name || user.email,
+        year: data?.an_studiu || user.user_metadata?.year || '-',
+        specialization: data?.specializare || user.user_metadata?.specialization || user.user_metadata?.faculty || '-'
+      }
+    };
   } catch (error) {
     console.error('❌ Error fetching user profile data:', error.message);
     return { success: false, data: null };
+  }
+}
+
+/**
+ * Save current user's profile data back to database and auth metadata.
+ */
+async function updateCurrentUserProfileData(profileUpdates = {}) {
+  try {
+    const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(false);
+
+    if (!user?.email) {
+      throw new Error('User not authenticated');
+    }
+
+    const accountType = user.user_metadata?.account_type || 'student';
+    const normalizedEmail = user.email.trim().toLowerCase();
+
+    if (accountType === 'professor') {
+      const updatePayload = {};
+
+      if (profileUpdates.full_name) updatePayload.full_name = profileUpdates.full_name;
+      if (profileUpdates.specialization) updatePayload.specialization = profileUpdates.specialization;
+      if (profileUpdates.faculty) updatePayload.department = profileUpdates.faculty;
+
+      const { error: dbError } = await client
+        .from('professors')
+        .update(updatePayload)
+        .eq('institutional_email', normalizedEmail);
+
+      if (dbError) throw new Error(dbError.message);
+
+      const { error: authError } = await client.auth.updateUser({
+        data: {
+          ...user.user_metadata,
+          full_name: profileUpdates.full_name || user.user_metadata?.full_name,
+          faculty: profileUpdates.faculty || user.user_metadata?.faculty,
+          specialization: profileUpdates.specialization || user.user_metadata?.specialization,
+          taught_subject: profileUpdates.taught_subject || user.user_metadata?.taught_subject,
+          teaching_years: profileUpdates.teaching_years || user.user_metadata?.teaching_years || []
+        }
+      });
+
+      if (authError) throw new Error(authError.message);
+      return { success: true };
+    }
+
+    const { error: dbError } = await client
+      .from('utilizatori')
+      .update({
+        nume_complet: profileUpdates.full_name,
+        an_studiu: profileUpdates.year ? parseInt(profileUpdates.year) : null,
+        specializare: profileUpdates.specialization
+      })
+      .eq('email', normalizedEmail);
+
+    if (dbError) throw new Error(dbError.message);
+
+    const { error: authError } = await client.auth.updateUser({
+      data: {
+        ...user.user_metadata,
+        full_name: profileUpdates.full_name || user.user_metadata?.full_name,
+        year: profileUpdates.year || user.user_metadata?.year,
+        specialization: profileUpdates.specialization || user.user_metadata?.specialization
+      }
+    });
+
+    if (authError) throw new Error(authError.message);
+
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error updating user profile data:', error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -891,6 +1203,8 @@ function showUserMenuInHeader(headerActions, user) {
   
   const userEmail = user.email || 'Student';
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
+  const accountType = user.user_metadata?.account_type === 'professor' ? 'Profesor' : 'Student';
+  const roleColor = accountType === 'Profesor' ? '#f97316' : '#0ea5e9';
   
   const showEmail = window.innerWidth > 480; // Hide email on very small screens
   
@@ -899,6 +1213,7 @@ function showUserMenuInHeader(headerActions, user) {
       <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.2rem' : '1.5rem'}; color: white;"></i>
       <div style="color: white; display: flex; flex-direction: column;">
         <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};">${escapeHtml(userName)}</div>
+        <div style="font-size: 0.65rem; opacity: 1; color: ${roleColor}; font-weight: 700; text-transform: uppercase;">${accountType}</div>
         ${showEmail ? `<div style="font-size: 0.7rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>

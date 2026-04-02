@@ -1,4 +1,4 @@
-/* ===================================================== */
+﻿/* ===================================================== */
 /* DOCUMENTS PAGE STYLING */
 /* ===================================================== */
 
@@ -291,7 +291,7 @@
 }
 
 .doc-faculty::before {
-  content: '🏫';
+  content: 'ðŸ«';
   opacity: 0.7;
 }
 
@@ -497,30 +497,30 @@ body.dark-mode .btn-preview:hover {
 /* NIGHT MODE ADJUSTMENTS */
 /* ===================================================== */
 
-body.night-mode .documents-section .section-header {
+body.dark-mode .documents-section .section-header {
   opacity: 0.95;
 }
 
-body.night-mode .docs-filters-sidebar {
+body.dark-mode .docs-filters-sidebar {
   background: #0f1419;
   border-color: #1f2530;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-body.night-mode .filter-input,
-body.night-mode .filter-select {
+body.dark-mode .filter-input,
+body.dark-mode .filter-select {
   background: #1a1f2e;
   border-color: #2a3142;
   color: #e1e8ed;
 }
 
-body.night-mode .doc-card {
+body.dark-mode .doc-card {
   background: #0f1419;
   border-color: #1f2530;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-body.night-mode .doc-card:hover {
+body.dark-mode .doc-card:hover {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
@@ -613,3 +613,4 @@ body.night-mode .doc-card:hover {
     width: 100%;
   }
 }
+
