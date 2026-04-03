@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeGlobalSearch();         // 🔎 Căutare globală
   initializeScrollAnimations();     // ✨ Animații secțiuni pe scroll
   initializeDocumentsData();        // 📄 Documente din tabelul `documente`
+  initializeDocumentDownloadActions(); // ⬇️ Descărcare reală documente
   initializeDocumentFilters();      // 📚 Filtrare documente
   initializePostCreation();         // 📝 Sistem de postări
   initializeQuestionsData();        // ❓ Întrebări din baza de date
@@ -1557,6 +1558,7 @@ function renderDynamicDocumentCard(documentRow) {
   const downloads = Number(documentRow.downloads || documentRow.numar_descarcari || 0);
   const rating = Number(documentRow.rating || 0);
   const fileUrl = documentRow.file_url || documentRow.url_fisier || '#';
+  const fileName = escapeHtml(documentRow.file_name || documentRow.nume_fisier || `${(documentRow.titlu || documentRow.title || 'document').toString().trim() || 'document'}.pdf`);
 
   card.innerHTML = `
     <div class="doc-header">
@@ -1572,12 +1574,53 @@ function renderDynamicDocumentCard(documentRow) {
       <span class="doc-stat">⭐ ${rating || '-'}/5</span>
     </div>
     <div class="doc-actions">
-      <a class="btn-download" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Descarca</a>
+      <button type="button" class="btn-download" data-file-url="${escapeHtml(fileUrl)}" data-file-name="${fileName}"><i class="fas fa-download"></i> Descarca</button>
       <a class="btn-preview" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-eye"></i> Previzualizare</a>
     </div>
   `;
 
   return card;
+}
+
+function initializeDocumentDownloadActions() {
+  document.addEventListener('click', async (event) => {
+    const btn = event.target.closest('.btn-download[data-file-url]');
+    if (!btn) return;
+
+    event.preventDefault();
+    const fileUrl = btn.getAttribute('data-file-url') || '';
+    const fileName = btn.getAttribute('data-file-name') || 'document';
+
+    if (!fileUrl || fileUrl === '#') {
+      showNotification('⚠️ Fișier indisponibil pentru descărcare.');
+      return;
+    }
+
+    try {
+      const response = await fetch(fileUrl, { method: 'GET' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1200);
+    } catch (error) {
+      // Fallback to direct URL with download hint when CORS blocks fetch.
+      try {
+        const parsed = new URL(fileUrl, window.location.origin);
+        parsed.searchParams.set('download', '1');
+        window.open(parsed.toString(), '_blank', 'noopener,noreferrer');
+      } catch (_) {
+        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+      }
+      showNotification('ℹ️ Descărcare directă inițiată în tab nou.');
+    }
+  });
 }
 
 async function initializeDocumentsData() {
