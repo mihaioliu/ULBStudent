@@ -407,8 +407,9 @@
             return;
           }
 
-          const accountType = user.user_metadata?.account_type || profileData.data?.account_type || 'student';
-          const isProfessor = accountType === 'professor';
+          const cachedRole = localStorage.getItem('role');
+          const accountType = profileData.data?.account_type || user.user_metadata?.account_type || ((cachedRole === 'profesor' || cachedRole === 'professor') ? 'professor' : 'student');
+          const isProfessor = accountType === 'professor' || accountType === 'profesor';
         
           const fullName = profileData.data?.full_name || profileData.data?.nume_complet || user.user_metadata?.full_name || user.email;
           const year = profileData.data?.year || profileData.data?.an_studiu || '-';

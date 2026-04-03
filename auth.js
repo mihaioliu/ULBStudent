@@ -93,6 +93,7 @@ async function loginWithEmail(email, password) {
       
       // Set user as logged in
       localStorage.setItem('currentUser', JSON.stringify(data.user));
+      await resolveAndCacheUserRole(data.user);
       
       console.log('✅ Login successful:', data.user.email);
       return { success: true, user: data.user };
@@ -106,35 +107,76 @@ async function loginWithEmail(email, password) {
 /**
  * Detect role by checking whether current user exists in `profesori`/`professors` table.
  */
-async function detectUserRole(userId) {
+async function detectUserRole(userId, email = '') {
   const client = await initSupabaseClient();
+  const normalizedEmail = (email || '').trim().toLowerCase();
 
   if (!userId) {
     return 'student';
   }
 
   // Preferred table name requested by project notes
-  const profesoriResult = await client
-    .from('profesori')
-    .select('user_id')
-    .eq('user_id', userId)
-    .limit(1);
+  const profesoriChecks = [
+    client.from('profesori').select('user_id').eq('user_id', userId).limit(1),
+    normalizedEmail ? client.from('profesori').select('email').eq('email', normalizedEmail).limit(1) : Promise.resolve({ error: null, data: [] }),
+    normalizedEmail ? client.from('profesori').select('institutional_email').eq('institutional_email', normalizedEmail).limit(1) : Promise.resolve({ error: null, data: [] })
+  ];
 
-  if (!profesoriResult.error && Array.isArray(profesoriResult.data) && profesoriResult.data.length > 0) {
+  const profesoriResults = await Promise.all(profesoriChecks);
+  if (profesoriResults.some((result) => !result.error && Array.isArray(result.data) && result.data.length > 0)) {
     return 'profesor';
   }
 
   // Fallback for current schema used in this project
-  const professorsResult = await client
+  const professorsByUserId = await client
     .from('professors')
     .select('id,user_id,institutional_email')
-    .or(`user_id.eq.${userId},institutional_email.eq.${(await getAuthenticatedUser(false))?.email || ''}`)
+    .eq('user_id', userId)
     .limit(1);
 
-  if (!professorsResult.error && Array.isArray(professorsResult.data) && professorsResult.data.length > 0) {
+  if (!professorsByUserId.error && Array.isArray(professorsByUserId.data) && professorsByUserId.data.length > 0) {
     return 'profesor';
   }
 
+  if (normalizedEmail) {
+    const professorsByEmail = await client
+      .from('professors')
+      .select('id,user_id,institutional_email')
+      .eq('institutional_email', normalizedEmail)
+      .limit(1);
+
+    if (!professorsByEmail.error && Array.isArray(professorsByEmail.data) && professorsByEmail.data.length > 0) {
+    return 'profesor';
+  }
+  }
+
+  return 'student';
+}
+
+async function resolveAndCacheUserRole(user) {
+  const cachedRole = localStorage.getItem('role');
+
+  if (user?.user_metadata?.account_type === 'professor') {
+    localStorage.setItem('role', 'profesor');
+    return 'profesor';
+  }
+
+  if (cachedRole === 'professor') {
+    localStorage.setItem('role', 'profesor');
+    return 'profesor';
+  }
+
+  if (user?.id) {
+    const detectedRole = await detectUserRole(user.id, user.email || '');
+    localStorage.setItem('role', detectedRole);
+    return detectedRole;
+  }
+
+  if (cachedRole === 'profesor' || cachedRole === 'student') {
+    return cachedRole;
+  }
+
+  localStorage.setItem('role', 'student');
   return 'student';
 }
 
@@ -150,7 +192,7 @@ async function routeByUserRole(options = {}) {
     throw new Error('Nu există sesiune activă după login.');
   }
 
-  const role = await detectUserRole(user.id);
+  const role = await detectUserRole(user.id, user.email || '');
   localStorage.setItem('role', role);
 
   const destination = role === 'profesor' ? professorDashboard : studentDashboard;
@@ -410,6 +452,7 @@ async function logoutUser() {
     // Clear localStorage
     localStorage.removeItem('supabase.auth.token');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('role');
     
     console.log('✅ Logout successful');
     
@@ -422,6 +465,7 @@ async function logoutUser() {
     // Force clear localStorage and redirect anyway
     localStorage.removeItem('supabase.auth.token');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('role');
     window.location.href = 'login.html';
   }
 }
@@ -451,6 +495,7 @@ async function checkAuthStatus() {
         const { data, error } = await client.auth.getUser(tokenData.access_token);
         
         if (!error && data?.user) {
+          await resolveAndCacheUserRole(userData);
           console.log('✅ User authenticated (cached):', userData.email);
           return { authenticated: true, user: userData };
         }
@@ -471,6 +516,7 @@ async function checkAuthStatus() {
       // Update localStorage with fresh session
       localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
       localStorage.setItem('currentUser', JSON.stringify(data.session.user));
+      await resolveAndCacheUserRole(data.session.user);
       
       console.log('✅ User authenticated:', data.session.user.email);
       return { authenticated: true, user: data.session.user };
@@ -513,13 +559,22 @@ async function getAuthenticatedUser(allowCachedFallback = true) {
       const sessionUser = data.session.user;
       localStorage.setItem('currentUser', JSON.stringify(sessionUser));
       localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+      await resolveAndCacheUserRole(sessionUser);
       return sessionUser;
     }
 
-    return allowCachedFallback ? getCurrentUser() : null;
+    const cachedUser = allowCachedFallback ? getCurrentUser() : null;
+    if (cachedUser) {
+      await resolveAndCacheUserRole(cachedUser);
+    }
+    return cachedUser;
   } catch (error) {
     console.warn('⚠️ Could not resolve authenticated user from session:', error.message);
-    return allowCachedFallback ? getCurrentUser() : null;
+    const cachedUser = allowCachedFallback ? getCurrentUser() : null;
+    if (cachedUser) {
+      await resolveAndCacheUserRole(cachedUser);
+    }
+    return cachedUser;
   }
 }
 
@@ -535,9 +590,10 @@ async function getCurrentUserProfileData() {
       return { success: false, data: null };
     }
 
-    const accountType = user.user_metadata?.account_type || 'student';
+    const role = await resolveAndCacheUserRole(user);
+    const accountType = role === 'profesor' ? 'professor' : 'student';
 
-    if (accountType === 'professor') {
+    if (role === 'profesor') {
       const professorChecks = [
         client.from(TABLES.PROFESSORS).select('*').eq('email', user.email).limit(1).maybeSingle(),
         client.from(TABLES.PROFESSORS).select('*').eq('user_id', user.id).limit(1).maybeSingle(),
@@ -625,10 +681,10 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
       throw new Error('User not authenticated');
     }
 
-    const accountType = user.user_metadata?.account_type || 'student';
+    const accountType = await resolveAndCacheUserRole(user);
     const normalizedEmail = user.email.trim().toLowerCase();
 
-    if (accountType === 'professor') {
+    if (accountType === 'profesor') {
       const updatePayload = {
         full_name: profileUpdates.full_name,
         nume_complet: profileUpdates.full_name,
@@ -671,7 +727,8 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
           faculty: profileUpdates.faculty || user.user_metadata?.faculty,
           specialization: profileUpdates.specialization || user.user_metadata?.specialization,
           taught_subject: profileUpdates.taught_subject || user.user_metadata?.taught_subject,
-          teaching_years: profileUpdates.teaching_years || user.user_metadata?.teaching_years || []
+          teaching_years: profileUpdates.teaching_years || user.user_metadata?.teaching_years || [],
+          account_type: accountType === 'profesor' ? 'professor' : 'student'
         }
       });
 
@@ -1460,6 +1517,7 @@ async function updateHeaderWithUserInfo() {
     
     // Step 2: Display user from localStorage INSTANTLY
     if (hasValidStorage && displayUser) {
+      await resolveAndCacheUserRole(displayUser);
       showUserMenuInHeader(headerActions, displayUser);
       
       // Step 3: Verify authentication async in background (non-blocking)
@@ -1481,7 +1539,9 @@ async function updateHeaderWithUserInfo() {
       // Still verify in background
       checkAuthStatus().then(({ authenticated, user }) => {
         if (authenticated && user) {
+          resolveAndCacheUserRole(user).then(() => {
           showUserMenuInHeader(headerActions, user);
+          });
         }
       }).catch(err => {
         console.warn('Auth check failed:', err);
@@ -1555,8 +1615,10 @@ function showUserMenuInHeader(headerActions, user) {
   
   const userEmail = user.email || 'Student';
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
-  const accountType = user.user_metadata?.account_type === 'professor' ? 'Profesor' : 'Student';
-  const roleColor = accountType === 'Profesor' ? '#f97316' : '#0ea5e9';
+  const storedRole = localStorage.getItem('role');
+  const accountIsProfessor = storedRole === 'profesor' || storedRole === 'professor' || user.user_metadata?.account_type === 'professor';
+  const accountType = accountIsProfessor ? 'Profesor' : 'Student';
+  const roleColor = accountIsProfessor ? '#f97316' : '#0ea5e9';
   
   const showEmail = window.innerWidth > 480; // Hide email on very small screens
   
@@ -1565,7 +1627,7 @@ function showUserMenuInHeader(headerActions, user) {
       <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.2rem' : '1.5rem'}; color: white;"></i>
       <div style="color: white; display: flex; flex-direction: column;">
         <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};">${escapeHtml(userName)}</div>
-        <div style="font-size: 0.65rem; opacity: 1; color: ${roleColor}; font-weight: 700; text-transform: uppercase;">${accountType}</div>
+        <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsProfessor ? '#ffd166' : roleColor}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
         ${showEmail ? `<div style="font-size: 0.7rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>
@@ -1583,23 +1645,25 @@ function showUserMenuInHeader(headerActions, user) {
     position: absolute;
     top: 100%;
     ${isMobile ? 'left: 50%; transform: translateX(-50%);' : 'right: 0;'}
-    background: white;
+    background: var(--surface);
+    color: var(--text);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.22);
     min-width: 200px;
     margin-top: 0.5rem;
     display: none;
     z-index: 1000;
     overflow: hidden;
     max-width: 90vw;
+    backdrop-filter: blur(12px);
   `;
   
   dropdownMenu.innerHTML = `
-    <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: var(--text); text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fas fa-user"></i> Profilul Meu
     </a>
-    <a href="settings.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: var(--text); text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    <a href="settings.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fas fa-cog"></i> Setări
     </a>
     <hr style="margin: 0; border: none; border-top: 1px solid var(--border-color);">
