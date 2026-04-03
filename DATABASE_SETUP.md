@@ -105,6 +105,110 @@ CREATE POLICY "Allow delete own comments" ON public.comments
 
 ---
 
+### 4) Tabel pentru feedback util pe recenzii
+
+```sql
+CREATE TABLE public.recenzii_utile (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  review_id BIGINT REFERENCES public.recenzii_profesori(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (review_id, user_id)
+);
+
+ALTER TABLE public.recenzii_utile ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow read all helpful votes" ON public.recenzii_utile
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow insert own helpful votes" ON public.recenzii_utile
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Allow delete own helpful votes" ON public.recenzii_utile
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+---
+
+### 5) Rol admin in `utilizatori`
+
+```sql
+ALTER TABLE public.utilizatori
+ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'student';
+
+UPDATE public.utilizatori
+SET role = 'admin'
+WHERE lower(email) = 'admin@ulbstudent.ro';
+```
+
+---
+
+### 6) Tabele pentru Contact si Raportari
+
+```sql
+CREATE TABLE IF NOT EXISTS public.raportari (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  email TEXT,
+  type TEXT,
+  page TEXT,
+  severity TEXT,
+  description TEXT,
+  status TEXT DEFAULT 'nou',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.notificari (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  type TEXT,
+  title TEXT,
+  message TEXT,
+  email TEXT,
+  status TEXT DEFAULT 'nou',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE public.raportari ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notificari ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "rls_read" ON public.raportari;
+DROP POLICY IF EXISTS "rls_insert" ON public.raportari;
+DROP POLICY IF EXISTS "rls_update" ON public.raportari;
+DROP POLICY IF EXISTS "rls_delete" ON public.raportari;
+
+CREATE POLICY "rls_read" ON public.raportari
+  FOR SELECT USING (true);
+
+CREATE POLICY "rls_insert" ON public.raportari
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "rls_update" ON public.raportari
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "rls_delete" ON public.raportari
+  FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "rls_read" ON public.notificari;
+DROP POLICY IF EXISTS "rls_insert" ON public.notificari;
+DROP POLICY IF EXISTS "rls_update" ON public.notificari;
+DROP POLICY IF EXISTS "rls_delete" ON public.notificari;
+
+CREATE POLICY "rls_read" ON public.notificari
+  FOR SELECT USING (true);
+
+CREATE POLICY "rls_insert" ON public.notificari
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "rls_update" ON public.notificari
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "rls_delete" ON public.notificari
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+---
+
 ## Verificare dupa setup
 
 1. Mergi in Table Editor.

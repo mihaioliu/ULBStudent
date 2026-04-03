@@ -320,34 +320,114 @@
       });
 
       // Settings Save
-      document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-        // Save all settings to localStorage
-        localStorage.setItem('language', document.getElementById('languageSetting').value);
-        localStorage.setItem('region', document.getElementById('regionSetting').value);
-        localStorage.setItem('timezone', document.getElementById('timezoneSetting').value);
-        
-        showNotification('✅ Setări salvate!');
-      });
+      document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+        const settingsPayload = {
+          language: document.getElementById('languageSetting').value,
+          region: document.getElementById('regionSetting').value,
+          timezone: document.getElementById('timezoneSetting').value,
+          notifications: {
+            email: document.getElementById('emailNotifSetting')?.checked ?? true,
+            comments: document.getElementById('commentNotifSetting')?.checked ?? true,
+            directMessages: document.getElementById('dmNotifSetting')?.checked ?? true,
+            collaborations: document.getElementById('matchNotifSetting')?.checked ?? true
+          },
+          privacy: {
+            profilePublic: document.getElementById('profilePublicSetting')?.checked ?? true,
+            activityVisible: document.getElementById('activityVisibleSetting')?.checked ?? true,
+            contactMode: document.getElementById('contactSetting')?.value || 'friends'
+          },
+          appearance: {
+            theme: document.querySelector('input[name="theme"]:checked')?.value || 'light',
+            fontSize: document.getElementById('fontSizeSetting')?.value || 'normal',
+            animations: document.getElementById('animationsSetting')?.checked ?? true
+          }
+        };
 
-      document.getElementById('resetSettingsBtn').addEventListener('click', () => {
-        if (confirm('Ești sigur? Se vor reseta toate setările la default.')) {
-          localStorage.removeItem('language');
-          localStorage.removeItem('region');
-          localStorage.removeItem('timezone');
-          window.location.reload();
+        const saveResult = await saveUserSettings(settingsPayload);
+        if (!saveResult.success) {
+          showNotification('❌ ' + (saveResult.error || 'Setările nu au putut fi salvate în baza de date.'));
+          return;
         }
+
+        // Keep a local cache for immediate UX fallback.
+        localStorage.setItem('app_settings_cache', JSON.stringify(settingsPayload));
+        showNotification('✅ Setări salvate în baza de date.');
       });
 
-      // Load saved settings
-      window.addEventListener('load', () => {
-        const language = localStorage.getItem('language') || 'ro';
-        const region = localStorage.getItem('region') || 'bucharesti';
-        const timezone = localStorage.getItem('timezone') || 'EET';
-        
-        document.getElementById('languageSetting').value = language;
-        document.getElementById('regionSetting').value = region;
-        document.getElementById('timezoneSetting').value = timezone;
+      document.getElementById('resetSettingsBtn').addEventListener('click', async () => {
+        if (!confirm('Ești sigur? Se vor reseta toate setările la default.')) {
+          return;
+        }
+
+        const defaults = {
+          language: 'ro',
+          region: 'bucharesti',
+          timezone: 'EET',
+          notifications: {
+            email: true,
+            comments: true,
+            directMessages: true,
+            collaborations: true
+          },
+          privacy: {
+            profilePublic: true,
+            activityVisible: true,
+            contactMode: 'friends'
+          },
+          appearance: {
+            theme: 'light',
+            fontSize: 'normal',
+            animations: true
+          }
+        };
+
+        const resetResult = await saveUserSettings(defaults);
+        if (!resetResult.success) {
+          showNotification('❌ ' + (resetResult.error || 'Resetarea setărilor a eșuat.'));
+          return;
+        }
+
+        localStorage.setItem('app_settings_cache', JSON.stringify(defaults));
+        showNotification('✅ Setările au fost resetate.');
+        setTimeout(() => window.location.reload(), 400);
       });
+
+      // Load saved settings (DB-first, local fallback)
+      const applySettingsToUI = (settings) => {
+        if (!settings || typeof settings !== 'object') return;
+
+        if (settings.language) document.getElementById('languageSetting').value = settings.language;
+        if (settings.region) document.getElementById('regionSetting').value = settings.region;
+        if (settings.timezone) document.getElementById('timezoneSetting').value = settings.timezone;
+
+        if (settings.notifications) {
+          if (typeof settings.notifications.email === 'boolean') document.getElementById('emailNotifSetting').checked = settings.notifications.email;
+          if (typeof settings.notifications.comments === 'boolean') document.getElementById('commentNotifSetting').checked = settings.notifications.comments;
+          if (typeof settings.notifications.directMessages === 'boolean') document.getElementById('dmNotifSetting').checked = settings.notifications.directMessages;
+          if (typeof settings.notifications.collaborations === 'boolean') document.getElementById('matchNotifSetting').checked = settings.notifications.collaborations;
+        }
+
+        if (settings.privacy) {
+          if (typeof settings.privacy.profilePublic === 'boolean') document.getElementById('profilePublicSetting').checked = settings.privacy.profilePublic;
+          if (typeof settings.privacy.activityVisible === 'boolean') document.getElementById('activityVisibleSetting').checked = settings.privacy.activityVisible;
+          if (settings.privacy.contactMode) document.getElementById('contactSetting').value = settings.privacy.contactMode;
+        }
+
+        if (settings.appearance) {
+          if (settings.appearance.fontSize) document.getElementById('fontSizeSetting').value = settings.appearance.fontSize;
+          if (typeof settings.appearance.animations === 'boolean') document.getElementById('animationsSetting').checked = settings.appearance.animations;
+          const themeInput = document.querySelector(`input[name="theme"][value="${settings.appearance.theme || 'light'}"]`);
+          if (themeInput) themeInput.checked = true;
+        }
+      };
+
+      const dbSettings = await loadUserSettings();
+      if (dbSettings.success && dbSettings.data && Object.keys(dbSettings.data).length > 0) {
+        applySettingsToUI(dbSettings.data);
+      } else {
+        const cached = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+        applySettingsToUI(cached);
+      }
       }
       
       document.addEventListener('DOMContentLoaded', initializeSettingsPage);

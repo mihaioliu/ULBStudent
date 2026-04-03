@@ -12,6 +12,160 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
+    <style>
+      .report-page {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 2rem;
+      }
+
+      .report-help-card {
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(230, 57, 70, 0.14) 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(230, 57, 70, 0.32);
+        border-left: 5px solid var(--accent);
+      }
+
+      .report-help-card h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--accent);
+      }
+
+      .report-help-card p {
+        margin: 0;
+        color: var(--text);
+      }
+
+      .report-form label {
+        color: var(--text);
+      }
+
+      .report-form input,
+      .report-form select,
+      .report-form textarea {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border-color);
+      }
+
+      .report-form input::placeholder,
+      .report-form textarea::placeholder {
+        color: var(--text-secondary);
+      }
+
+      .report-submit-btn {
+        flex: 1;
+        background: var(--accent);
+        color: #fff;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+      }
+
+      .report-submit-btn:hover {
+        background: var(--accent-hover);
+      }
+
+      .report-reset-btn {
+        flex: 1;
+        background: var(--light-gray);
+        color: var(--text);
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+      }
+
+      .report-reset-btn:hover {
+        background: var(--border-color);
+      }
+
+      .report-faq h3 {
+        color: var(--accent);
+        margin-top: 0;
+      }
+
+      .report-faq-item {
+        margin-bottom: 1.5rem;
+      }
+
+      .report-faq-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .report-faq-item h4 {
+        margin-bottom: 0.5rem;
+      }
+
+      .report-faq-item p {
+        margin: 0;
+        color: var(--text-secondary);
+      }
+
+      .report-faq {
+        margin-top: 4rem;
+        padding: 2rem;
+        background: var(--light-gray);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+      }
+
+      body.dark-mode .report-help-card,
+      html.dark-mode .report-help-card {
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.2) 0%, rgba(230, 57, 70, 0.1) 100%);
+        border-color: rgba(248, 113, 113, 0.55);
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3);
+      }
+
+      body.dark-mode .report-form input,
+      body.dark-mode .report-form select,
+      body.dark-mode .report-form textarea,
+      html.dark-mode .report-form input,
+      html.dark-mode .report-form select,
+      html.dark-mode .report-form textarea {
+        background: #111827;
+        color: #f3f4f6;
+        border-color: #334155;
+      }
+
+      body.dark-mode .report-form input::placeholder,
+      body.dark-mode .report-form textarea::placeholder,
+      html.dark-mode .report-form input::placeholder,
+      html.dark-mode .report-form textarea::placeholder {
+        color: #9ca3af;
+      }
+
+      body.dark-mode .report-reset-btn,
+      html.dark-mode .report-reset-btn {
+        background: #111827;
+        border-color: #334155;
+        color: #f3f4f6;
+      }
+
+      body.dark-mode .report-reset-btn:hover,
+      html.dark-mode .report-reset-btn:hover {
+        background: #1f2937;
+      }
+
+      @media (max-width: 768px) {
+        .report-page {
+          padding: 1.2rem;
+        }
+
+        .report-two-col {
+          grid-template-columns: 1fr !important;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -37,21 +191,21 @@
       </div>
     </header>
 
-    <main class="container" style="max-width: 800px; margin: 3rem auto; padding: 2rem;">
+    <main class="container report-page">
       <div style="text-align: center; margin-bottom: 3rem;">
         <h1>🐛 Raportează o Problemă</h1>
         <p>Ajută-ne să îmbunătățim ULBStudent raportând bug-uri și problemele pe care le întâmpini.</p>
       </div>
 
-      <div style="background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--accent);">
-        <h4 style="margin: 0 0 0.5rem 0; color: var(--accent);">⚠️ Tip Util</h4>
-        <p style="margin: 0; color: var(--text);">
+      <div class="report-help-card">
+        <h4>⚠️ Tip Util</h4>
+        <p>
           Cât mai mulți detalii despre problemă, cu atât mai ușor cuvânt repara! 
           Te rog descrie pașii ca să reproduci problema.
         </p>
       </div>
 
-      <form id="bugReportForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <form id="bugReportForm" class="report-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
         <!-- Tip Bug -->
         <div>
           <label for="bugType" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
@@ -147,7 +301,7 @@
           <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
             🎯 Comportament Așteptat vs Actual
           </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="report-two-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div>
               <label for="expected" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
                 ✅ Ce ar fi trebuit să se întâmple?
@@ -174,7 +328,7 @@
         </div>
 
         <!-- Browser și Device -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="report-two-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div>
             <label for="browser" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
               🌐 Browser (ex: Chrome, Firefox)
@@ -217,46 +371,36 @@
 
         <!-- Butoane -->
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button 
-            type="submit"
-            style="flex: 1; background: var(--accent); color: white; padding: 1rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;"
-            onmouseover="this.style.background='var(--accent-hover)'"
-            onmouseout="this.style.background='var(--accent)'"
-          >
+          <button type="submit" class="report-submit-btn">
             🚀 Trimite Raport
           </button>
-          <button 
-            type="reset"
-            style="flex: 1; background: var(--light-gray); color: var(--text); padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;"
-            onmouseover="this.style.background='var(--border-color)'"
-            onmouseout="this.style.background='var(--light-gray)'"
-          >
+          <button type="reset" class="report-reset-btn">
             Șterge
           </button>
         </div>
       </form>
 
       <!-- FAQ Section -->
-      <div style="margin-top: 4rem; padding: 2rem; background: var(--light-gray); border-radius: 12px;">
-        <h3 style="color: var(--accent); margin-top: 0;">❓ Întrebări Frecvente</h3>
+      <div class="report-faq">
+        <h3>❓ Întrebări Frecvente</h3>
         
-        <div style="margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 0.5rem;">Ce se întâmplă după ce trimit raportul?</h4>
-          <p style="margin: 0; color: var(--text-secondary);">
+        <div class="report-faq-item">
+          <h4>Ce se întâmplă după ce trimit raportul?</h4>
+          <p>
             Rapoartele sunt trimise direct echipei de dezvoltare. Te vom contacta dacă ai furnizat email-ul și avem nevoie de mai mulți detalii.
           </p>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 0.5rem;">Cât timp durează repararea?</h4>
-          <p style="margin: 0; color: var(--text-secondary);">
+        <div class="report-faq-item">
+          <h4>Cât timp durează repararea?</h4>
+          <p>
             Bug-urile critice: 24-48 ore. Probleme medii: 1-2 săptămâni. Cereri de funcții: variabil, depinde de complexitate.
           </p>
         </div>
 
-        <div>
-          <h4 style="margin-bottom: 0.5rem;">Pot raporta probleme de securitate?</h4>
-          <p style="margin: 0; color: var(--text-secondary);">
+        <div class="report-faq-item">
+          <h4>Pot raporta probleme de securitate?</h4>
+          <p>
             Da! Te rog contactează direct <strong>security@ulbstudent.ro</strong> pentru probleme sensibile.
           </p>
         </div>
@@ -298,13 +442,57 @@
     </footer>
 
     <script>
-      document.getElementById('bugReportForm').addEventListener('submit', function(e) {
+      document.getElementById('bugReportForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        alert('✅ Mulțumim pentru raport! O să analizez și voi lucra la rezolvare.');
-        this.reset();
+
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalLabel = submitBtn ? submitBtn.textContent : '';
+
+        const payload = {
+          type: document.getElementById('bugType')?.value || '',
+          page: document.getElementById('affectedPage')?.value || '',
+          severity: document.getElementById('severity')?.value || '',
+          description: document.getElementById('description')?.value || '',
+          steps: document.getElementById('steps')?.value || '',
+          expected: document.getElementById('expected')?.value || '',
+          actual: document.getElementById('actual')?.value || '',
+          browser: document.getElementById('browser')?.value || '',
+          device: document.getElementById('device')?.value || '',
+          email: document.getElementById('reporterEmail')?.value || ''
+        };
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Se trimite...';
+        }
+
+        try {
+          const result = await saveBugReport(payload);
+          if (!result.success) {
+            throw new Error(result.error || 'Nu s-a putut salva raportul.');
+          }
+
+          if (typeof showNotification === 'function') {
+            showNotification('✅ Raport trimis și salvat în baza de date.');
+          } else {
+            alert('Raport trimis cu succes!');
+          }
+          form.reset();
+        } catch (error) {
+          if (typeof showNotification === 'function') {
+            showNotification('❌ ' + error.message);
+          } else {
+            alert('Eroare: ' + error.message);
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel || '🚀 Trimite Raport';
+          }
+        }
       });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script src="interactive.js"></script>
   </body>

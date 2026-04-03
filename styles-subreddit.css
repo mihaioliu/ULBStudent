@@ -250,12 +250,49 @@
 #postContentInput:focus {
   outline: none;
   border-color: var(--accent);
-  background: white;
+  background: var(--surface);
   box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.15);
 }
 
 #postContentInput::placeholder {
   color: #999;
+}
+
+html.dark-mode .post-input,
+body.dark-mode .post-input,
+html.dark-mode #postContentInput,
+body.dark-mode #postContentInput,
+html.dark-mode #postTitleInput,
+body.dark-mode #postTitleInput,
+html.dark-mode #postTagsInput,
+body.dark-mode #postTagsInput,
+html.dark-mode #postCategoryInput,
+body.dark-mode #postCategoryInput {
+  background: #111827;
+  color: #e5e7eb;
+  border-color: #334155;
+}
+
+html.dark-mode .post-input:focus,
+body.dark-mode .post-input:focus,
+html.dark-mode #postContentInput:focus,
+body.dark-mode #postContentInput:focus,
+html.dark-mode #postTitleInput:focus,
+body.dark-mode #postTitleInput:focus,
+html.dark-mode #postTagsInput:focus,
+body.dark-mode #postTagsInput:focus,
+html.dark-mode #postCategoryInput:focus,
+body.dark-mode #postCategoryInput:focus {
+  background: #0b1220;
+  color: #f8fafc;
+  border-color: var(--accent);
+}
+
+html.dark-mode .post-input::placeholder,
+body.dark-mode .post-input::placeholder,
+html.dark-mode #postContentInput::placeholder,
+body.dark-mode #postContentInput::placeholder {
+  color: #94a3b8;
 }
 
 .post-input:focus {

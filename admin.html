@@ -1,0 +1,627 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Admin Panel - ULBStudent" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <title>Admin Panel - ULBStudent</title>
+    <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <style>
+      .admin-page {
+        max-width: 1200px;
+        margin: 2.5rem auto;
+        padding: 1.5rem;
+      }
+
+      .admin-header {
+        margin-bottom: 1.25rem;
+      }
+
+      .admin-header h1 {
+        margin: 0;
+      }
+
+      .admin-header p {
+        margin: 0.45rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.9rem;
+        margin: 1rem 0 1.5rem;
+      }
+
+      .admin-stat {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.9rem;
+        background: var(--surface);
+      }
+
+      .admin-stat h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--accent);
+      }
+
+      .admin-stat p {
+        margin: 0.2rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .admin-tabs {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+
+      .admin-tab {
+        border: 1px solid var(--border-color);
+        background: var(--light-gray);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 0.55rem 0.85rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .admin-tab.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+
+      .admin-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--surface);
+        padding: 1rem;
+      }
+
+      .admin-card h2 {
+        margin-top: 0;
+      }
+
+      .admin-table-wrap {
+        overflow-x: auto;
+      }
+
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+
+      .admin-table th,
+      .admin-table td {
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+        padding: 0.65rem;
+        vertical-align: top;
+      }
+
+      .admin-table th {
+        color: var(--text-secondary);
+        font-size: 0.86rem;
+      }
+
+      .admin-inline-actions {
+        display: flex;
+        gap: 0.45rem;
+        align-items: center;
+      }
+
+      .admin-inline-actions select,
+      .admin-inline-actions input,
+      .admin-inline-actions button {
+        padding: 0.4rem 0.55rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-admin-save {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+        cursor: pointer;
+      }
+
+      .admin-hidden {
+        display: none;
+      }
+
+      .admin-empty {
+        color: var(--text-secondary);
+        padding: 1rem 0;
+      }
+
+      @media (max-width: 768px) {
+        .admin-page {
+          padding: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="header-content">
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="comments.html" class="nav-link">Discuții</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="container admin-page">
+      <section class="admin-header">
+        <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
+        <p>Zona de administrare pentru raportări, notificări și roluri utilizatori.</p>
+      </section>
+
+      <section class="admin-stats">
+        <div class="admin-stat">
+          <h3 id="statReports">0</h3>
+          <p>Raportări</p>
+        </div>
+        <div class="admin-stat">
+          <h3 id="statOpenReports">0</h3>
+          <p>Raportări deschise</p>
+        </div>
+        <div class="admin-stat">
+          <h3 id="statNotifications">0</h3>
+          <p>Notificări</p>
+        </div>
+        <div class="admin-stat">
+          <h3 id="statUsers">0</h3>
+          <p>Utilizatori</p>
+        </div>
+      </section>
+
+      <section class="admin-tabs" id="adminTabs">
+        <button class="admin-tab active" data-target="panelReports">Raportări</button>
+        <button class="admin-tab" data-target="panelNotifications">Notificări</button>
+        <button class="admin-tab" data-target="panelUsers">Utilizatori</button>
+      </section>
+
+      <section id="panelReports" class="admin-card">
+        <h2>Raportări Probleme</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="reportsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tip</th>
+                <th>Pagină</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="reportsEmpty" class="admin-empty admin-hidden">Nu există raportări.</p>
+      </section>
+
+      <section id="panelNotifications" class="admin-card admin-hidden">
+        <h2>Notificări Sistem</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="notificationsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Titlu</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="notificationsEmpty" class="admin-empty admin-hidden">Nu există notificări.</p>
+      </section>
+
+      <section id="panelUsers" class="admin-card admin-hidden">
+        <h2>Utilizatori și Roluri</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nume</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="usersEmpty" class="admin-empty admin-hidden">Nu există utilizatori.</p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>📚 ULBStudent</h4>
+          <p>Panou administrativ pentru managementul platformei.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+    <script>
+      const adminState = {
+        reports: [],
+        notifications: [],
+        users: []
+      };
+
+      function adminEscape(value) {
+        const text = String(value || '');
+        if (typeof escapeHtml === 'function') return escapeHtml(text);
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function rowValue(row, candidates, fallback = '-') {
+        for (const key of candidates) {
+          const value = row?.[key];
+          if (value !== null && value !== undefined && String(value).trim() !== '') {
+            return value;
+          }
+        }
+        return fallback;
+      }
+
+      async function ensureAdminAccess() {
+        await protectPage();
+        const user = await getAuthenticatedUser(false);
+
+        if (!user?.id) {
+          window.location.href = 'login.html';
+          return null;
+        }
+
+        await resolveAndCacheUserRole(user);
+        const role = localStorage.getItem('role');
+        const isAdmin = role === 'admin' || String(user.email || '').toLowerCase() === 'admin@ulbstudent.ro';
+
+        if (!isAdmin) {
+          if (typeof showNotification === 'function') {
+            showNotification('⛔ Acces interzis: doar administratorii pot deschide această pagină.');
+          }
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 700);
+          return null;
+        }
+
+        return user;
+      }
+
+      function wireTabs() {
+        const tabButtons = Array.from(document.querySelectorAll('.admin-tab'));
+        tabButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            tabButtons.forEach((item) => item.classList.remove('active'));
+            button.classList.add('active');
+
+            const target = button.getAttribute('data-target');
+            document.querySelectorAll('main .admin-card').forEach((panel) => {
+              panel.classList.toggle('admin-hidden', panel.id !== target);
+            });
+          });
+        });
+      }
+
+      function updateStats() {
+        const reports = adminState.reports;
+        const openReports = reports.filter((item) => {
+          const status = String(rowValue(item, ['status'], 'nou')).toLowerCase();
+          return status === 'nou' || status === 'in_analiza';
+        });
+
+        document.getElementById('statReports').textContent = String(reports.length);
+        document.getElementById('statOpenReports').textContent = String(openReports.length);
+        document.getElementById('statNotifications').textContent = String(adminState.notifications.length);
+        document.getElementById('statUsers').textContent = String(adminState.users.length);
+      }
+
+      function renderReports() {
+        const tableBody = document.querySelector('#reportsTable tbody');
+        const empty = document.getElementById('reportsEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.reports.length) {
+          empty.classList.remove('admin-hidden');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.reports.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const type = rowValue(row, ['type', 'tip']);
+          const page = rowValue(row, ['page', 'pagina']);
+          const email = rowValue(row, ['email']);
+          const status = rowValue(row, ['status'], 'nou');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${adminEscape(id)}</td>
+            <td>${adminEscape(type)}</td>
+            <td>${adminEscape(page)}</td>
+            <td>${adminEscape(email)}</td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="report-status" data-id="${adminEscape(id)}">
+                  <option value="nou" ${status === 'nou' ? 'selected' : ''}>nou</option>
+                  <option value="in_analiza" ${status === 'in_analiza' ? 'selected' : ''}>in_analiza</option>
+                  <option value="rezolvat" ${status === 'rezolvat' ? 'selected' : ''}>rezolvat</option>
+                  <option value="respins" ${status === 'respins' ? 'selected' : ''}>respins</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-report" data-id="${adminEscape(id)}">Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      function renderNotifications() {
+        const tableBody = document.querySelector('#notificationsTable tbody');
+        const empty = document.getElementById('notificationsEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.notifications.length) {
+          empty.classList.remove('admin-hidden');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.notifications.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const title = rowValue(row, ['title', 'titlu']);
+          const email = rowValue(row, ['email']);
+          const status = rowValue(row, ['status'], 'nou');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${adminEscape(id)}</td>
+            <td>${adminEscape(title)}</td>
+            <td>${adminEscape(email)}</td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="notification-status" data-id="${adminEscape(id)}">
+                  <option value="nou" ${status === 'nou' ? 'selected' : ''}>nou</option>
+                  <option value="in_analiza" ${status === 'in_analiza' ? 'selected' : ''}>in_analiza</option>
+                  <option value="rezolvat" ${status === 'rezolvat' ? 'selected' : ''}>rezolvat</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-notification" data-id="${adminEscape(id)}">Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      function renderUsers() {
+        const tableBody = document.querySelector('#usersTable tbody');
+        const empty = document.getElementById('usersEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.users.length) {
+          empty.classList.remove('admin-hidden');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.users.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const name = rowValue(row, ['nume_complet', 'full_name'], '-');
+          const email = rowValue(row, ['email']);
+          const role = String(rowValue(row, ['role'], 'student')).toLowerCase();
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${adminEscape(id)}</td>
+            <td>${adminEscape(name)}</td>
+            <td>${adminEscape(email)}</td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="user-role" data-id="${adminEscape(id)}" data-email="${adminEscape(email)}">
+                  <option value="student" ${role === 'student' ? 'selected' : ''}>student</option>
+                  <option value="profesor" ${role === 'profesor' ? 'selected' : ''}>profesor</option>
+                  <option value="admin" ${role === 'admin' ? 'selected' : ''}>admin</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-user-role" data-id="${adminEscape(id)}" data-email="${adminEscape(email)}">Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      async function loadAdminData() {
+        const client = await initSupabaseClient();
+
+        async function fetchRows(tableName) {
+          const attempts = [
+            () => client.from(tableName).select('*').order('created_at', { ascending: false }).limit(150),
+            () => client.from(tableName).select('*').order('id', { ascending: false }).limit(150),
+            () => client.from(tableName).select('*').limit(150)
+          ];
+
+          let lastError = null;
+          for (const run of attempts) {
+            const result = await run();
+            if (!result.error) return result;
+            lastError = result.error;
+          }
+
+          return { data: [], error: lastError };
+        }
+
+        const [reportsRes, notificationsRes, usersRes] = await Promise.all([
+          fetchRows('raportari'),
+          fetchRows('notificari'),
+          fetchRows('utilizatori')
+        ]);
+
+        adminState.reports = Array.isArray(reportsRes.data) ? reportsRes.data : [];
+        adminState.notifications = Array.isArray(notificationsRes.data) ? notificationsRes.data : [];
+        adminState.users = Array.isArray(usersRes.data) ? usersRes.data : [];
+
+        if (reportsRes.error || notificationsRes.error || usersRes.error) {
+          const message = reportsRes.error?.message || notificationsRes.error?.message || usersRes.error?.message || 'Eroare la încărcarea datelor.';
+          if (typeof showNotification === 'function') {
+            showNotification('⚠️ ' + message);
+          }
+        }
+
+        updateStats();
+        renderReports();
+        renderNotifications();
+        renderUsers();
+      }
+
+      async function saveReportStatus(reportId) {
+        const statusSelect = document.querySelector(`select[data-kind="report-status"][data-id="${CSS.escape(String(reportId))}"]`);
+        if (!statusSelect) return;
+
+        const status = statusSelect.value;
+        const client = await initSupabaseClient();
+        const result = await client.from('raportari').update({ status }).eq('id', reportId);
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification('❌ ' + result.error.message);
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('✅ Status raportare actualizat.');
+        }
+        await loadAdminData();
+      }
+
+      async function saveNotificationStatus(notificationId) {
+        const statusSelect = document.querySelector(`select[data-kind="notification-status"][data-id="${CSS.escape(String(notificationId))}"]`);
+        if (!statusSelect) return;
+
+        const status = statusSelect.value;
+        const client = await initSupabaseClient();
+        const result = await client.from('notificari').update({ status }).eq('id', notificationId);
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification('❌ ' + result.error.message);
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('✅ Status notificare actualizat.');
+        }
+        await loadAdminData();
+      }
+
+      async function saveUserRole(userId, email) {
+        const selectById = document.querySelector(`select[data-kind="user-role"][data-id="${CSS.escape(String(userId))}"]`);
+        const newRole = selectById?.value || 'student';
+
+        const client = await initSupabaseClient();
+        let result = await client.from('utilizatori').update({ role: newRole }).eq('id', userId);
+
+        if (result.error && email) {
+          result = await client.from('utilizatori').update({ role: newRole }).eq('email', email);
+        }
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification('❌ ' + result.error.message);
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('✅ Rol utilizator actualizat.');
+        }
+        await loadAdminData();
+      }
+
+      function wireTableActions() {
+        document.addEventListener('click', async (event) => {
+          const button = event.target.closest('[data-action]');
+          if (!button) return;
+
+          const action = button.getAttribute('data-action');
+          const id = button.getAttribute('data-id');
+          const email = button.getAttribute('data-email');
+
+          if (action === 'save-report' && id) {
+            await saveReportStatus(id);
+            return;
+          }
+
+          if (action === 'save-notification' && id) {
+            await saveNotificationStatus(id);
+            return;
+          }
+
+          if (action === 'save-user-role' && id) {
+            await saveUserRole(id, email);
+          }
+        });
+      }
+
+      async function initializeAdminPanel() {
+        const user = await ensureAdminAccess();
+        if (!user) return;
+
+        wireTabs();
+        wireTableActions();
+        await loadAdminData();
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeAdminPanel);
+    </script>
+  </body>
+</html>

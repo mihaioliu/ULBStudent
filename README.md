@@ -15,6 +15,7 @@
 11. Layout extins pe latime pentru paginile de profesori si documente.
 12. Eliminare completa a functionalitatii Team Matching din UI si codul activ.
 13. Pagini informative implementate: Contact, Raporteaza problema, Termeni si Conditii, Politica de confidentialitate.
+14. Feedback util pentru recenzii profesor persistat in Supabase.
 
 ## Functionalitati in curs de finalizare
 
@@ -24,9 +25,8 @@
 
 ## Functionalitati neimplementate complet
 
-1. Backend real pentru like/dislike pe recenzii (momentan este simulare in UI pe index).
-2. Notificari reale in timp real (stack + persistenta server-side).
-3. Sistem avansat de moderare continut (raportare/administrare postari si comentarii).
-4. Dashboard administrativ pentru gestionare profesori/documente/utilizatori.
-5. Suita de teste automate (unit/integration/e2e) si pipeline CI/CD.
+1. Notificari reale in timp real (stack + persistenta server-side).
+2. Sistem avansat de moderare continut (raportare/administrare postari si comentarii).
+3. Dashboard administrativ pentru gestionare profesori/documente/utilizatori.
+4. Suita de teste automate (unit/integration/e2e) si pipeline CI/CD.
 

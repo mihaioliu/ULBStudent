@@ -37,6 +37,8 @@ const OFFICIAL_PROFESSORS = [
   { academic_title: 'Conf. dr. ing.', full_name: 'Mihai Neghina', institutional_email: 'mihai.neghina@ulbsibiu.ro', specialization: 'Ingineria Sistemelor Multimedia' }
 ];
 
+window.OFFICIAL_PROFESSORS = OFFICIAL_PROFESSORS;
+
 let professorsData = [];
 let filteredProfessors = [];
 let activeReviewProfessor = null;
@@ -75,6 +77,10 @@ async function loadProfessors() {
     const fullName = `${firstName} ${lastName}`.trim() || prof.full_name || prof.nume_complet || prof.name || 'Profesor';
     const department = prof.departament || prof.department || '-';
     const subject = prof.materie || prof.taught_subject || prof.materie_predata || prof.specialization || '-';
+    const subjectList = String(subject)
+      .split(/[,;/|]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
     const email = prof.email || prof.institutional_email || '-';
 
     container.innerHTML += `
@@ -84,12 +90,12 @@ async function loadProfessors() {
           <div class="prof-header-info">
             <h3>${title} ${fullName}</h3>
             <p class="prof-faculty">${department}</p>
-            <p class="prof-department">Specializare: ${subject}</p>
+            <p class="prof-department">Materii: ${subject}</p>
             <p class="prof-department">Email: ${email}</p>
           </div>
         </div>
         <div class="prof-specialties">
-          <span class="specialty-tag">${subject}</span>
+          ${subjectList.map((item) => `<span class="specialty-tag">${item}</span>`).join('') || `<span class="specialty-tag">${subject}</span>`}
         </div>
         <div class="prof-stats">
           <span class="stat-item">⭐ ${media}/5 (${numarRecenzii} recenzii)</span>

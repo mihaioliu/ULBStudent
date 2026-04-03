@@ -219,13 +219,53 @@
     </footer>
 
     <script>
-      document.getElementById('contactForm').addEventListener('submit', function(e) {
+      document.getElementById('contactForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        alert('Mulțumim pentru mesaj! Te vom contacta în scurt timp.');
-        this.reset();
+
+        const form = this;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalLabel = submitBtn ? submitBtn.textContent : '';
+
+        const payload = {
+          name: document.getElementById('contactName')?.value || '',
+          email: document.getElementById('contactEmail')?.value || '',
+          subject: document.getElementById('contactSubject')?.value || '',
+          message: document.getElementById('contactMessage')?.value || ''
+        };
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Se trimite...';
+        }
+
+        try {
+          const result = await saveSupportContactMessage(payload);
+          if (!result.success) {
+            throw new Error(result.error || 'Nu s-a putut salva mesajul.');
+          }
+
+          if (typeof showNotification === 'function') {
+            showNotification('✅ Mesaj trimis și salvat în baza de date.');
+          } else {
+            alert('Mesaj trimis cu succes!');
+          }
+          form.reset();
+        } catch (error) {
+          if (typeof showNotification === 'function') {
+            showNotification('❌ ' + error.message);
+          } else {
+            alert('Eroare: ' + error.message);
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel || 'Trimite Mesaj';
+          }
+        }
       });
-    </script>    <script src=\"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2\"></script>
-    <script src=\"auth.js\"></script>    <script src="interactive.js"></script>
+    </script>
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
   </body>
 </html>
 

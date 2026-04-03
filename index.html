@@ -101,7 +101,7 @@
           <p style="color: #e63946; margin: 0; font-weight: 500;">Informații importante de la profesori</p>
         </div>
         
-        <div class="announcements-container">
+        <div class="announcements-container" id="announcementsFeed" aria-live="polite">
           <div class="announcement-card urgent">
             <div class="announcement-badge">🚨 URGENT</div>
             <h4>S-a mutat sala de curs!</h4>
@@ -144,7 +144,7 @@
           <p style="color: #888; margin: 0;">Evaluări de la studenți cu experiență</p>
         </div>
         
-        <div class="reviews-grid">
+        <div class="reviews-grid" id="featuredReviewsGrid">
           <div class="review-card">
             <div class="review-header">
               <h4>Arhitectura Calculatoarelor</h4>
@@ -217,7 +217,7 @@
           <p style="color: #888; margin: 0;">Cei mai de ajutor membri ai comunității</p>
         </div>
 
-        <div class="leaderboard-table">
+        <div class="leaderboard-table" id="leaderboardFeed" aria-live="polite">
           <div class="leaderboard-item rank1">
             <div class="rank">🥇</div>
             <div class="user-info">
@@ -269,7 +269,7 @@
           <p style="color: #888; margin: 0;">Impactul comunității ULBStudent în numere</p>
         </div>
         
-        <div class="stats-grid">
+        <div class="stats-grid" id="platformStatsGrid" aria-live="polite">
           <div class="stat-card">
             <div class="stat-icon">👥</div>
             <div class="stat-content">
@@ -311,7 +311,7 @@
           <p style="color: #888; margin: 0;">Ce se întâmplă acum în comunitate</p>
         </div>
         
-        <div class="activity-feed">
+        <div class="activity-feed" id="recentActivityFeed" aria-live="polite">
           <div class="activity-item">
             <div class="activity-avatar">👨‍💻</div>
             <div class="activity-content">
@@ -361,7 +361,7 @@
           <p style="color: #888; margin: 0;">De la studenți care au beneficiat de platformă</p>
         </div>
         
-        <div class="testimonials-grid">
+        <div class="testimonials-grid" id="testimonialsGrid" aria-live="polite">
           <div class="testimonial-card">
             <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
             <p class="testimonial-text">"ULBStudent m-a ajutat enorm la Calculatoare. Răspunsurile la întrebări au fost super utile!"</p>
@@ -444,8 +444,8 @@
       </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
+    <script src="professors-filtering.js"></script>
     <script src="interactive.js"></script>
   </body>
 </html>

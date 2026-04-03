@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeSubredditData();        // 👤 Profil + postări din baza de date
   initializeCommentsData();         // 💬 Comentarii din baza de date
   initializeFeaturedProfessors();    // 👨‍🏫 Nume profesori din baza de date
+  initializeHomepageData();          // 🏠 Secțiuni homepage alimentate din DB
+  initializeSearchableDropdowns();    // 🔎 Căutare în dropdown-uri mari
 
   // Show page only after initialization to avoid flash between navigations
   document.body.classList.add('page-ready');
@@ -65,8 +67,6 @@ function initializeUnifiedFooter() {
       <div class="footer-section">
         <h4>Cont si suport</h4>
         <ul>
-          <li><a href="login.html">Conectare</a></li>
-          <li><a href="register.html">Inregistrare</a></li>
           <li><a href="contact.html">Contact</a></li>
           <li><a href="raporteaza-problema.html">Raporteaza problema</a></li>
         </ul>
@@ -155,6 +155,87 @@ function showSignInModal() {
 
 function showSignUpModal() {
   window.location.href = 'register.html';
+}
+
+function initializeSearchableDropdowns() {
+  const selects = Array.from(document.querySelectorAll('select')).filter((select) => {
+    if (select.dataset.searchable === 'false') return false;
+    if (select.closest('.admin-inline-actions')) return false;
+    if (select.dataset.searchEnhanced === 'true') return false;
+    return select.dataset.dropdownSearch === 'true';
+  });
+
+  selects.forEach((select) => {
+    if (select.dataset.searchEnhanced === 'true') return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'searchable-select';
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'searchable-select-input';
+    searchInput.placeholder = 'Caută în listă...';
+    searchInput.setAttribute('aria-label', 'Caută în dropdown');
+    searchInput.hidden = true;
+    wrapper.insertBefore(searchInput, select);
+
+    const originalOptions = Array.from(select.options).map((option) => ({
+      value: option.value,
+      text: option.textContent || '',
+      disabled: option.disabled,
+      selected: option.selected
+    }));
+
+    const applyFilter = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      Array.from(select.options).forEach((option, index) => {
+        const optionData = originalOptions[index];
+        if (!optionData) return;
+
+        const matches = !query || optionData.text.toLowerCase().includes(query);
+        option.hidden = !matches;
+        option.disabled = optionData.disabled;
+
+        if (matches) visibleCount += 1;
+      });
+
+      if (visibleCount === 0) {
+        select.classList.add('searchable-select-empty');
+      } else {
+        select.classList.remove('searchable-select-empty');
+      }
+    };
+
+    const openSearch = () => {
+      wrapper.classList.add('is-open');
+      searchInput.hidden = false;
+    };
+
+    const closeSearch = () => {
+      if (document.activeElement === searchInput) return;
+      searchInput.hidden = true;
+      wrapper.classList.remove('is-open');
+    };
+
+    searchInput.addEventListener('input', applyFilter);
+    searchInput.addEventListener('focus', applyFilter);
+    select.addEventListener('focus', openSearch);
+    select.addEventListener('click', openSearch);
+    select.addEventListener('blur', () => window.setTimeout(closeSearch, 120));
+    searchInput.addEventListener('blur', () => window.setTimeout(closeSearch, 120));
+    document.addEventListener('click', (event) => {
+      if (!wrapper.contains(event.target)) {
+        closeSearch();
+      }
+    });
+
+    select.dataset.searchEnhanced = 'true';
+    applyFilter();
+  });
 }
 
 /**
@@ -877,6 +958,37 @@ styles.textContent = `
     background: rgba(255, 105, 180, 0.1);
     transform: scale(1.2);
   }
+
+  .searchable-select {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .searchable-select .searchable-select-input[hidden] {
+    display: none !important;
+  }
+
+  .searchable-select.is-open .searchable-select-input {
+    display: block;
+  }
+
+  .searchable-select-input {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.92rem;
+  }
+
+  .searchable-select-input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .searchable-select-empty select {
+    outline: 2px solid rgba(230, 57, 70, 0.25);
+  }
 `;
 document.head.appendChild(styles);
 
@@ -920,8 +1032,30 @@ function initializeReviewInteractions() {
   const helpfulCounts = document.querySelectorAll('.helpful-count');
   
   helpfulCounts.forEach(helpful => {
-    helpful.addEventListener('click', function(e) {
+    helpful.addEventListener('click', async function(e) {
       e.stopPropagation();
+
+      const reviewId = this.dataset.reviewId || '';
+      if (reviewId && typeof toggleProfessorReviewHelpful === 'function') {
+        const result = await toggleProfessorReviewHelpful(reviewId);
+        if (!result.success) {
+          showNotification(result.error || 'Nu s-a putut salva feedback-ul util.');
+          return;
+        }
+
+        this.textContent = `👍 ${result.count} găsit util`;
+        this.style.transform = 'scale(1.15)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 150);
+
+        showNotification(result.added ? 'Mulțumim pentru feedback! ❤️' : 'Feedback-ul util a fost retras.');
+
+        let userReputation = JSON.parse(localStorage.getItem('userReputation')) || { points: 0 };
+        userReputation.points += result.added ? 1 : 0;
+        localStorage.setItem('userReputation', JSON.stringify(userReputation));
+        return;
+      }
       
       // Extract the first number from text (e.g. "👍 425 găsit util").
       const countMatch = String(this.textContent || '').match(/\d+/);
@@ -957,33 +1091,31 @@ function initializeReviewInteractions() {
 // 10. ANNOUNCEMENT INTERACTIONS
 // ============================================
 function initializeAnnouncementButtons() {
-  const markReadButtons = document.querySelectorAll('.btn-mark-read');
-  
-  markReadButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      
-      const card = this.closest('.announcement-card');
-      
-      // Add faded effect
-      card.style.opacity = '0.6';
-      card.style.pointerEvents = 'none';
-      
-      // Update button text
-      this.textContent = '✓ Citit';
-      this.disabled = true;
-      
-      // Show notification
-      showNotification('Anunț marcat ca citit! 📖');
-      
-      // Save to localStorage
-      let readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements')) || [];
-      const announcementId = card.querySelector('h4').textContent;
-      if (!readAnnouncements.includes(announcementId)) {
-        readAnnouncements.push(announcementId);
-      }
-      localStorage.setItem('readAnnouncements', JSON.stringify(readAnnouncements));
-    });
+  if (window.__announcementButtonsBound) return;
+  window.__announcementButtonsBound = true;
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-mark-read');
+    if (!btn) return;
+
+    e.stopPropagation();
+
+    const card = btn.closest('.announcement-card');
+    if (!card || btn.disabled) return;
+
+    card.style.opacity = '0.6';
+    card.style.pointerEvents = 'none';
+    btn.textContent = '✓ Citit';
+    btn.disabled = true;
+
+    showNotification('Anunț marcat ca citit! 📖');
+
+    const readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements')) || [];
+    const announcementId = card.dataset.announcementId || card.querySelector('h4')?.textContent || 'announcement';
+    if (!readAnnouncements.includes(announcementId)) {
+      readAnnouncements.push(announcementId);
+    }
+    localStorage.setItem('readAnnouncements', JSON.stringify(readAnnouncements));
   });
 }
 
@@ -1113,13 +1245,38 @@ function initializeGlobalSearch() {
           }));
         }
       });
+
+      if (searchableData.professors.length === 0 && Array.isArray(window.OFFICIAL_PROFESSORS)) {
+        searchableData.professors = window.OFFICIAL_PROFESSORS.map((item, index) => ({
+          id: index + 1,
+          name: item.full_name || item.name || 'Profesor',
+          subject: item.specialization || item.subject || 'Specializare',
+          rating: 0,
+          email: item.institutional_email || item.email || '',
+          department: item.department || item.faculty || ''
+        }));
+      }
     } catch (error) {
       console.warn('Search DB preload failed:', error.message);
+      if (searchableData.professors.length === 0 && Array.isArray(window.OFFICIAL_PROFESSORS)) {
+        searchableData.professors = window.OFFICIAL_PROFESSORS.map((item, index) => ({
+          id: index + 1,
+          name: item.full_name || item.name || 'Profesor',
+          subject: item.specialization || item.subject || 'Specializare',
+          rating: 0,
+          email: item.institutional_email || item.email || '',
+          department: item.department || item.faculty || ''
+        }));
+      }
     }
   }
 
   collectDomContent();
   collectDatabaseContent();
+  window.refreshGlobalSearchIndex = async function() {
+    collectDomContent();
+    await collectDatabaseContent();
+  };
 
   function performSearch() {
     const query = globalSearchInput.value.trim();
@@ -1291,30 +1448,67 @@ function initializeDocumentFilters() {
   const categoryFilter = document.getElementById('categoryFilter') || document.getElementById('docTypeFilter');
   const disciplineFilter = document.getElementById('discipleFilter');
   const sortFilter = document.getElementById('sortFilter');
+  const searchInput = document.getElementById('docSearch');
+  const resetButton = document.getElementById('resetDocsFiltersBtn');
   const docsGrid = document.getElementById('docsGrid');
+  const specializationInputs = Array.from(document.querySelectorAll('.faculties-list input[type="checkbox"]'));
   
   if (!yearFilter) return; // Nu șu pe pagina de documente
+
+  const normalizeText = (value) => String(value || '')
+    .toLowerCase()
+    .replace(/-/g, ' ')
+    .replace(/ă/g, 'a')
+    .replace(/â/g, 'a')
+    .replace(/î/g, 'i')
+    .replace(/ș/g, 's')
+    .replace(/ț/g, 't')
+    .replace(/[^a-z0-9\s-]/g, ' ');
+
+  const getSelectedSpecializations = () => specializationInputs
+    .filter((input) => input.checked)
+    .map((input) => normalizeText(input.value || ''));
+
+  function resetDocumentFilters() {
+    if (searchInput) searchInput.value = '';
+    if (yearFilter) yearFilter.value = '';
+    if (categoryFilter) categoryFilter.value = '';
+    if (disciplineFilter) disciplineFilter.value = '';
+    if (sortFilter) sortFilter.value = '';
+    specializationInputs.forEach((input) => { input.checked = false; });
+
+    const cards = docsGrid ? docsGrid.querySelectorAll('.doc-card') : document.querySelectorAll('.doc-card');
+    cards.forEach((card) => {
+      card.style.display = 'flex';
+    });
+  }
   
   function filterDocuments() {
     const selectedYear = yearFilter.value;
     const selectedCategory = categoryFilter?.value || '';
     const selectedDiscipline = disciplineFilter?.value || '';
     const selectedSort = sortFilter?.value || '';
+    const selectedSearch = normalizeText(searchInput?.value || '');
+    const selectedSpecializations = getSelectedSpecializations();
     const docCards = docsGrid ? docsGrid.querySelectorAll('.doc-card') : document.querySelectorAll('.doc-card');
     
     // Filter
     docCards.forEach(card => {
       const cardMeta = (card.querySelector('.doc-meta')?.textContent || '').toLowerCase();
+      const cardText = normalizeText(card.textContent || '');
       const cardYear = card.getAttribute('data-year') || cardMeta.match(/anul\s*(\d+)/i)?.[1] || '';
       const cardCategory = card.getAttribute('data-category') || cardMeta;
+      const cardSpecialization = normalizeText(card.getAttribute('data-specialization') || cardMeta);
       
       const matchYear = !selectedYear || cardYear === selectedYear;
       const matchCategory = !selectedCategory || cardCategory.includes(selectedCategory.toLowerCase());
-      const matchDiscipline = !selectedDiscipline || cardMeta.includes(selectedDiscipline.toLowerCase().replace(/-/g, ' '));
+      const matchDiscipline = !selectedDiscipline || normalizeText(cardMeta).includes(normalizeText(selectedDiscipline.replace(/-/g, ' ')));
+      const matchSearch = !selectedSearch || cardText.includes(selectedSearch);
+      const matchSpecialization = selectedSpecializations.length === 0 || selectedSpecializations.some((spec) => cardSpecialization.includes(spec));
       
-      card.style.display = (matchYear && matchCategory && matchDiscipline) ? 'flex' : 'none';
+      card.style.display = (matchYear && matchCategory && matchDiscipline && matchSearch && matchSpecialization) ? 'flex' : 'none';
       
-      if (matchYear && matchCategory && matchDiscipline) {
+      if (matchYear && matchCategory && matchDiscipline && matchSearch && matchSpecialization) {
         card.style.animation = 'fadeInUp 0.4s ease-out';
       }
     });
@@ -1338,6 +1532,14 @@ function initializeDocumentFilters() {
   yearFilter?.addEventListener('change', filterDocuments);
   categoryFilter?.addEventListener('change', filterDocuments);
   sortFilter?.addEventListener('change', filterDocuments);
+  disciplineFilter?.addEventListener('change', filterDocuments);
+  searchInput?.addEventListener('input', filterDocuments);
+  specializationInputs.forEach((checkbox) => checkbox.addEventListener('change', filterDocuments));
+  resetButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    resetDocumentFilters();
+    filterDocuments();
+  });
 }
 
 function renderDynamicDocumentCard(documentRow) {
@@ -1346,9 +1548,11 @@ function renderDynamicDocumentCard(documentRow) {
 
   const title = escapeHtml(documentRow.titlu || documentRow.title || 'Document');
   const specialization = escapeHtml(documentRow.specializare || documentRow.specialization || 'General');
+  const subject = escapeHtml(documentRow.materie || documentRow.subject || documentRow.taught_subject || specialization || 'General');
   const year = String(documentRow.an_studiu || documentRow.year || '-');
   const type = escapeHtml(documentRow.tip || documentRow.type || 'Material');
   const department = escapeHtml(documentRow.departament || documentRow.department || 'Departament ULB');
+  const professorName = escapeHtml(documentRow.nume_profesor || documentRow.professor_name || documentRow.full_name || documentRow.author_name || 'Profesor');
   const description = escapeHtml(documentRow.descriere || documentRow.description || 'Fara descriere');
   const downloads = Number(documentRow.downloads || documentRow.numar_descarcari || 0);
   const rating = Number(documentRow.rating || 0);
@@ -1359,8 +1563,9 @@ function renderDynamicDocumentCard(documentRow) {
       <i class="fas fa-file-pdf"></i>
       <h3>${title}</h3>
     </div>
-    <p class="doc-meta">${specialization} | Anul ${year} | ${type}</p>
+    <p class="doc-meta">${subject} | Anul ${year} | ${type}</p>
     <p class="doc-faculty">${department}</p>
+    <p class="doc-author">👨‍🏫 ${professorName}</p>
     <p class="doc-description">${description}</p>
     <div class="doc-stats">
       <span class="doc-stat">📥 ${downloads} descarcari</span>
@@ -1383,10 +1588,7 @@ async function initializeDocumentsData() {
     const result = await getDocuments();
     docsGrid.innerHTML = '';
 
-    const sanitizedDocuments = (result.data || []).filter((row) => {
-      const title = String(row.titlu || row.title || '').toLowerCase();
-      return !title.includes('test');
-    });
+    const sanitizedDocuments = Array.isArray(result.data) ? result.data : [];
 
     if (!result.success || !Array.isArray(result.data) || sanitizedDocuments.length === 0) {
       const empty = document.createElement('div');
@@ -1488,6 +1690,318 @@ async function initializeQuestionsData() {
       showNotification('❌ Nu s-a putut salva întrebarea.');
     }
   });
+}
+
+function normalizeHomepageValue(value, fallback = '') {
+  const text = String(value || '').trim();
+  return text || fallback;
+}
+
+function formatHomepageAuthor(row = {}) {
+  const name = normalizeHomepageValue(row.name || row.full_name || row.nume_complet || row.author_name, '');
+  if (name) return name;
+
+  const email = normalizeHomepageValue(row.email || row.institutional_email || row.contact_email, '');
+  if (email) return email.split('@')[0];
+
+  const userId = normalizeHomepageValue(row.user_id || row.author || row.owner_id, '');
+  if (userId) return `Utilizator ${userId.slice(0, 6)}`;
+
+  return 'Student activ';
+}
+
+function buildHomepageTimeline({ documents = [], posts = [], questions = [], reviews = [] }) {
+  const items = [];
+
+  documents.slice(0, 3).forEach((item) => {
+    items.push({
+      id: `doc-${item.id}`,
+      type: 'document',
+      title: normalizeHomepageValue(item.titlu || item.title, 'Document nou'),
+      meta: `${normalizeHomepageValue(item.tip_document || item.type, 'Document')} • ${normalizeHomepageValue(item.specializare || item.specialization, 'Toate specializările')}`,
+      time: item.created_at,
+      badge: 'Doc',
+      tone: 'info'
+    });
+  });
+
+  posts.slice(0, 3).forEach((item) => {
+    items.push({
+      id: `post-${item.id}`,
+      type: 'post',
+      title: normalizeHomepageValue(item.title || item.titlu, 'Postare nouă'),
+      meta: `${formatHomepageAuthor(item)} • postare în forum`,
+      time: item.created_at,
+      badge: 'Forum',
+      tone: 'success'
+    });
+  });
+
+  questions.slice(0, 3).forEach((item) => {
+    items.push({
+      id: `question-${item.id}`,
+      type: 'question',
+      title: normalizeHomepageValue(item.title || item.titlu, 'Întrebare nouă'),
+      meta: `${formatHomepageAuthor(item)} • întrebare din comunitate`,
+      time: item.created_at,
+      badge: 'Q&A',
+      tone: 'warning'
+    });
+  });
+
+  reviews.slice(0, 3).forEach((item) => {
+    items.push({
+      id: `review-${item.id}`,
+      type: 'review',
+      title: normalizeHomepageValue(item.comentariu || item.comment || item.review_text, 'Recenzie nouă'),
+      meta: `${normalizeHomepageValue(item.title || item.materie || item.subject, 'Profesor')} • ⭐ ${Number(item.rating || 0).toFixed(1)}/5`,
+      time: item.created_at,
+      badge: 'Review',
+      tone: 'accent'
+    });
+  });
+
+  return items
+    .filter((item) => item.title)
+    .sort((left, right) => new Date(right.time || 0).getTime() - new Date(left.time || 0).getTime())
+    .slice(0, 3);
+}
+
+function renderHomepageAnnouncement(item) {
+  const card = document.createElement('div');
+  card.className = `announcement-card ${item.tone || 'info'}`;
+  card.dataset.announcementId = item.id;
+  card.innerHTML = `
+    <div class="announcement-badge">${item.badge}</div>
+    <h4>${escapeHtml(item.title)}</h4>
+    <p class="announcement-meta">${escapeHtml(item.meta)}</p>
+    <p class="announcement-text">${escapeHtml(item.text || 'Informație actualizată din baza de date.')}</p>
+    <div class="announcement-footer">
+      <span class="posted-time">⏰ ${formatTimeAgo(item.time)}</span>
+      <button class="btn-mark-read">Marchez ca citit</button>
+    </div>
+  `;
+  return card;
+}
+
+function renderHomepageActivityItem(item) {
+  const card = document.createElement('div');
+  card.className = 'activity-item';
+  card.innerHTML = `
+    <div class="activity-avatar">${escapeHtml(item.avatar || 'UL')}</div>
+    <div class="activity-content">
+      <h4>${escapeHtml(item.title)}</h4>
+      <p>${escapeHtml(item.text)}</p>
+      <span class="activity-time">${escapeHtml(formatTimeAgo(item.time))}</span>
+    </div>
+    <div class="activity-badge">${escapeHtml(item.badge)}</div>
+  `;
+  return card;
+}
+
+function renderHomepageLeaderboardItem(item, rank) {
+  const card = document.createElement('div');
+  card.className = `leaderboard-item rank${Math.min(rank, 3)}`;
+  card.innerHTML = `
+    <div class="rank">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}</div>
+    <div class="user-info">
+      <h4>${escapeHtml(item.name)}</h4>
+      <span class="badge ${escapeHtml(item.badgeClass)}">${escapeHtml(item.badge)}</span>
+    </div>
+    <div class="stats-right">
+      <span>${item.points} puncte</span>
+      <div class="progress-bar">
+        <div class="progress" style="width: ${item.progress}%"></div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function renderHomepageTestimonial(item) {
+  const card = document.createElement('div');
+  card.className = 'testimonial-card';
+  const stars = '★'.repeat(Math.max(1, Math.min(5, Math.round(Number(item.rating || 5)))));
+  card.innerHTML = `
+    <div class="stars-testimonial">${escapeHtml(stars)}</div>
+    <p class="testimonial-text">"${escapeHtml(item.comment)}"</p>
+    <div class="testimonial-author">
+      <div class="author-avatar">${escapeHtml(item.avatar)}</div>
+      <div>
+        <h4>${escapeHtml(item.author)}</h4>
+        <span>${escapeHtml(item.meta)}</span>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+async function initializeHomepageData() {
+  const statsGrid = document.getElementById('platformStatsGrid');
+  const announcementsFeed = document.getElementById('announcementsFeed');
+  const leaderboardFeed = document.getElementById('leaderboardFeed');
+  const activityFeed = document.getElementById('recentActivityFeed');
+  const testimonialsGrid = document.getElementById('testimonialsGrid');
+
+  if (!statsGrid && !announcementsFeed && !leaderboardFeed && !activityFeed && !testimonialsGrid) {
+    return;
+  }
+
+  try {
+    const [professorsResult, documentsResult, postsResult, questionsResult, reviewsResult] = await Promise.all([
+      typeof getProfessors === 'function' ? getProfessors() : Promise.resolve({ success: false, data: [] }),
+      typeof getDocuments === 'function' ? getDocuments() : Promise.resolve({ success: false, data: [] }),
+      typeof getPosts === 'function' ? getPosts() : Promise.resolve({ success: false, data: [] }),
+      typeof getQuestions === 'function' ? getQuestions() : Promise.resolve({ success: false, data: [] }),
+      typeof getProfessorReviews === 'function' ? getProfessorReviews() : Promise.resolve({ success: false, data: [] })
+    ]);
+
+    const client = typeof initSupabaseClient === 'function' ? await initSupabaseClient() : null;
+    const commentsResult = client
+      ? await client.from('comments').select('id,name,email,user_id,content,created_at,post_id').order('created_at', { ascending: false })
+      : { data: [], error: null };
+
+    const professors = Array.isArray(professorsResult.data) ? professorsResult.data : [];
+    const documents = Array.isArray(documentsResult.data) ? documentsResult.data : [];
+    const posts = Array.isArray(postsResult.data) ? postsResult.data : [];
+    const questions = Array.isArray(questionsResult.data) ? questionsResult.data : [];
+    const reviews = Array.isArray(reviewsResult.data) ? reviewsResult.data : [];
+    const comments = Array.isArray(commentsResult.data) ? commentsResult.data : [];
+
+    const averageReview = reviews.length
+      ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
+      : 0;
+
+    if (statsGrid) {
+      const statCards = Array.from(statsGrid.querySelectorAll('.stat-card'));
+      const values = [
+        `${professors.length}`,
+        `${documents.length}`,
+        `${posts.length + questions.length + comments.length}`,
+        averageReview ? `${averageReview.toFixed(1)}/5` : 'N/A'
+      ];
+      const labels = [
+        'Profesori în baza de date',
+        'Documente indexate',
+        'Contribuții comunității',
+        'Rating mediu al recenziilor'
+      ];
+
+      statCards.forEach((card, index) => {
+        const valueEl = card.querySelector('h3');
+        const labelEl = card.querySelector('.stat-content p');
+        if (valueEl && values[index]) valueEl.textContent = values[index];
+        if (labelEl && labels[index]) labelEl.textContent = labels[index];
+      });
+    }
+
+    if (announcementsFeed) {
+      const timeline = buildHomepageTimeline({ documents, posts, questions, reviews });
+      announcementsFeed.innerHTML = '';
+
+      if (timeline.length === 0) {
+        announcementsFeed.innerHTML = '<div class="announcement-card info"><h4>Nimic nou pentru moment</h4><p class="announcement-meta">Baza de date nu are încă anunțuri, documente sau postări recente.</p><p class="announcement-text">Revino după ce apar noi materiale sau discuții în comunitate.</p></div>';
+      } else {
+        timeline.forEach((item) => {
+          const announcement = renderHomepageAnnouncement({
+            ...item,
+            text: item.type === 'review'
+              ? 'Citește recenzia completă și verifică utilitatea ei în pagina profesorului.'
+              : item.type === 'question'
+                ? 'Apasă pentru a ajunge la discuția completă din forum.'
+                : item.type === 'post'
+                  ? 'Discuție nouă din comunitate, generată direct din baza de date.'
+                  : 'Material adăugat recent în biblioteca de documente.'
+          });
+          announcementsFeed.appendChild(announcement);
+        });
+      }
+    }
+
+    if (activityFeed) {
+      const activityItems = buildHomepageTimeline({ documents, posts, questions, reviews }).map((item) => ({
+        avatar: item.type === 'document' ? 'DOC' : item.type === 'review' ? 'REV' : item.type === 'question' ? 'Q&A' : 'FOR',
+        title: item.title,
+        text: item.meta,
+        time: item.time,
+        badge: item.badge
+      }));
+
+      activityFeed.innerHTML = '';
+      if (activityItems.length === 0) {
+        activityFeed.innerHTML = '<div class="activity-item"><div class="activity-avatar">UL</div><div class="activity-content"><h4>Fără activitate nouă</h4><p>Așteptăm prima contribuție în baza de date.</p><span class="activity-time">Acum</span></div><div class="activity-badge">Info</div></div>';
+      } else {
+        activityItems.forEach((item) => activityFeed.appendChild(renderHomepageActivityItem(item)));
+      }
+    }
+
+    if (leaderboardFeed) {
+      const authorStats = new Map();
+      const addContribution = (label, type, points, badge, badgeClass) => {
+        if (!label) return;
+        const key = label.toLowerCase();
+        const current = authorStats.get(key) || { name: label, posts: 0, questions: 0, comments: 0, points: 0, badge, badgeClass };
+        current[type] += 1;
+        current.points += points;
+        current.badge = badge || current.badge;
+        current.badgeClass = badgeClass || current.badgeClass;
+        authorStats.set(key, current);
+      };
+
+      posts.forEach((post) => addContribution(formatHomepageAuthor(post), 'posts', 10, 'Forum activ', 'active'));
+      questions.forEach((question) => addContribution(formatHomepageAuthor(question), 'questions', 12, 'Q&A util', 'curious'));
+      comments.forEach((comment) => addContribution(formatHomepageAuthor(comment), 'comments', 6, 'Ajutor în discuții', 'expert'));
+
+      const ranked = Array.from(authorStats.values())
+        .sort((left, right) => right.points - left.points)
+        .slice(0, 3);
+
+      leaderboardFeed.innerHTML = '';
+      if (ranked.length === 0) {
+        leaderboardFeed.innerHTML = '<div class="leaderboard-item"><div class="rank">#1</div><div class="user-info"><h4>Fără activitate încă</h4><span class="badge active">În așteptare</span></div><div class="stats-right"><span>0 puncte</span><div class="progress-bar"><div class="progress" style="width: 10%"></div></div></div></div>';
+      } else {
+        const maxPoints = ranked[0].points || 1;
+        ranked.forEach((item, index) => {
+          const leaderboardItem = renderHomepageLeaderboardItem({
+            name: item.name,
+            points: item.points,
+            badge: item.badge,
+            badgeClass: item.badgeClass,
+            progress: Math.max(12, Math.round((item.points / maxPoints) * 100))
+          }, index + 1);
+          leaderboardFeed.appendChild(leaderboardItem);
+        });
+      }
+    }
+
+    if (testimonialsGrid) {
+      const testimonials = reviews.slice(0, 3).map((review) => {
+        const professorName = review.title || review.professor_name || review.materie || 'Profesor';
+        const comment = review.comentariu || review.comment || review.review_text || 'Recenzie salvată în baza de date.';
+        const rating = Number(review.rating || 5);
+        return {
+          author: formatHomepageAuthor(review),
+          avatar: (formatHomepageAuthor(review).slice(0, 2) || 'UL').toUpperCase(),
+          comment,
+          rating,
+          meta: `${professorName} • ${rating.toFixed(1)}/5`
+        };
+      });
+
+      testimonialsGrid.innerHTML = '';
+      if (testimonials.length === 0) {
+        testimonialsGrid.innerHTML = '<div class="testimonial-card"><div class="stars-testimonial">★★★★★</div><p class="testimonial-text">"Nu există încă recenzii suficiente în baza de date."</p><div class="testimonial-author"><div class="author-avatar">UL</div><div><h4>ULBStudent</h4><span>Feedback în așteptare</span></div></div></div>';
+      } else {
+        testimonials.forEach((item) => testimonialsGrid.appendChild(renderHomepageTestimonial(item)));
+      }
+    }
+  } catch (error) {
+    console.warn('Nu s-au putut încărca datele homepage din baza de date:', error.message);
+  } finally {
+    if (typeof window.refreshGlobalSearchIndex === 'function') {
+      window.refreshGlobalSearchIndex().catch(() => {});
+    }
+  }
 }
 
 function renderPostCard(post, currentUser) {
@@ -1694,7 +2208,7 @@ async function initializeCommentsData() {
   if (!commentsList) return;
 
   const params = new URLSearchParams(window.location.search);
-  const postId = Number(params.get('post'));
+  const postId = String(params.get('post') || '').trim();
 
   if (!postId) {
     if (emptyState) emptyState.style.display = 'block';
@@ -1757,9 +2271,8 @@ async function initializeCommentsData() {
 
 async function initializeFeaturedProfessors() {
   const reviewCards = Array.from(document.querySelectorAll('.reviews-grid .review-card'));
-  const statCards = Array.from(document.querySelectorAll('.statistics-section .stat-card'));
 
-  if (reviewCards.length === 0 && statCards.length === 0) {
+  if (reviewCards.length === 0) {
     return;
   }
 
@@ -1786,17 +2299,20 @@ async function initializeFeaturedProfessors() {
 
     const featuredProfessors = professors.length > 0 ? professors.slice(0, 3) : [];
 
-    reviewCards.forEach((card, index) => {
+    for (const [index, card] of reviewCards.entries()) {
       const professor = featuredProfessors[index] || null;
-      if (!professor) return;
+      if (!professor) continue;
 
       const professorName = professor.full_name || professor.nume_complet || 'Profesor';
       const subject = professor.taught_subject || professor.materie_predata || professor.specialization || 'Specializare';
       const rows = reviewByProfessor.get(String(professor.id)) || [];
+      const primaryReviewId = rows[0]?.id || '';
       const avgRating = rows.length ? rows.reduce((sum, row) => sum + Number(row.rating || 0), 0) / rows.length : Number(professor.rating || 0);
       const difficulty = rows.length ? Math.max(1, Math.min(10, Math.round(11 - avgRating * 1.6))) : 0;
       const utility = rows.length ? Math.max(1, Math.min(10, Math.round(avgRating * 2))) : 0;
-      const helpful = rows.reduce((sum, row) => sum + Number(row.helpful_count || row.utile || row.likes || row.useful_likes || 0), 0) || rows.length * 12;
+      const helpful = primaryReviewId && typeof getProfessorReviewHelpfulCount === 'function'
+        ? (await getProfessorReviewHelpfulCount(primaryReviewId)).count || 0
+        : rows.reduce((sum, row) => sum + Number(row.helpful_count || row.utile || row.likes || row.useful_likes || 0), 0) || rows.length * 12;
       const advice = rows[0]?.advice || rows[0]?.sfat || rows[0]?.comment || rows[0]?.comentariu || 'Nimic încă';
       const reviewText = rows[0]?.comment || rows[0]?.comentariu || rows[0]?.review_text || 'Nu există recenzii suficient de multe încă.';
 
@@ -1814,32 +2330,13 @@ async function initializeFeaturedProfessors() {
       if (statsItems[2]) statsItems[2].textContent = `💡 Sfat: ${advice}`;
       if (reviewTextEl) reviewTextEl.textContent = reviewText;
       if (helpfulEl) helpfulEl.textContent = `👍 ${helpful} găsit util`;
+      if (helpfulEl) helpfulEl.dataset.reviewId = primaryReviewId;
 
       stars.forEach((star, starIndex) => {
         star.classList.toggle('filled', starIndex < Math.round(avgRating || 0));
       });
-    });
-
-    if (statCards.length >= 4) {
-      const studentCount = Math.max(0, professors.length * 38 + posts.length * 5 + documents.length * 2);
-      const documentCount = documents.length;
-      const discussionCount = posts.length + reviews.length + Math.max(0, (document.querySelectorAll('.question')?.length || 0));
-      const ratingAvg = reviews.length ? (reviews.reduce((sum, row) => sum + Number(row.rating || 0), 0) / reviews.length).toFixed(1) : '0.0';
-
-      const values = [
-        `${studentCount.toLocaleString('ro-RO')}+`,
-        `${documentCount.toLocaleString('ro-RO')}+`,
-        `${discussionCount.toLocaleString('ro-RO')}+`,
-        `${ratingAvg}/5`
-      ];
-
-      statCards.forEach((card, index) => {
-        const valueEl = card.querySelector('h3');
-        if (valueEl && values[index]) {
-          valueEl.textContent = values[index];
-        }
-      });
     }
+
   } catch (error) {
     console.warn('Could not load featured professors from database:', error.message);
   }

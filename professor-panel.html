@@ -1,0 +1,736 @@
+<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panou profesor - ULBStudent" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <title>Panou Profesor - ULBStudent</title>
+    <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <style>
+      .prof-panel {
+        max-width: 1320px;
+        margin: 2rem auto 3rem;
+        padding: 0 1.25rem;
+      }
+
+      .prof-hero {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1.2fr 0.8fr;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(15, 23, 42, 0.04));
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.35rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .prof-hero h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .prof-hero p {
+        margin: 0;
+        color: var(--text-secondary);
+      }
+
+      .prof-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.85rem;
+      }
+
+      .prof-badge {
+        border: 1px solid rgba(230, 57, 70, 0.25);
+        background: rgba(230, 57, 70, 0.08);
+        color: var(--text);
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.88rem;
+      }
+
+      .prof-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+      }
+
+      .prof-stat {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1rem;
+      }
+
+      .prof-stat strong {
+        display: block;
+        font-size: 1.5rem;
+        color: var(--accent);
+      }
+
+      .prof-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .prof-card {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 1.15rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .prof-card h2 {
+        margin-top: 0;
+      }
+
+      .prof-form {
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      .prof-form label {
+        display: grid;
+        gap: 0.35rem;
+        font-weight: 600;
+      }
+
+      .prof-form input,
+      .prof-form textarea,
+      .prof-form select {
+        width: 100%;
+        padding: 0.75rem 0.85rem;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--light-gray);
+        color: var(--text);
+      }
+
+      .prof-form textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .prof-form-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .prof-btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .prof-btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .prof-btn-secondary {
+        background: var(--light-gray);
+        color: var(--text);
+        border: 1px solid var(--border-color);
+      }
+
+      .prof-toolbar {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        margin: 1rem 0;
+      }
+
+      .prof-toolbar input {
+        min-width: min(100%, 320px);
+        padding: 0.7rem 0.85rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      .prof-table-wrap {
+        overflow-x: auto;
+      }
+
+      .prof-table {
+        width: 100%;
+        min-width: 940px;
+        border-collapse: collapse;
+      }
+
+      .prof-table th,
+      .prof-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .prof-table th {
+        color: var(--text-secondary);
+        font-size: 0.88rem;
+      }
+
+      .prof-row-actions {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+      }
+
+      .prof-row-actions button {
+        border: 0;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .prof-row-edit {
+        background: rgba(230, 57, 70, 0.14);
+        color: var(--accent);
+      }
+
+      .prof-row-delete {
+        background: rgba(239, 68, 68, 0.14);
+        color: #ef4444;
+      }
+
+      .prof-empty {
+        color: var(--text-secondary);
+        padding: 1rem 0;
+      }
+
+      .prof-help {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.08), rgba(59, 130, 246, 0.07));
+        border: 1px solid rgba(230, 57, 70, 0.18);
+        color: var(--text);
+      }
+
+      @media (max-width: 1024px) {
+        .prof-hero,
+        .prof-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .prof-panel {
+          padding: 0 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo" />
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="comments.html" class="nav-link">Discutii</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="prof-panel">
+      <section class="prof-hero">
+        <div>
+          <p style="margin:0 0 0.35rem; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">Panou profesor</p>
+          <h1 id="professorName">Se incarca...</h1>
+          <p id="professorMeta">Conectare la profilul profesorului si documentele aferente.</p>
+          <div class="prof-badges" id="subjectBadges"></div>
+        </div>
+        <div class="prof-stats">
+          <div class="prof-stat">
+            <span>Documente proprii</span>
+            <strong id="statDocuments">0</strong>
+          </div>
+          <div class="prof-stat">
+            <span>Materii atribuite</span>
+            <strong id="statSubjects">0</strong>
+          </div>
+          <div class="prof-stat">
+            <span>Tip curent</span>
+            <strong id="statRole">Profesor</strong>
+          </div>
+          <div class="prof-stat">
+            <span>Status acces</span>
+            <strong id="statAccess">Activ</strong>
+          </div>
+        </div>
+      </section>
+
+      <div class="prof-grid">
+        <section class="prof-card">
+          <h2>Adauga sau modifica document</h2>
+          <form id="professorDocumentForm" class="prof-form">
+            <input type="hidden" id="documentId" />
+            <label>
+              Titlu document
+              <input type="text" id="documentTitle" placeholder="Ex: Curs JavaScript avansat" required />
+            </label>
+            <label>
+              Materie atribuita
+              <select id="documentSubject" required></select>
+            </label>
+            <label>
+              Tip document
+              <select id="documentType" required>
+                <option value="curs">Curs</option>
+                <option value="seminar">Seminar</option>
+                <option value="laborator">Laborator</option>
+                <option value="proiect">Proiect</option>
+                <option value="examen">Examen</option>
+                <option value="referat">Referat</option>
+              </select>
+            </label>
+            <label>
+              An de studiu
+              <select id="documentYear" required>
+                <option value="1">Anul I</option>
+                <option value="2">Anul II</option>
+                <option value="3">Anul III</option>
+                <option value="4">Anul IV</option>
+              </select>
+            </label>
+            <label>
+              Descriere
+              <textarea id="documentDescription" placeholder="Descrie ce include materialul si cui i se adreseaza." required></textarea>
+            </label>
+            <label>
+              Incarca fisier
+              <input type="file" id="documentFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.txt,.png,.jpg,.jpeg" />
+            </label>
+            <label>
+              Sau URL fisier
+              <input type="url" id="documentUrl" placeholder="https://..." />
+            </label>
+            <div class="prof-form-actions">
+              <button type="submit" class="prof-btn prof-btn-primary" id="saveDocumentBtn">Salveaza document</button>
+              <button type="button" class="prof-btn prof-btn-secondary" id="resetDocumentBtn">Curata formularul</button>
+            </div>
+          </form>
+          <div class="prof-help">
+            Documentele sunt legate automat de contul profesorului conectat si pot fi editate doar din acest panou.
+          </div>
+        </section>
+
+        <section class="prof-card">
+          <h2>Documentele mele</h2>
+          <div class="prof-toolbar">
+            <input type="text" id="documentsSearch" placeholder="Cauta dupa titlu, materie sau tip..." />
+            <button type="button" class="prof-btn prof-btn-secondary" id="refreshDocumentsBtn">Reincarca</button>
+          </div>
+          <div class="prof-table-wrap">
+            <table class="prof-table">
+              <thead>
+                <tr>
+                  <th>Titlu</th>
+                  <th>Materie</th>
+                  <th>Tip</th>
+                  <th>An</th>
+                  <th>Fișier</th>
+                  <th>Actiuni</th>
+                </tr>
+              </thead>
+              <tbody id="documentsTableBody"></tbody>
+            </table>
+          </div>
+          <p id="documentsEmpty" class="prof-empty" style="display:none;">Nu exista inca documente pentru acest profesor.</p>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>ULBStudent</h4>
+          <p>Panoul profesorului pentru materiale, materii si documente proprii.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="interactive.js"></script>
+    <script>
+      const state = {
+        professor: null,
+        documents: [],
+        subjects: [],
+        search: ''
+      };
+
+      const PROFESSOR_DOCUMENTS_BUCKET = 'documente';
+
+      function parseSubjectList(row = {}) {
+        const raw = row.materie || row.materie_predata || row.taught_subject || row.specialization || '';
+        return String(raw)
+          .split(/[,;/|\n]+/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      function getFileUrlFromDocument(row = {}) {
+        if (row.file_url || row.url_fisier || row.url) {
+          return row.file_url || row.url_fisier || row.url || '';
+        }
+
+        const bucket = row.storage_bucket || row.bucket;
+        const storagePath = row.storage_path || row.path_fisier || row.file_path || '';
+        if (!bucket || !storagePath || !window.SUPABASE_CONFIG?.url) {
+          return '';
+        }
+
+        const cleanedPath = String(storagePath).replace(/^\/+/, '');
+        return `${window.SUPABASE_CONFIG.url}/storage/v1/object/public/${encodeURIComponent(bucket)}/${cleanedPath}`;
+      }
+
+      function getDocumentFileName(row = {}) {
+        return row.file_name || row.nume_fisier || row.original_file_name || '';
+      }
+
+      function getDocumentTitle(row = {}) {
+        return row.titlu || row.title || 'Document';
+      }
+
+      function getDocumentSubject(row = {}) {
+        return row.materie || row.subject || row.taught_subject || 'Materie';
+      }
+
+      function getDocumentType(row = {}) {
+        return row.tip_document || row.type || 'Material';
+      }
+
+      function getDocumentYear(row = {}) {
+        return row.an_studiu || row.year || '-';
+      }
+
+      function setMessage(text) {
+        if (typeof showNotification === 'function') {
+          showNotification(text);
+        }
+      }
+
+      function renderSubjectOptions(selectedValue = '') {
+        const select = document.getElementById('documentSubject');
+        if (!select) return;
+
+        const selected = String(selectedValue || '').trim();
+        const options = state.subjects.length
+          ? state.subjects
+          : ['Materie atribuita'];
+
+        select.innerHTML = options.map((subject) => {
+          const isSelected = selected ? subject.toLowerCase() === selected.toLowerCase() : false;
+          return `<option value="${escapeHtml(subject)}" ${isSelected ? 'selected' : ''}>${escapeHtml(subject)}</option>`;
+        }).join('');
+      }
+
+      function renderSubjectBadges() {
+        const container = document.getElementById('subjectBadges');
+        if (!container) return;
+        container.innerHTML = state.subjects.map((subject) => `<span class="prof-badge">${escapeHtml(subject)}</span>`).join('') || '<span class="prof-badge">Materie neatribuita</span>';
+      }
+
+      function renderStats() {
+        document.getElementById('statDocuments').textContent = String(state.documents.length);
+        document.getElementById('statSubjects').textContent = String(state.subjects.length);
+      }
+
+      function renderDocuments() {
+        const tbody = document.getElementById('documentsTableBody');
+        const emptyState = document.getElementById('documentsEmpty');
+        const query = state.search.trim().toLowerCase();
+        const filtered = state.documents.filter((row) => {
+          if (!query) return true;
+          const haystack = [
+            getDocumentTitle(row),
+            getDocumentSubject(row),
+            getDocumentType(row),
+            String(getDocumentYear(row))
+          ].join(' ').toLowerCase();
+          return haystack.includes(query);
+        });
+
+        tbody.innerHTML = '';
+        emptyState.style.display = filtered.length ? 'none' : 'block';
+
+        filtered.forEach((row) => {
+          const tr = document.createElement('tr');
+          const docId = row.id;
+          tr.innerHTML = `
+            <td>${escapeHtml(getDocumentTitle(row))}</td>
+            <td>${escapeHtml(getDocumentSubject(row))}</td>
+            <td>${escapeHtml(getDocumentType(row))}</td>
+            <td>${escapeHtml(getDocumentYear(row))}</td>
+            <td>
+              ${getFileUrlFromDocument(row) ? `<a href="${escapeHtml(getFileUrlFromDocument(row))}" target="_blank" rel="noopener noreferrer">Deschide</a>` : '-'}
+              ${!getFileUrlFromDocument(row) && getDocumentFileName(row) ? `<div style="color: var(--text-secondary); font-size: 0.82rem; margin-top: 0.25rem;">${escapeHtml(getDocumentFileName(row))}</div>` : ''}
+            </td>
+            <td>
+              <div class="prof-row-actions">
+                <button type="button" class="prof-row-edit" data-action="edit-document" data-id="${escapeHtml(docId)}">Editeaza</button>
+                <button type="button" class="prof-row-delete" data-action="delete-document" data-id="${escapeHtml(docId)}">Sterge</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function uploadDocumentFile(file) {
+        const client = await initSupabaseClient();
+        const safeName = `${Date.now()}-${file.name}`.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const storagePath = `professors/${safeName}`;
+
+        try {
+          const result = await client.storage.from(PROFESSOR_DOCUMENTS_BUCKET).upload(storagePath, file, {
+            upsert: true,
+            cacheControl: '3600'
+          });
+
+          if (result.error) {
+            throw result.error;
+          }
+
+          const publicUrl = client.storage.from(PROFESSOR_DOCUMENTS_BUCKET).getPublicUrl(result.data.path).data.publicUrl;
+          return {
+            success: true,
+            bucket: PROFESSOR_DOCUMENTS_BUCKET,
+            path: result.data.path,
+            publicUrl
+          };
+        } catch (error) {
+          return {
+            success: false,
+            bucket: PROFESSOR_DOCUMENTS_BUCKET,
+            path: storagePath,
+            publicUrl: '',
+            error: error?.message || 'Nu s-a putut incarca fisierul.'
+          };
+        }
+      }
+
+      async function refreshDocuments() {
+        const context = await getCurrentProfessorContext();
+        if (!context.user || !context.professor) {
+          setMessage('Contul conectat nu este asociat unui profesor.');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        state.professor = context.professor;
+        state.subjects = parseSubjectList(context.professor);
+        document.getElementById('professorName').textContent = context.professor.full_name || context.professor.nume_complet || context.user.email || 'Profesor';
+        document.getElementById('professorMeta').textContent = `${context.professor.institutional_email || context.professor.email || context.user.email || ''} • ${context.professor.department || context.professor.departament || 'Departament'}`;
+        renderSubjectBadges();
+        renderSubjectOptions(document.getElementById('documentSubject')?.value || state.subjects[0] || '');
+
+        const docsResult = await getProfessorDocuments(context.professor.user_id || context.user.id, context.professor.institutional_email || context.professor.email || context.user.email || '');
+        state.documents = docsResult.success ? docsResult.data : [];
+        if (!docsResult.success) {
+          setMessage(docsResult.error || 'Nu s-au putut incarca documentele.');
+        }
+
+        renderStats();
+        renderDocuments();
+      }
+
+      function resetForm() {
+        const form = document.getElementById('professorDocumentForm');
+        form.reset();
+        document.getElementById('documentId').value = '';
+        renderSubjectOptions(state.subjects[0] || '');
+        document.getElementById('saveDocumentBtn').textContent = 'Salveaza document';
+      }
+
+      async function handleSaveDocument(event) {
+        event.preventDefault();
+
+        if (!state.professor) {
+          setMessage('Nu exista un profesor asociat acestui cont.');
+          return;
+        }
+
+        const title = document.getElementById('documentTitle').value.trim();
+        const subject = document.getElementById('documentSubject').value.trim();
+        const type = document.getElementById('documentType').value.trim();
+        const year = document.getElementById('documentYear').value.trim();
+        const description = document.getElementById('documentDescription').value.trim();
+        const fileInput = document.getElementById('documentFile');
+        const urlField = document.getElementById('documentUrl').value.trim();
+        const documentId = document.getElementById('documentId').value.trim();
+
+        if (!title || !subject || !type || !year || !description) {
+          setMessage('Completeaza toate campurile obligatorii.');
+          return;
+        }
+
+        let fileUrl = urlField;
+        let fileName = fileInput.files?.[0]?.name || '';
+        let storageBucket = '';
+        let storagePath = '';
+        let uploadWarning = '';
+        const file = fileInput.files?.[0];
+        if (file) {
+          const uploadResult = await uploadDocumentFile(file);
+          storageBucket = uploadResult.bucket || '';
+          storagePath = uploadResult.path || '';
+          if (uploadResult.success) {
+            fileUrl = uploadResult.publicUrl || fileUrl;
+          } else {
+            uploadWarning = `Upload Storage indisponibil (${PROFESSOR_DOCUMENTS_BUCKET}): ${uploadResult.error || 'eroare necunoscuta'}`;
+          }
+        }
+
+        if (!fileUrl) {
+          if (!fileName && !urlField) {
+            setMessage('Adauga un fisier sau un URL valid.');
+            return;
+          }
+        }
+
+        const payload = {
+          title,
+          subject,
+          type,
+          year,
+          description,
+          file_name: fileName,
+          storage_bucket: storageBucket,
+          storage_path: storagePath,
+          fisier_path: storagePath || fileUrl || fileName || `manual/${Date.now()}-document`,
+          file_path: storagePath || fileUrl || fileName || `manual/${Date.now()}-document`,
+          file_url: fileUrl,
+          professor_id: state.professor.user_id,
+          professor_name: state.professor.full_name || state.professor.nume_complet || '',
+          professor_email: state.professor.institutional_email || state.professor.email || ''
+        };
+
+        const result = documentId
+          ? await updateProfessorDocument(documentId, payload)
+          : await saveProfessorDocument(payload);
+
+        if (!result.success) {
+          const errorText = String(result.error || '');
+          if (errorText.toLowerCase().includes('row-level security')) {
+            setMessage('Blocat de politica RLS pentru tabela documente. Ruleaza scriptul SUPABASE_PRODUCTION_SETUP.sql (sectiunea documente + storage) in SQL Editor.');
+            return;
+          }
+          setMessage(result.error || 'Nu s-a putut salva documentul.');
+          return;
+        }
+
+        if (uploadWarning) {
+          setMessage(`${documentId ? 'Document actualizat' : 'Document salvat'}, dar fara link public de fisier. ${uploadWarning}`);
+        } else {
+          setMessage(documentId ? 'Document actualizat.' : 'Document salvat.');
+        }
+        resetForm();
+        await refreshDocuments();
+      }
+
+      function fillFormFromRow(row) {
+        document.getElementById('documentId').value = row.id || '';
+        document.getElementById('documentTitle').value = getDocumentTitle(row);
+        renderSubjectOptions(getDocumentSubject(row));
+        document.getElementById('documentType').value = row.tip_document || row.type || 'curs';
+        document.getElementById('documentYear').value = String(row.an_studiu || row.year || '1');
+        document.getElementById('documentDescription').value = row.descriere || row.description || '';
+        document.getElementById('documentUrl').value = getFileUrlFromDocument(row);
+        const fileName = getDocumentFileName(row);
+        if (fileName) {
+          setMessage(`Se editeaza documentul: ${fileName}`);
+        }
+        document.getElementById('saveDocumentBtn').textContent = 'Actualizeaza document';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function handleTableActions(event) {
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
+
+        const action = button.getAttribute('data-action');
+        const id = button.getAttribute('data-id');
+        const selected = state.documents.find((row) => String(row.id) === String(id));
+
+        if (action === 'edit-document' && selected) {
+          fillFormFromRow(selected);
+          return;
+        }
+
+        if (action === 'delete-document' && id) {
+          if (!window.confirm('Stergi acest document?')) return;
+          const result = await deleteProfessorDocument(id);
+          if (!result.success) {
+            setMessage(result.error || 'Nu s-a putut sterge documentul.');
+            return;
+          }
+          setMessage('Document sters.');
+          await refreshDocuments();
+        }
+      }
+
+      async function initializeProfessorPanel() {
+        await protectPage();
+        const user = await getAuthenticatedUser(false);
+        if (!user?.id) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const role = String(localStorage.getItem('role') || user.user_metadata?.role || user.user_metadata?.account_type || '').toLowerCase();
+        if (role !== 'profesor' && role !== 'professor') {
+          const context = await getCurrentProfessorContext();
+          if (!context.professor) {
+            setMessage('Acest cont nu are permisiuni de profesor.');
+            window.location.href = 'index.html';
+            return;
+          }
+        }
+
+        await refreshDocuments();
+        renderSubjectOptions(state.subjects[0] || '');
+        renderStats();
+
+        document.getElementById('professorDocumentForm').addEventListener('submit', handleSaveDocument);
+        document.getElementById('resetDocumentBtn').addEventListener('click', resetForm);
+        document.getElementById('refreshDocumentsBtn').addEventListener('click', refreshDocuments);
+        document.getElementById('documentsSearch').addEventListener('input', (event) => {
+          state.search = event.target.value;
+          renderDocuments();
+        });
+        document.getElementById('documentsTableBody').addEventListener('click', handleTableActions);
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeProfessorPanel);
+    </script>
+  </body>
+</html>

@@ -59,7 +59,7 @@ async function loadProfessorProfile() {
       const fullName = currentProfessor.nume_complet || currentProfessor.full_name || 'Profesor';
       const specialization = currentProfessor.specializare || currentProfessor.specialization || '-';
       const email = currentProfessor.email || currentProfessor.institutional_email || '-';
-      const subjects = currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || '-';
+      const subjects = currentProfessor.materie || currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || '-';
 
       nameEl.textContent = fullName;
       specializationEl.textContent = `Specializare: ${specialization}`;

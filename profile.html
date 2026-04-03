@@ -431,7 +431,6 @@
       </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <script src="interactive.js"></script>
     <script>
@@ -450,8 +449,10 @@
           }
 
           const cachedRole = localStorage.getItem('role');
+          const metadataRole = String(user.user_metadata?.role || '').toLowerCase();
           const accountType = profileData.data?.account_type || user.user_metadata?.account_type || ((cachedRole === 'profesor' || cachedRole === 'professor') ? 'professor' : 'student');
-          const isProfessor = accountType === 'professor' || accountType === 'profesor';
+          const isAdmin = cachedRole === 'admin' || metadataRole === 'admin' || String(user.email || '').toLowerCase() === 'admin@ulbstudent.ro';
+          const isProfessor = !isAdmin && (accountType === 'professor' || accountType === 'profesor');
         
           const fullName = profileData.data?.full_name || profileData.data?.nume_complet || user.user_metadata?.full_name || user.email;
           const year = profileData.data?.year || profileData.data?.an_studiu || '-';
@@ -463,7 +464,7 @@
           // Update header
           document.getElementById('profileFullName').textContent = fullName;
           document.getElementById('profileEmail').textContent = user.email;
-          document.getElementById('profileRole').textContent = isProfessor ? 'Cont Profesor conectat' : 'Cont Student conectat';
+          document.getElementById('profileRole').textContent = isAdmin ? 'Cont ADMIN conectat' : (isProfessor ? 'Cont Profesor conectat' : 'Cont Student conectat');
 
           const studentPanel = document.getElementById('studentProfilePanel');
           const professorPanel = document.getElementById('professorProfilePanel');
@@ -473,7 +474,15 @@
           const recentSectionTitle = document.getElementById('recentSectionTitle');
           const editProfileBtn = document.getElementById('editProfileBtn');
 
-          if (isProfessor) {
+          if (isAdmin) {
+            if (studentPanel) studentPanel.classList.add('hidden');
+            if (professorPanel) professorPanel.classList.add('hidden');
+            if (yearLabel) yearLabel.textContent = 'Nivel acces';
+            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Administrativ';
+            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Platformă';
+            if (recentSectionTitle) recentSectionTitle.textContent = 'Evenimente Recente';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-user-shield"></i> Editează Profil Admin';
+          } else if (isProfessor) {
             if (studentPanel) studentPanel.classList.add('hidden');
             if (professorPanel) professorPanel.classList.remove('hidden');
             if (yearLabel) yearLabel.textContent = 'Ani de predare';
@@ -494,14 +503,18 @@
           // Update info section
           document.getElementById('infoFullName').textContent = fullName;
           document.getElementById('infoEmail').textContent = user.email;
-          document.getElementById('infoYear').textContent = isProfessor ? (teachingYears || '-') : (year || '-');
+          document.getElementById('infoYear').textContent = isAdmin ? 'Administrator' : (isProfessor ? (teachingYears || '-') : (year || '-'));
           document.getElementById('infoSpecialization').textContent = specialization || '-';
 
           const facultyInfoItem = document.getElementById('facultyInfoItem');
           const subjectInfoItem = document.getElementById('subjectInfoItem');
           const teachingYearsInfoItem = document.getElementById('teachingYearsInfoItem');
 
-          if (isProfessor) {
+          if (isAdmin) {
+            if (facultyInfoItem) facultyInfoItem.style.display = 'none';
+            if (subjectInfoItem) subjectInfoItem.style.display = 'none';
+            if (teachingYearsInfoItem) teachingYearsInfoItem.style.display = 'none';
+          } else if (isProfessor) {
             if (facultyInfoItem) facultyInfoItem.style.display = 'block';
             if (subjectInfoItem) subjectInfoItem.style.display = 'block';
             if (teachingYearsInfoItem) teachingYearsInfoItem.style.display = 'block';
@@ -544,7 +557,7 @@
           const professorEditFields = document.getElementById('professorEditFields');
         
           editBtn.addEventListener('click', () => {
-          if (isProfessor) {
+          if (isProfessor || isAdmin) {
             if (studentEditFields) studentEditFields.style.display = 'none';
             if (professorEditFields) professorEditFields.style.display = 'block';
             document.getElementById('professorEditFullName').value = fullName;
@@ -568,16 +581,16 @@
         
           form.addEventListener('submit', async (e) => {
           e.preventDefault();
-          const newFullName = isProfessor
+          const newFullName = (isProfessor || isAdmin)
             ? document.getElementById('professorEditFullName').value
             : document.getElementById('studentEditFullName').value;
-          const newYear = isProfessor ? '' : document.getElementById('studentEditYear').value;
-          const newSpec = isProfessor
+          const newYear = (isProfessor || isAdmin) ? '' : document.getElementById('studentEditYear').value;
+          const newSpec = (isProfessor || isAdmin)
             ? document.getElementById('professorEditSpecialization').value
             : document.getElementById('studentEditSpecialization').value;
-          const newFaculty = isProfessor ? (document.getElementById('professorEditFaculty')?.value || faculty) : faculty;
-          const newSubject = isProfessor ? (document.getElementById('professorEditSubject')?.value || subject) : subject;
-          const newTeachingYears = isProfessor
+          const newFaculty = (isProfessor || isAdmin) ? (document.getElementById('professorEditFaculty')?.value || faculty) : faculty;
+          const newSubject = (isProfessor || isAdmin) ? (document.getElementById('professorEditSubject')?.value || subject) : subject;
+          const newTeachingYears = (isProfessor || isAdmin)
             ? (document.getElementById('professorEditTeachingYears')?.value || teachingYears || '').split(',').map(item => item.trim()).filter(Boolean)
             : [];
           
