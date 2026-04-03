@@ -11,9 +11,7 @@ const TABLES = {
   POSTS_LEGACY: 'posts',
   COMMENTS: 'comments',
   QUESTIONS: 'questions',
-  MATCH_PROFILES: 'profiluri_matching',
   MATCHES: 'matches',
-  TEAM_MATCHES: 'team_matches',
   PROFESSOR_REVIEWS: 'recenzii_profesori'
 };
 
@@ -1123,79 +1121,6 @@ async function upsertProfessors(professors) {
   }
 }
 
-/**
- * Save Team Match to Database
- * Preferred table: team_matches
- * Fallback table: matches
- */
-async function saveTeamMatch(profile, matchType) {
-  try {
-    const client = await initSupabaseClient();
-    const user = getCurrentUser();
-
-    if (!user?.id) {
-      throw new Error('User not authenticated');
-    }
-
-    const preferredPayload = {
-      user_id: user.id,
-      profile_id: String(profile.id),
-      profile_name: profile.name,
-      profile_year: profile.year,
-      profile_specialization: profile.specialization,
-      profile_skills: profile.skills,
-      match_type: matchType
-    };
-
-    // Tabelul cerut in proiect: profiluri_matching
-    const matchingInsert = await client
-      .from(TABLES.MATCH_PROFILES)
-      .insert([{
-        user_id: user.id,
-        profil_nume: profile.name,
-        profil_an: profile.year,
-        profil_specializare: profile.specialization,
-        profil_skilluri: profile.skills,
-        tip_match: matchType
-      }])
-      .select();
-
-    if (!matchingInsert.error) {
-      return { success: true, data: matchingInsert.data, source: TABLES.MATCH_PROFILES };
-    }
-
-    // Try team_matches first (rich payload)
-    const preferredInsert = await client
-      .from(TABLES.TEAM_MATCHES)
-      .insert([preferredPayload])
-      .select();
-
-    if (!preferredInsert.error) {
-      return { success: true, data: preferredInsert.data, source: 'team_matches' };
-    }
-
-    // Fallback for existing `matches` table
-    const fallbackPayload = {
-      user_id_1: user.id,
-      user_id_2: null,
-      match_type: `${matchType}:${profile.name}`
-    };
-
-    const fallbackInsert = await client
-      .from(TABLES.MATCHES)
-      .insert([fallbackPayload])
-      .select();
-
-    if (fallbackInsert.error) {
-      throw new Error(fallbackInsert.error.message);
-    }
-
-    return { success: true, data: fallbackInsert.data, source: 'matches' };
-  } catch (error) {
-    console.error('❌ Error saving team match:', error.message);
-    return { success: false, data: [], error: error.message };
-  }
-}
 
 /**
  * Update Post Votes (Upvote/Downvote)
@@ -1276,58 +1201,6 @@ async function updateQuestionVotes(questionId, voteDirection) {
   } catch (error) {
     console.error('❌ Error updating question votes:', error.message);
     return { success: false, error: error.message };
-  }
-}
-
-/**
- * Get Team Matches from Database
- */
-async function getTeamMatches() {
-  try {
-    const client = await initSupabaseClient();
-    const user = getCurrentUser();
-
-    if (!user?.id) {
-      return { success: false, data: [] };
-    }
-
-    // 1) Tabel principal din proiect
-    const matchingSelect = await client
-      .from(TABLES.MATCH_PROFILES)
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (!matchingSelect.error) {
-      return { success: true, data: matchingSelect.data, source: TABLES.MATCH_PROFILES };
-    }
-
-    // 2) Fallback team_matches
-    const preferredSelect = await client
-      .from(TABLES.TEAM_MATCHES)
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (!preferredSelect.error) {
-      return { success: true, data: preferredSelect.data, source: 'team_matches' };
-    }
-
-    // Fallback to matches
-    const fallbackSelect = await client
-      .from(TABLES.MATCHES)
-      .select('*')
-      .eq('user_id_1', user.id)
-      .order('created_at', { ascending: false });
-
-    if (fallbackSelect.error) {
-      throw new Error(fallbackSelect.error.message);
-    }
-
-    return { success: true, data: fallbackSelect.data, source: 'matches' };
-  } catch (error) {
-    console.error('❌ Error loading team matches:', error.message);
-    return { success: false, data: [] };
   }
 }
 
@@ -1466,7 +1339,6 @@ async function protectPage() {
     'index.html',
     'documente.html',
     'subreddit.html',
-    'team-matching.html',
     'comments.html'
   ];
   
@@ -1604,13 +1476,16 @@ function showUserMenuInHeader(headerActions, user) {
   userMenu.style.cssText = `
     display: flex;
     align-items: center;
-    gap: ${isMobileScreen ? '0.5rem' : '1rem'};
-    background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
-    padding: ${isMobileScreen ? '0.5rem 0.75rem' : '0.5rem 1rem'};
-    border-radius: 8px;
+    gap: ${isMobileScreen ? '0.45rem' : '0.75rem'};
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.16) 0%, rgba(230, 57, 70, 0.26) 100%);
+    border: 1px solid rgba(230, 57, 70, 0.35);
+    box-shadow: 0 8px 18px rgba(230, 57, 70, 0.18);
+    backdrop-filter: blur(10px);
+    padding: ${isMobileScreen ? '0.42rem 0.62rem' : '0.45rem 0.78rem'};
+    border-radius: 10px;
     cursor: pointer;
     position: relative;
-    font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};
+    font-size: ${isMobileScreen ? '0.76rem' : '0.86rem'};
   `;
   
   const userEmail = user.email || 'Student';
@@ -1624,14 +1499,14 @@ function showUserMenuInHeader(headerActions, user) {
   
   userMenu.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.2rem' : '1.5rem'}; color: white;"></i>
-      <div style="color: white; display: flex; flex-direction: column;">
-        <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.8rem' : '0.9rem'};">${escapeHtml(userName)}</div>
+      <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.05rem' : '1.28rem'}; color: var(--accent);"></i>
+      <div style="color: var(--text); display: flex; flex-direction: column;">
+        <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.74rem' : '0.82rem'};">${escapeHtml(userName)}</div>
         <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsProfessor ? '#ffd166' : roleColor}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
-        ${showEmail ? `<div style="font-size: 0.7rem; opacity: 0.9;">${escapeHtml(userEmail)}</div>` : ''}
+        ${showEmail ? `<div style="font-size: 0.66rem; opacity: 0.82;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>
-    <i class="fas fa-chevron-down" style="color: white; font-size: 0.7rem;"></i>
+    <i class="fas fa-chevron-down" style="color: var(--text); font-size: 0.66rem;"></i>
   `;
   
   // Create dropdown menu
@@ -1742,15 +1617,20 @@ function escapeHtml(text) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const isAuthPage = currentPage === 'login.html' || currentPage === 'register.html';
+
+  // Render quickly from local cache first to avoid visible delay in header account box.
+  const headerRenderPromise = updateHeaderWithUserInfo();
   
   // Initialize Supabase on all pages
   await initSupabaseClient();
   
   // Protect pages and update header on all pages
-  if (currentPage !== 'login.html' && currentPage !== 'register.html') {
+  if (!isAuthPage) {
     await protectPage();
   }
   
-  // Update header with user info on all pages
+  // Ensure first render completed, then refresh with latest session state.
+  await headerRenderPromise;
   await updateHeaderWithUserInfo();
 });

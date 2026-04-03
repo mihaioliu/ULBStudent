@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
   // Inițializez toate funcțiile interactive când DOM este gata
+  initializeUnifiedFooter();       // 🧩 Footer unificat pe toate paginile
   initializeThemeToggle();          // 🌓 Tema (Light/Dark/Night)
   initializeVotingSystem();         // 👍 Sistem de upvote/downvote
   initializeNavigation();           // 🔗 Marcaje active în meniu
@@ -34,6 +35,55 @@ document.addEventListener('DOMContentLoaded', function() {
   // Show page only after initialization to avoid flash between navigations
   document.body.classList.add('page-ready');
 });
+
+/**
+ * Normalizez footer-ul la aceeași structură pe toate paginile.
+ */
+function initializeUnifiedFooter() {
+  const footer = document.querySelector('footer');
+  if (!footer || footer.dataset.lockedFooter === 'true') {
+    return;
+  }
+
+  const year = new Date().getFullYear();
+
+  footer.innerHTML = `
+    <div class="footer-content">
+      <div class="footer-section">
+        <img src="assets/Logos%20and%20icons/ulbsfmi-logo-white.png" alt="ULBS FMI" class="footer-brand-logo">
+        <p>Comunitate pentru studentii ULBS: intrebari, resurse, colaborare si progres academic.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Pagini importante</h4>
+        <ul>
+          <li><a href="index.html">Acasa</a></li>
+          <li><a href="subreddit.html">Forum</a></li>
+          <li><a href="documente.html">Documente</a></li>
+          <li><a href="profesori.html">Profesori</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Cont si suport</h4>
+        <ul>
+          <li><a href="login.html">Conectare</a></li>
+          <li><a href="register.html">Inregistrare</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="raporteaza-problema.html">Raporteaza problema</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="termeni-conditii.html">Termeni si conditii</a></li>
+          <li><a href="politica-confidentialitate.html">Politica de confidentialitate</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; ${year} ULBS Student Hub. Toate drepturile rezervate.</p>
+    </div>
+  `;
+}
 
 /**
  * 0. THEME TOGGLE - Comută între Light/Dark/Night mode
@@ -543,8 +593,9 @@ function initializeAIChat() {
   const aiChatBtn = document.createElement('button');
   aiChatBtn.id = 'aiChatBtn';
   aiChatBtn.className = 'fab-button show';
-  aiChatBtn.innerHTML = '<i class="fas fa-comments"></i>';
+  aiChatBtn.innerHTML = '<img src="assets/Logos%20and%20icons/ulbstudent-icon-circle-border.png" alt="AI" class="ai-btn-icon">';
   aiChatBtn.title = 'Deschide chat AI';
+  aiChatBtn.setAttribute('aria-label', 'Deschide chat AI');
   
   fabContainer.insertBefore(aiChatBtn, fabContainer.firstChild);
   
@@ -872,8 +923,9 @@ function initializeReviewInteractions() {
     helpful.addEventListener('click', function(e) {
       e.stopPropagation();
       
-      // Get current count
-      let count = parseInt(this.textContent);
+      // Extract the first number from text (e.g. "👍 425 găsit util").
+      const countMatch = String(this.textContent || '').match(/\d+/);
+      let count = countMatch ? parseInt(countMatch[0], 10) : 0;
       
       // Increment count
       count++;

@@ -1,84 +1,70 @@
-# Structura CSS Refactorizată
+# Structura CSS Refactorizata
 
-Bun venit! CSS-ul a fost reorganizat în mai multe fișiere pentru o mai bună mentenabilitate și performanță. Iată cum usar fiecare pagină HTML:
+Bun venit! CSS-ul a fost reorganizat in mai multe fisiere pentru mentenabilitate si performanta mai bune.
 
-## Fișiers CSS disponibile
+## Fisiere CSS disponibile
 
-- **styles.css** (original) - Păstrat pentru compatibilitate
-- **styles-global.css** - Stiluri globale comune (header, footer, variabile, dark mode)
-- **styles-subreddit.css** - Stiluri specifice pentru subreddit.html
-- **styles-team-matching.css** - Stiluri specifice pentru team-matching.html
-- **styles-documents.css** - Stiluri specifice pentru documente.html
-- **styles-professors.css** - Stiluri specifice pentru pagina de profesori
+- **styles.css** (original) - pastrat pentru compatibilitate
+- **styles-global.css** - stiluri globale comune (header, footer, variabile, dark mode)
+- **styles-subreddit.css** - stiluri specifice pentru subreddit.html
+- **styles-documents.css** - stiluri specifice pentru documente.html
+- **styles-professors.css** - stiluri specifice pentru profesori.html
 
-## Cum să incluzi CSS-ul în fiecare pagină HTML
+## Cum incluzi CSS-ul in fiecare pagina
 
-### Pentru pagini simple (index.html, login.html, register.html, profile.html, settings.html, etc.)
+### Pagini simple (index, login, register, profile, settings etc.)
 
-Includ doar:
 ```html
 <link rel="stylesheet" href="styles-global.css">
 ```
 
-### Pentru subreddit.html
+### subreddit.html
 
-Includ:
 ```html
 <link rel="stylesheet" href="styles-global.css">
 <link rel="stylesheet" href="styles-subreddit.css">
 ```
 
-### Pentru team-matching.html
+### documente.html
 
-Includ:
-```html
-<link rel="stylesheet" href="styles-global.css">
-<link rel="stylesheet" href="styles-team-matching.css">
-```
-
-### Pentru documente.html
-
-Includ:
 ```html
 <link rel="stylesheet" href="styles-global.css">
 <link rel="stylesheet" href="styles-documents.css">
 ```
 
-### Pentru pagina de profesori (dacă exisă) 
+### profesori.html
 
-Includ:
 ```html
 <link rel="stylesheet" href="styles-global.css">
 <link rel="stylesheet" href="styles-professors.css">
 ```
 
-## Beneficii ai acestei structuri
+## Beneficii
 
-✅ **Performanță mai bună** - Fiecare pagină încarcă doar CSS-ul necesar
-✅ **Mentenabilitate** - Fiecare pagină are propriul set de stiluri organizat
-✅ **Reîntrebuințare** - Stiluri comune sunt în styles-global.css
-✅ **Ușor de găsit** - CSS pentru o pagină e în propriul fișier
-✅ **Caching mai bun** - Browserul cachează stilurile globale separat
+- Incarcare mai eficienta: fiecare pagina ia doar CSS-ul necesar
+- Mentenabilitate mai buna: stilurile sunt separate pe zone clare
+- Reutilizare corecta: stilurile comune stau in styles-global.css
+- Debugging mai simplu: gasesti rapid unde trebuie modificat
 
-## Înainte de a folosi o structură nouă:
+## Checklist de verificare
 
-1. **Testează** - Deschide fiecare pagină și verifică că arată corect
-2. **Verifică tema** - Testează dark mode și night mode pe fiecare pagină
-3. **Responsive** - Testează pe mobile pentru a te asigura că merge bine
+1. Verifica fiecare pagina pe desktop.
+2. Verifica fiecare pagina pe mobil.
+3. Testeaza tema dark mode pe toate paginile.
+4. Verifica elementele de header/footer si formularele.
 
-## Opțional: Setează styles-global.css ca main styles.css
+## Optional: foloseste styles-global.css ca styles.css principal
 
-Dacă vrei să faci asta, poti:
-1. Șterge styles.css original
-2. Renumește styles-global.css în styles.css
-3. Actualizeaza path-urile din toate HTML-urile
-4. Verifică că totul merge
+1. Sterge styles.css original.
+2. Redenumeste styles-global.css in styles.css.
+3. Actualizeaza link-urile din paginile HTML.
+4. Ruleaza verificari vizuale dupa schimbare.
 
-## Dacă vrei revert
+## Revert
 
-Dacă ceva nu merge, poți reveni la styles.css original și folosi direct acel fișier în toți HTML-urile.
+Daca ceva nu merge, revino la styles.css original si la includerile initiale.
 
 ---
 
 **Creat:** 31.03.2026
-**Versiune:** 1.0
+**Versiune:** 1.1

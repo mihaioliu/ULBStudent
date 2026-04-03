@@ -8,6 +8,12 @@
   padding: 2rem 0;
 }
 
+.documents-page-container {
+  width: min(1600px, calc(100% - 1.5rem));
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .documents-section .section-header {
   margin-bottom: 2.5rem;
 }
@@ -29,7 +35,7 @@
 /* Documents Layout */
 .documents-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   gap: 2.5rem;
 }
 
@@ -195,7 +201,7 @@
 
 .docs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
 }
 
@@ -296,7 +302,9 @@
 }
 
 .doc-faculty::before {
-  content: 'ðŸ«';
+  content: '\f19d';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
   opacity: 0.7;
 }
 
@@ -553,6 +561,10 @@ body.dark-mode .doc-card:hover {
 }
 
 @media (max-width: 768px) {
+  .documents-page-container {
+    width: min(100%, calc(100% - 1rem));
+  }
+
   .documents-layout {
     grid-template-columns: 1fr;
     gap: 1.5rem;

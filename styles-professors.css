@@ -7,14 +7,22 @@
   padding: 2rem 0;
 }
 
+.professors-page-container {
+  width: min(1600px, calc(100% - 1.5rem));
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .professors-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   gap: 2rem;
   margin-top: 2rem;
+  align-items: start;
 }
 
 .filters-sidebar {
-  flex: 0 0 320px;
+  width: 100%;
   background: var(--surface);
   padding: 2rem;
   border-radius: 12px;
@@ -28,14 +36,6 @@
   margin-bottom: 2rem;
 }
 
-.filter-title {
-  display: block;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
-
 .filter-select,
 .filter-input {
   width: 100%;
@@ -44,13 +44,11 @@
   border-radius: 8px;
   background: var(--light-gray);
   color: var(--text);
-  font-size: 0.9rem;
   transition: var(--transition);
 }
 
 .filter-select option {
   background: #ffffff;
-  color: var(--text);
 }
 
 .filter-select:hover,
@@ -116,14 +114,30 @@
 }
 
 .professors-main {
-  flex: 1;
   min-width: 0;
 }
 
 .professors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
+}
+
+@media (max-width: 1100px) {
+  .professors-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-sidebar {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .professors-page-container {
+    width: min(100%, calc(100% - 1rem));
+  }
 }
 
 .professor-card {

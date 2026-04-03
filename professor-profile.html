@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -17,29 +17,28 @@
   <body>
     <header>
       <div class="header-content">
-        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo" />
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo" />
         <p class="tagline">Comunitatea ta de studiu</p>
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
           <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link">Discuții</a></li>
-          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
+          <li><a href="comments.html" class="nav-link">Discutii</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
           <i class="fas fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Înregistrare</button>
+        <button class="btn-signup">Inregistrare</button>
       </div>
     </header>
 
     <main class="container" style="max-width: 1000px; margin: 2rem auto 3rem; padding: 0 1.5rem;">
-      <a href="profesori.html" class="join-btn" style="display: inline-block; margin-bottom: 1rem; text-decoration: none;">Înapoi la profesori</a>
+      <a href="profesori.html" class="join-btn" style="display: inline-block; margin-bottom: 1rem; text-decoration: none;">Inapoi la profesori</a>
 
       <section style="background: var(--surface); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.2rem;">
         <h1 id="profName" style="margin-bottom: 0.4rem;">Profesor</h1>
@@ -64,8 +63,8 @@
       <section style="background: linear-gradient(135deg, var(--surface) 0%, var(--light-gray) 100%); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: var(--shadow-sm);">
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
           <div>
-            <h3 style="margin: 0 0 0.35rem 0;">Adaugă recenzie</h3>
-            <p style="margin: 0; color: var(--text-secondary);">Scrie o opinie scurtă despre profesor, materie și utilitatea cursului.</p>
+            <h3 style="margin: 0 0 0.35rem 0;">Adauga recenzie</h3>
+            <p style="margin: 0; color: var(--text-secondary);">Scrie o opinie scurta despre profesor, materie si utilitatea cursului.</p>
           </div>
           <button id="openReviewModalBtn" type="button" class="btn-action btn-primary" style="min-width: 180px; justify-content:center;">
             Scrie o recenzie
@@ -76,17 +75,17 @@
       <section style="background: var(--surface); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem;">
         <h3 style="margin-top: 0;">Recenzii</h3>
         <div id="reviewsList" style="display: grid; gap: 0.8rem;"></div>
-        <p id="reviewsEmptyState" style="color: var(--text-secondary);">Nu există încă recenzii pentru acest profesor.</p>
+        <p id="reviewsEmptyState" style="color: var(--text-secondary);">Nu exista inca recenzii pentru acest profesor.</p>
       </section>
     </main>
 
     <div id="reviewModal" class="review-modal" aria-hidden="true">
       <div class="review-modal-content" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
-        <button type="button" class="review-modal-close" id="closeReviewModalBtn" aria-label="Închide">&times;</button>
+        <button type="button" class="review-modal-close" id="closeReviewModalBtn" aria-label="Inchide">&times;</button>
         <div class="review-modal-header">
           <p class="review-modal-kicker">Recenzie profesor</p>
           <h3 id="reviewModalTitle">Scrie o recenzie</h3>
-          <p id="reviewModalSubtitle">Spune ce ai apreciat, cât de util a fost cursul și ce sfat ai pentru alți studenți.</p>
+          <p id="reviewModalSubtitle">Spune ce ai apreciat, cat de util a fost cursul si ce sfat ai pentru alti studenti.</p>
         </div>
 
         <form id="reviewForm" class="review-modal-form">
@@ -104,12 +103,12 @@
 
           <label class="review-field">
             <span>Comentariu</span>
-            <textarea id="reviewComment" rows="5" required placeholder="Ex: Explică bine, dar cere multă practică la examen."></textarea>
+            <textarea id="reviewComment" rows="5" required placeholder="Ex: Explica bine, dar cere multa practica la examen."></textarea>
           </label>
 
           <div class="review-modal-actions">
-            <button type="button" class="btn-action btn-secondary" id="cancelReviewModalBtn">Renunță</button>
-            <button type="submit" class="btn-action btn-primary">Salvează recenzia</button>
+            <button type="button" class="btn-action btn-secondary" id="cancelReviewModalBtn">Renunta</button>
+            <button type="submit" class="btn-action btn-primary">Salveaza recenzia</button>
           </div>
         </form>
       </div>
@@ -119,7 +118,7 @@
       <div class="footer-content">
         <div class="footer-section">
           <h4>ULBStudent</h4>
-          <p>Platforma de suport pentru comunitatea studenților ULB.</p>
+          <p>Platforma de suport pentru comunitatea studentilor ULBS.</p>
         </div>
       </div>
     </footer>
@@ -129,3 +128,6 @@
     <script src="professor-profile.js"></script>
   </body>
 </html>
+
+
+

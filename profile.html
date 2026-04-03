@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Profilul meu - ULBStudent" />
-    <meta name="keywords" content="profil, student, ULB" />
+    <meta name="keywords" content="profil, student, ULBS" />
     
     <title>Profilul Meu - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       .profile-page {
-        padding: 1.5rem 0 2rem;
+        padding: 1.5rem 0 3.25rem;
       }
 
       .profile-role-panels {
@@ -53,12 +53,14 @@
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: 1.2rem;
+        align-items: start;
       }
 
       .profile-main,
       .profile-sidebar {
         display: grid;
         gap: 1rem;
+        grid-auto-rows: min-content;
       }
 
       .profile-section,
@@ -97,6 +99,52 @@
       .info-item p {
         margin: 0;
         font-weight: 700;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .stats-grid .stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 0.35rem;
+        min-height: 94px;
+        border: 1px solid var(--border-color);
+        border-left: none;
+        border-radius: 10px;
+        background: var(--light-gray);
+        box-shadow: none;
+        padding: 0.85rem;
+      }
+
+      .stats-grid .stat-value {
+        font-size: 1.35rem;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--accent);
+        overflow-wrap: anywhere;
+      }
+
+      .stats-grid .stat-label {
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+      }
+
+      .sidebar-card h3 {
+        margin: 0 0 0.75rem;
+      }
+
+      .sidebar-card .btn-secondary,
+      .sidebar-card .btn-danger {
+        width: 100%;
+        margin-top: 0.55rem;
+      }
+
+      #recentActivity {
+        min-height: 120px;
       }
 
       .btn-edit-profile,
@@ -137,7 +185,7 @@
     <!-- Header -->
     <header>
       <div class="header-content">
-        <img src="assets/logo2.jpeg" alt="ULBStudent Logo" class="header-logo">
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
         <p class="tagline">Comunitatea ta de studiu</p>
       </div>
       <nav>
@@ -146,7 +194,6 @@
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
-          <li><a href="team-matching.html" class="nav-link">Team Matching</a></li>
         </ul>
       </nav>
       <div class="header-actions">
@@ -165,7 +212,7 @@
             <div class="profile-avatar-large" id="profileAvatarLarge">👤</div>
             <div class="profile-header-info">
               <h1 id="profileFullName">Nume Student</h1>
-              <p id="profileEmail" style="color: var(--text-secondary); margin: 0;">email@ulb.ro</p>
+              <p id="profileEmail" style="color: var(--text-secondary); margin: 0;">email@ulbsibiu.ro</p>
               <p id="profileRole" style="color: var(--accent); margin: 0.35rem 0 0; font-weight: 700; letter-spacing: 0.02em;">Cont conectat</p>
               <div class="profile-badges" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                 <span class="profile-badge" style="background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">Activ</span>
@@ -241,10 +288,6 @@
                 <div class="stat-card">
                   <div class="stat-value" id="statQuestions">0</div>
                   <div class="stat-label">Întrebări</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-value" id="statMatches">0</div>
-                  <div class="stat-label">Potriviri</div>
                 </div>
               </div>
             </section>
@@ -365,14 +408,13 @@
       <div class="footer-content">
         <div class="footer-section">
           <h4>📚 ULBStudent</h4>
-          <p>Platformă de suport pentru comunitatea studenților ULB.</p>
+          <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         <div class="footer-section">
           <h4>🔗 Linkuri Rapide</h4>
           <ul style="list-style: none; padding: 0;">
             <li><a href="index.html">Pagina Principală</a></li>
             <li><a href="comments.html">Discuții</a></li>
-            <li><a href="team-matching.html">Team Matching</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -488,12 +530,8 @@
               .select('id', { count: 'exact', head: true })
               .eq('email', user.email);
             document.getElementById('statComments').textContent = String(commentsCount || 0);
-
-            const teamMatchesResult = await getTeamMatches();
-            document.getElementById('statMatches').textContent = String((teamMatchesResult.data || []).length || 0);
           } catch {
             document.getElementById('statComments').textContent = '0';
-            document.getElementById('statMatches').textContent = '0';
           }
         
           // Edit profile modal
@@ -591,6 +629,10 @@
     </script>
   </body>
 </html>
+
+
+
+
 
 
 

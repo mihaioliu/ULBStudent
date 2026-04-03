@@ -1,31 +1,32 @@
-# Ghid Setup Bază de Date - ULBStudent
+# Ghid Setup Baza de Date - ULBStudent
 
-## ⚠️ ACȚIUNE REQUIRATĂ: Crează Tabelele în Supabase
+## Actiune necesara: creeaza tabelele in Supabase
 
-Pentru ca aplicația să funcționeze complet, trebuie să creezi următoarele tabele în baza ta de date Supabase.
+Pentru ca aplicatia sa functioneze corect, trebuie sa creezi tabelele de mai jos in proiectul tau Supabase.
 
-### Accesează Supabase SQL Editor:
-1. Du-te la [supabase.com](https://supabase.com)
-2. Deschide proiectul tău
-3. Merge la **SQL Editor** (în stânga)
-4. Copiază și rulează fiecare comandă mai jos
+### Acces in SQL Editor
+
+1. Intra pe https://supabase.com
+2. Deschide proiectul tau
+3. Mergi la SQL Editor
+4. Ruleaza comenzile de mai jos
 
 ---
 
-## 🗄️ Tabele necesare:
+## Tabele necesare
 
-### 0️⃣ Tabel pentru PROFESORI + Seed oficial
+### 0) Tabel profesori + seed oficial
 
-Rulează fișierul SQL din proiect: `supabase_professors_seed.sql`.
+Ruleaza fisierul SQL din proiect: `supabase_professors_seed.sql`.
 
 Acest script:
-- creează tabelul `professors`
-- adaugă politicile RLS necesare
-- inserează lista oficială de profesori (upsert după email)
+- creeaza tabelul `professors`
+- adauga politicile RLS necesare
+- insereaza lista oficiala de profesori (upsert dupa email)
 
 ---
 
-### 1️⃣ Tabel pentru ÎNTREBĂRI (index.html)
+### 1) Tabel pentru intrebari (index.html)
 
 ```sql
 CREATE TABLE public.questions (
@@ -37,25 +38,21 @@ CREATE TABLE public.questions (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Seteaza RLS (Row Level Security) pentru securitate
 ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 
--- Permite oricui sa vada intrebarile
 CREATE POLICY "Allow read access for all" ON public.questions
   FOR SELECT USING (true);
 
--- Permite logat sa creeze intrebari
 CREATE POLICY "Allow insert for authenticated users" ON public.questions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Permite userului sa se stearga propriile intrebari
 CREATE POLICY "Allow delete own questions" ON public.questions
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
 ---
 
-### 2️⃣ Tabel pentru POSTĂRI (subreddit.html)
+### 2) Tabel pentru postari (subreddit.html)
 
 ```sql
 CREATE TABLE public.posts (
@@ -81,7 +78,7 @@ CREATE POLICY "Allow delete own posts" ON public.posts
 
 ---
 
-### 3️⃣ Tabel pentru COMENTARII (comments.html)
+### 3) Tabel pentru comentarii (comments.html)
 
 ```sql
 CREATE TABLE public.comments (
@@ -108,61 +105,18 @@ CREATE POLICY "Allow delete own comments" ON public.comments
 
 ---
 
-### 4️⃣ Tabel pentru TEAM MATCHING (team-matching.html)
+## Verificare dupa setup
 
-```sql
-CREATE TABLE public.matches (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  user_id_1 UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  user_id_2 UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  match_type TEXT DEFAULT 'like',
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow read own matches" ON public.matches
-  FOR SELECT USING (auth.uid() = user_id_1 OR auth.uid() = user_id_2);
-
-CREATE POLICY "Allow insert for authenticated users" ON public.matches
-  FOR INSERT WITH CHECK (auth.uid() = user_id_1);
-```
+1. Mergi in Table Editor.
+2. Verifica existenta tabelelor:
+   - `questions`
+   - `posts`
+   - `comments`
+3. Testeaza creare cont si postare/comentariu.
 
 ---
 
-## ✅ Verificare: După ce ai creat tabelele
-
-1. Mergi la **Tabel Editor** în Supabase
-2. Ar trebui să vezi 4 tabele noi:
-   - ✅ `questions`
-   - ✅ `posts`
-   - ✅ `comments`
-   - ✅ `matches`
-
-3. Testează crearea unui cont și vê dacă posturile se salvează!
-
----
-
-## 🚀 Funcționalitate după Setup:
-
-### Pe **subreddit.html**:
-- ✅ Creezi o postare → Se salvează automat în DB
-- ✅ Postarea apare cu username-ul tău
-- ✅ Toate postările se pun pe o coadă în DB
-
-### Pe **comments.html**:
-- ✅ Adaugi un comentariu → Se salvează în DB
-- ✅ Link-urile sunt incluse cu post_id
-
-### Pe **index.html** (în desarrollo):
-- 🔄 Salvare automată de întrebări (în lucru)
-
-### Pe **team-matching.html** (în dezvoltare):
-- 🔄 Salvare matches în DB (în lucru)
-
----
-
-## ⚙️ Funcții disponibile în `auth.js`:
+## Functionalitate disponibila in auth.js
 
 ```javascript
 // SALVARE
@@ -178,25 +132,24 @@ await getComments(postId);
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-**„Eroare: RLS policy violation"**
-- Nu ești logat! Conectează-te înainte de a posta
+**Eroare: RLS policy violation**
+- Nu esti logat. Conecteaza-te inainte de a posta.
 
-**„Eroare: Table not found"**
-- Tabela nu a fost creată. Rulează SQL-ul din nou
+**Eroare: Table not found**
+- Tabela nu a fost creata. Ruleaza SQL-ul din nou.
 
-**„Nu se salvează în DB"**
-- Verifica console (F12) pentru erori
-- Asigură-te că ești logat
-- Check RLS policies în Supabase
+**Nu se salveaza in DB**
+- Verifica consola browserului (F12).
+- Verifica daca esti autentificat.
+- Verifica politicile RLS din Supabase.
 
 ---
 
-## 📞 Support
+## Support
 
-Dacă ai probleme:
-1. Verifica console-ul browser (F12 → Console)
-2. Verifica Supabase logs (Logs → Edge Functions)
-3. Asigură-te că ai API key corectă în `auth.js`
-
+Daca ai probleme:
+1. Verifica consola browserului (F12 -> Console)
+2. Verifica Supabase logs (Logs -> Edge Functions)
+3. Verifica API key-ul din `auth.js`
