@@ -727,7 +727,9 @@ function initializeAIChat() {
   });
   
   // Trimitere mesaj cu buton
-  document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+  document.getElementById('chatSendBtn').addEventListener('click', () => {
+    sendMessage();
+  });
   
   // Trimitere mesaj cu Enter
   document.getElementById('chatInput').addEventListener('keypress', (e) => {
@@ -737,8 +739,9 @@ function initializeAIChat() {
   });
   
   // Funcție trimitere mesaj
-  function sendMessage() {
+  async function sendMessage() {
     const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSendBtn');
     const message = input.value.trim();
     
     if (message === '') return;
@@ -746,27 +749,91 @@ function initializeAIChat() {
     // Adăugare mesaj utilizator
     addChatMessage(message, 'user');
     input.value = '';
-    
-    // Simulare răspuns AI (în viitor se va integra cu AI real)
-    setTimeout(() => {
-      const responses = [
-        'Interesant! Doresti mai multe informatii?',
-        'Am inteles. Cum pot continua sa te ajut?',
-        'Buna intrebare! Iti pot oferi detalii mai specifice.',
-        'Sigur! Sa ma gandesc la cea mai buna solutie pentru tine.',
-        'Este o observatie foarte buna. Vreau sa iti explic mai bine.'
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addChatMessage(randomResponse, 'ai');
-    }, 500);
+
+    const config = window.SUPABASE_CONFIG || {};
+    const baseUrl = typeof config.url === 'string' ? config.url.replace(/\/$/, '') : '';
+    const anonKey = config.anonKey || '';
+
+    if (!baseUrl || !anonKey) {
+      addChatMessage('Configuratia Supabase lipseste. Verifica fisierul supabase-client.js.', 'ai');
+      return;
+    }
+
+    const functionUrl = `${baseUrl}/functions/v1/chat-facultate`;
+
+    const typingId = `typing-${Date.now()}`;
+    addChatMessage('Se genereaza raspunsul...', 'ai', typingId);
+
+    input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+      let authToken = anonKey;
+
+      if (typeof initSupabaseClient === 'function') {
+        const client = await initSupabaseClient();
+        const { data } = await client.auth.getSession();
+        if (data?.session?.access_token) {
+          authToken = data.session.access_token;
+        }
+      }
+
+      const res = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ prompt: message })
+      });
+
+      const rawBody = await res.text();
+      let data = {};
+
+      try {
+        data = rawBody ? JSON.parse(rawBody) : {};
+      } catch {
+        data = { error: rawBody || 'Raspuns invalid de la server.' };
+      }
+
+      const typingMessage = document.querySelector(`[data-chat-id="${typingId}"]`);
+      if (typingMessage) typingMessage.remove();
+
+      if (!res.ok) {
+        const errorText = data?.error || `Serverul a raspuns cu codul ${res.status}.`;
+        addChatMessage(errorText, 'ai');
+        return;
+      }
+
+      const reply = data?.reply || 'Nu am primit un raspuns valid de la server.';
+      addChatMessage(reply, 'ai');
+    } catch (error) {
+      const typingMessage = document.querySelector(`[data-chat-id="${typingId}"]`);
+      if (typingMessage) typingMessage.remove();
+      addChatMessage(`Eroare de conexiune: ${error.message}`, 'ai');
+    } finally {
+      input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      input.focus();
+    }
   }
   
   // Funcție adăugare mesaj în chat
-  function addChatMessage(text, sender) {
+  function addChatMessage(text, sender, messageId = '') {
     const messagesContainer = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${sender}`;
-    messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+
+    if (messageId) {
+      messageDiv.dataset.chatId = messageId;
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = escapeHtml(String(text || ''));
+    messageDiv.appendChild(bubble);
+
     messagesContainer.appendChild(messageDiv);
     
     // Scroll automat la ultimul mesaj
