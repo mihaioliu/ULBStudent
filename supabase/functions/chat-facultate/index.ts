@@ -21,7 +21,7 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ 
-          parts: [{ text: `Ești ULBStudent AI. Ajută studentul: ${prompt}` }] 
+          parts: [{ text: `Ești Eliot. Ajută studentul: ${prompt}` }] 
         }]
       })
     })

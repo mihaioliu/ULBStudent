@@ -687,12 +687,12 @@ function initializeAIChat() {
   chatModal.innerHTML = `
     <div class="chat-window">
       <div class="chat-header">
-        <h3><i class="fas fa-robot" style="margin-right: 8px;"></i>ULBStudent AI</h3>
+        <h3><i class="fas fa-robot" style="margin-right: 8px;"></i>Eliot</h3>
         <button class="chat-close-btn" id="chatCloseBtn">&times;</button>
       </div>
       <div class="chat-messages" id="chatMessages">
         <div class="chat-message ai">
-          <div class="message-bubble">Salut! Sunt asistentul AI al ULBStudent. Cum te pot ajuta astazi?</div>
+          <div class="message-bubble">Salut! Sunt Eliot, asistentul AI. Cum te pot ajuta astazi?</div>
         </div>
       </div>
       <div class="chat-input-area">
