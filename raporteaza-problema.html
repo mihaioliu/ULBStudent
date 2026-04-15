@@ -448,6 +448,15 @@
         const form = this;
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn ? submitBtn.textContent : '';
+        const notify = (message, type = 'info') => {
+          if (typeof showToast === 'function') {
+            showToast(message, type);
+            return;
+          }
+          if (typeof showNotification === 'function') {
+            showNotification(message, type);
+          }
+        };
 
         const payload = {
           type: document.getElementById('bugType')?.value || '',
@@ -464,6 +473,7 @@
 
         if (submitBtn) {
           submitBtn.disabled = true;
+          submitBtn.classList.add('is-loading');
           submitBtn.textContent = 'Se trimite...';
         }
 
@@ -473,21 +483,14 @@
             throw new Error(result.error || 'Nu s-a putut salva raportul.');
           }
 
-          if (typeof showNotification === 'function') {
-            showNotification('✅ Raport trimis și salvat în baza de date.');
-          } else {
-            alert('Raport trimis cu succes!');
-          }
+          notify('Raport trimis și salvat în baza de date.', 'success');
           form.reset();
         } catch (error) {
-          if (typeof showNotification === 'function') {
-            showNotification('❌ ' + error.message);
-          } else {
-            alert('Eroare: ' + error.message);
-          }
+          notify(error.message || 'Nu s-a putut trimite raportul.', 'error');
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
             submitBtn.textContent = originalLabel || '🚀 Trimite Raport';
           }
         }

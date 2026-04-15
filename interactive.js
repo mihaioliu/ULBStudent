@@ -4,11 +4,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Inițializez toate funcțiile interactive când DOM este gata
+  // Initialize core interactions FIRST (non-blocking)
   initializeUnifiedFooter();       // 🧩 Footer unificat pe toate paginile
+  initializeAppSettings();         // ⚙️ Preferinte persistente (tema/font/animații)
   initializeThemeToggle();          // 🌓 Tema (Light/Dark/Night)
   initializeVotingSystem();         // 👍 Sistem de upvote/downvote
   initializeNavigation();           // 🔗 Marcaje active în meniu
+  initializeMobileNavigation();     // 📱 Hamburger menu pe mobil
+  initializeAccessibilityEnhancements(); // ♿ Atribute ARIA de bază
+  initializeLazyMedia();            // 🖼️ Lazy-loading imagini/media
   initializeScrollEffects();        // 📜 Animații pe scroll
   initializeSearchBar();            // 🔍 Căutare cu focus effect
   initializeQuestionFilters();      // 🎯 Filtrare întrebări
@@ -35,9 +39,41 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeHomepageData();          // 🏠 Secțiuni homepage alimentate din DB
   initializeSearchableDropdowns();    // 🔎 Căutare în dropdown-uri mari
 
-  // Show page only after initialization to avoid flash between navigations
+  // 🔐 ASYNC: Protect pages and initialize session in BACKGROUND (non-blocking)
+  Promise.all([
+    protectPage().catch(err => console.warn('Page protection check failed:', err.message)),
+    updateHeaderWithUserInfo().catch(err => console.warn('Header update failed:', err.message))
+  ]).finally(() => {
+    // Always mark page as ready, even if auth checks fail
+    console.log('✅ Page initialization complete');
+  });
+
+  // Show page only after core initialization
   document.body.classList.add('page-ready');
 });
+
+function initializeAppSettings() {
+  let settings = {};
+  try {
+    settings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+  } catch {
+    settings = {};
+  }
+
+  const appearance = settings?.appearance || {};
+  const cachedTheme = localStorage.getItem('theme') || '';
+  const preferredTheme = String(appearance.theme || cachedTheme || 'light').toLowerCase();
+  const normalizedTheme = preferredTheme === 'light' ? 'light' : 'dark';
+
+  localStorage.setItem('theme', normalizedTheme);
+
+  const fontSize = String(appearance.fontSize || 'normal').toLowerCase();
+  const validFontSize = ['small', 'normal', 'large'].includes(fontSize) ? fontSize : 'normal';
+  document.documentElement.setAttribute('data-font-size', validFontSize);
+
+  const animationsEnabled = appearance.animations !== false;
+  document.documentElement.setAttribute('data-animations', animationsEnabled ? 'on' : 'off');
+}
 
 /**
  * Normalizez footer-ul la aceeași structură pe toate paginile.
@@ -105,6 +141,21 @@ function initializeThemeToggle() {
       
       applyTheme(newTheme);
       localStorage.setItem('theme', newTheme); // Salvez preferința
+
+      // Sincronizez si cache-ul de setari pentru persistenta intre pagini.
+      try {
+        const settings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+        const merged = {
+          ...settings,
+          appearance: {
+            ...(settings.appearance || {}),
+            theme: newTheme
+          }
+        };
+        localStorage.setItem('app_settings_cache', JSON.stringify(merged));
+      } catch {
+        // noop
+      }
     });
   }
 }
@@ -249,6 +300,53 @@ let votes = {
   q3: 30
 };
 
+function applyVoteVisualState(voteContainer, selectedVote) {
+  if (!voteContainer) return;
+
+  const upIcon = voteContainer.querySelector('.fa-arrow-up');
+  const downIcon = voteContainer.querySelector('.fa-arrow-down');
+
+  if (upIcon) {
+    upIcon.classList.toggle('is-active-up', selectedVote === 'up');
+  }
+
+  if (downIcon) {
+    downIcon.classList.toggle('is-active-down', selectedVote === 'down');
+  }
+}
+
+async function syncPostVoteState(postsFeed, posts = []) {
+  if (!postsFeed || typeof getCurrentUserPostVotes !== 'function') return;
+
+  const postIds = posts.map((post) => String(post?.id || '')).filter(Boolean);
+  if (postIds.length === 0) return;
+
+  const votesResult = await getCurrentUserPostVotes(postIds);
+  const votesMap = votesResult?.data || {};
+
+  postsFeed.querySelectorAll('.post-card').forEach((card) => {
+    const postId = String(card.getAttribute('data-post-id') || '');
+    const selectedVote = votesMap[postId] || null;
+    applyVoteVisualState(card.querySelector('.post-votes'), selectedVote);
+  });
+}
+
+async function syncQuestionVoteState(questionList, questions = []) {
+  if (!questionList || typeof getCurrentUserQuestionVotes !== 'function') return;
+
+  const questionIds = questions.map((question) => String(question?.id || '')).filter(Boolean);
+  if (questionIds.length === 0) return;
+
+  const votesResult = await getCurrentUserQuestionVotes(questionIds);
+  const votesMap = votesResult?.data || {};
+
+  questionList.querySelectorAll('.question').forEach((card) => {
+    const questionId = String(card.getAttribute('data-question-id') || '');
+    const selectedVote = votesMap[questionId] || null;
+    applyVoteVisualState(card.querySelector('.vote-column'), selectedVote);
+  });
+}
+
 function initializeVotingSystem() {
   // Vote on postări (posts)
   document.addEventListener('click', async function(e) {
@@ -272,6 +370,7 @@ function initializeVotingSystem() {
       const result = await updatePostVotes(postId, direction);
       if (result.success) {
         voteSpan.textContent = result.newVotes;
+        applyVoteVisualState(postCard.querySelector('.post-votes'), result.userVote || null);
         // Feedback visual
         voteSpan.style.color = direction === 'up' ? '#22c55e' : '#ef4444';
         createParticles(voteSpan, direction === 'up' ? '#22c55e' : '#ef4444');
@@ -279,10 +378,10 @@ function initializeVotingSystem() {
           voteSpan.style.color = '';
         }, 500);
       } else {
-        showNotification('❌ Eroare la salvarea votului.');
+        showToast(result.error || 'Eroare la salvarea votului.', 'error');
       }
     } catch (error) {
-      showNotification('❌ Eroare: ' + error.message);
+      showToast(error.message || 'Eroare la votare.', 'error');
     }
   });
   
@@ -308,6 +407,7 @@ function initializeVotingSystem() {
       const result = await updateQuestionVotes(questionId, direction);
       if (result.success) {
         voteSpan.textContent = result.newVotes;
+        applyVoteVisualState(question.querySelector('.vote-column'), result.userVote || null);
         // Feedback visual
         voteSpan.style.color = direction === 'up' ? '#22c55e' : '#ef4444';
         createParticles(voteSpan, direction === 'up' ? '#22c55e' : '#ef4444');
@@ -315,10 +415,10 @@ function initializeVotingSystem() {
           voteSpan.style.color = '';
         }, 500);
       } else {
-        showNotification('❌ Eroare la salvarea votului.');
+        showToast(result.error || 'Eroare la salvarea votului.', 'error');
       }
     } catch (error) {
-      showNotification('❌ Eroare: ' + error.message);
+      showToast(error.message || 'Eroare la votare.', 'error');
     }
   });
 }
@@ -353,7 +453,47 @@ function createParticles(element, color) {
 // ============================================
 function initializeNavigation() {
   const navLinks = document.querySelectorAll('.nav-link');
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   
+  // Page name mappings for matching
+  const pageAliases = {
+    '': 'index.html',
+    'index': 'index.html',
+    'index.html': 'index.html',
+    'subreddit.html': 'subreddit.html',
+    'subreddit': 'subreddit.html',
+    'documente.html': 'documente.html',
+    'documente': 'documente.html',
+    'comments.html': 'comments.html',
+    'comments': 'comments.html',
+    'discutie.html': 'discutie.html',
+    'discutie': 'discutie.html',
+    'profesori.html': 'profesori.html',
+    'profesori': 'profesori.html',
+    'profile.html': 'profile.html',
+    'profile': 'profile.html',
+    'settings.html': 'settings.html',
+    'settings': 'settings.html'
+  };
+  
+  const normalizedPage = pageAliases[currentPage] || pageAliases[currentPage.split('.')[0]] || currentPage;
+  
+  // Set active on page load
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href') || '';
+    const linkPage = href.split('/').pop() || '';
+    const normalizedLink = pageAliases[linkPage] || pageAliases[linkPage.split('.')[0]] || linkPage;
+    
+    // Match current page with link
+    if (normalizedPage === normalizedLink || 
+        (normalizedPage === 'index.html' && (linkPage === '' || linkPage === 'index.html' || linkPage === 'index'))) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+  
+  // Click handler for manual navigation
   navLinks.forEach(link => {
     link.addEventListener('click', function(e) {
       // Remove active class from all links
@@ -361,6 +501,128 @@ function initializeNavigation() {
       // Add active class to clicked link
       this.classList.add('active');
     });
+  });
+  
+  // Also watch for hash changes and page navigation
+  window.addEventListener('hashchange', () => {
+    updateNavigationActive();
+  });
+}
+
+function initializeMobileNavigation() {
+  const header = document.querySelector('header');
+  const nav = header?.querySelector('nav');
+  const navList = nav?.querySelector('ul');
+
+  if (!header || !nav || !navList) return;
+
+  let toggleBtn = header.querySelector('.nav-toggle-btn');
+  if (!toggleBtn) {
+    toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'nav-toggle-btn';
+    toggleBtn.setAttribute('aria-label', 'Deschide meniul de navigare');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i><span>Meniu</span>';
+    header.insertBefore(toggleBtn, nav);
+  }
+
+  const closeMenu = () => {
+    header.classList.remove('nav-open');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    const isOpen = header.classList.toggle('nav-open');
+    toggleBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  navList.addEventListener('click', (event) => {
+    if (event.target.closest('.nav-link')) {
+      closeMenu();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeMenu();
+    }
+  });
+}
+
+function initializeAccessibilityEnhancements() {
+  const main = document.querySelector('main');
+  if (main && !main.getAttribute('role')) {
+    main.setAttribute('role', 'main');
+  }
+
+  const primaryNav = document.querySelector('header nav');
+  if (primaryNav && !primaryNav.getAttribute('aria-label')) {
+    primaryNav.setAttribute('aria-label', 'Navigare principala');
+  }
+
+  document.querySelectorAll('.btn-theme-toggle:not([aria-label])').forEach((btn) => {
+    btn.setAttribute('aria-label', 'Schimba tema');
+  });
+
+  document.querySelectorAll('button:not([aria-label])').forEach((btn) => {
+    const hasVisibleText = (btn.textContent || '').trim().length > 0;
+    if (hasVisibleText) return;
+
+    const fallbackLabel = btn.getAttribute('title') || btn.getAttribute('data-action') || 'Buton';
+    btn.setAttribute('aria-label', fallbackLabel);
+  });
+
+  document.querySelectorAll('.action-btn:not([aria-label])').forEach((btn) => {
+    const title = btn.getAttribute('title') || btn.getAttribute('data-action') || 'Actiune';
+    btn.setAttribute('aria-label', title);
+  });
+
+  document.querySelectorAll('input:not([type="hidden"]):not([aria-label])').forEach((input) => {
+    const id = input.getAttribute('id');
+    if (id && document.querySelector(`label[for="${id}"]`)) {
+      return;
+    }
+
+    const placeholder = input.getAttribute('placeholder');
+    if (placeholder) {
+      input.setAttribute('aria-label', placeholder);
+    }
+  });
+}
+
+function updateNavigationActive() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const pageAliases = {
+    '': 'index.html',
+    'index': 'index.html',
+    'index.html': 'index.html',
+    'subreddit.html': 'subreddit.html',
+    'comments.html': 'comments.html',
+    'discutie.html': 'discutie.html',
+    'documente.html': 'documente.html',
+    'profesori.html': 'profesori.html'
+  };
+  
+  const normalizedPage = pageAliases[currentPage] || currentPage;
+  
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href') || '';
+    const linkPage = href.split('/').pop() || '';
+    const normalizedLink = pageAliases[linkPage] || linkPage;
+    
+    if (normalizedPage === normalizedLink) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
   });
 }
 
@@ -578,51 +840,156 @@ function toggleLike(button) {
  * Afișez notificări toast în colțul jos-dreapta
  * Slide-in cu animație la apariție, dispariție după 3 sec
  */
-let notificationCount = 0;
+/**
+ * Toast Notification System - Enhanced
+ * Supports: success, error, warning, info types
+ * Auto-dismisses after 4 seconds or on close click
+ */
 
-function showNotification(message) {
-  // Creez element div cu clasa 'notification'
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.textContent = message;
+function initToastContainer() {
+  if (document.getElementById('toast-container')) return;
   
-  // Calculez poziția basată pe numărul de notificări existente
-  const bottomPosition = 30 + (notificationCount * 90);
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  container.setAttribute('role', 'region');
+  container.setAttribute('aria-live', 'polite');
+  container.setAttribute('aria-label', 'Notificari aplicatie');
+  document.body.appendChild(container);
+}
+
+function initializeLazyMedia() {
+  const images = Array.from(document.querySelectorAll('img'));
+  images.forEach((img, index) => {
+    if (!img.getAttribute('loading')) {
+      img.setAttribute('loading', index === 0 ? 'eager' : 'lazy');
+    }
+
+    if (!img.getAttribute('decoding')) {
+      img.setAttribute('decoding', 'async');
+    }
+  });
+}
+
+function showToast(message, type = 'info', duration = 4000) {
+  initToastContainer();
+  const container = document.getElementById('toast-container');
   
-  // Stil inline: poziție fixed, gradient roșu, shadow
-  notification.style.cssText = `
-    position: fixed;
-    bottom: ${bottomPosition}px;
-    right: 30px;
-    background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(230, 57, 70, 0.4);
-    z-index: ${1000 + notificationCount};
-    animation: slideInRight 0.5s ease-out;
-    max-width: 350px;
-    word-wrap: break-word;
+  // Determine icon and styling based on type
+  const icons = {
+    success: '✓',
+    error: '✕',
+    warning: '!',
+    info: 'ⓘ'
+  };
+  
+  const icon = icons[type] || icons.info;
+  
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  toast.innerHTML = `
+    <div class="toast-content">
+      <i class="toast-icon">${icon}</i>
+      <span class="toast-text">${escapeHtml(message)}</span>
+    </div>
+    <button class="toast-close" aria-label="Inchide notificare">×</button>
   `;
   
-  notificationCount++;
-  document.body.appendChild(notification); // Adaug la pagină
+  container.appendChild(toast);
   
-  // Auto-dismiss după 3 secunde cu slide-out animație
-  setTimeout(() => {
-    notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
-    setTimeout(() => {
-      notification.remove();
-      notificationCount = Math.max(0, notificationCount - 1);
-      
-      // Reajustez poziția notificărilor rămase
-      const remainingNotifications = document.querySelectorAll('.notification');
-      remainingNotifications.forEach((notif, index) => {
-        notif.style.bottom = (30 + (index * 90)) + 'px';
-        notif.style.zIndex = 1000 + index;
-      });
-    }, 500);
-  }, 3000);
+  // Close button handler
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => removeToast(toast));
+  
+  // Auto-remove after duration
+  if (duration > 0) {
+    setTimeout(() => removeToast(toast), duration);
+  }
+  
+  return toast;
+}
+
+function removeToast(toastEl) {
+  toastEl.classList.add('removing');
+  setTimeout(() => toastEl.remove(), 300);
+}
+
+// Backwards compatibility - showNotification now uses toast system
+function showNotification(message, type = 'info') {
+  // Parse emoji and message to determine type
+  if (message.includes('✅') || message.includes('succes')) {
+    showToast(message.replace(/^✅\s*/, ''), 'success');
+  } else if (message.includes('❌') || message.includes('roare')) {
+    showToast(message.replace(/^❌\s*/, ''),  'error');
+  } else if (message.includes('⚠️') || message.includes('avertis')) {
+    showToast(message.replace(/^⚠️\s*/, ''), 'warning');
+  } else {
+    showToast(message, type);
+  }
+}
+
+// ============================================
+// POST SORTING UTILITIES
+// ============================================
+
+/**
+ * Sort posts array by specified type
+ * Types: recent, popular, trending, oldest
+ */
+function sortPostsByType(posts, sortType = 'recent') {
+  const now = new Date();
+  
+  const postsWithMetadata = posts.map(post => {
+    const createdAt = post.created_at ? new Date(post.created_at) : now;
+    const hoursOld = (now - createdAt) / (1000 * 60 * 60);
+    const votes = Number(post.votes || 0);
+    
+    // Trending score: more votes + more recent = higher score
+    const trendingScore = votes * Math.max(1, 10 - hoursOld);
+    
+    return { ...post, createdAt, hoursOld, votes, trendingScore };
+  });
+  
+  switch(sortType) {
+    case 'recent':
+      return postsWithMetadata.sort((a, b) => b.createdAt - a.createdAt);
+    case 'popular':
+      return postsWithMetadata.sort((a, b) => b.votes - a.votes || b.createdAt - a.createdAt);
+    case 'trending':
+      return postsWithMetadata.sort((a, b) => b.trendingScore - a.trendingScore);
+    case 'oldest':
+      return postsWithMetadata.sort((a, b) => a.createdAt - b.createdAt);
+    default:
+      return postsWithMetadata;
+  }
+}
+
+/**
+ * Sort and re-render posts in the feed
+ */
+function sortAndRenderPosts(postElements, sortType, container, user) {
+  // Extract post data from DOM elements
+  const posts = Array.from(postElements).map(el => {
+    return {
+      id: el.dataset.postId || '',
+      title: el.querySelector('.post-title')?.textContent || '',
+      content: el.querySelector('.post-body p')?.textContent || '',
+      votes: Number(el.querySelector('.vote-count')?.textContent || 0),
+      created_at: el.dataset.createdAt || new Date().toISOString()
+    };
+  });
+  
+  if (!container) return;
+  
+  const sorted = sortPostsByType(posts, sortType);
+  container.innerHTML = '';
+  sorted.forEach(post => {
+    const postEl = postElements.find(el => el.dataset.postId === post.id);
+    if (postEl) {
+      container.appendChild(postEl.cloneNode(true));
+    }
+  });
 }
 
 // ============================================
@@ -1383,7 +1750,7 @@ function initializeGlobalSearch() {
     if (hasResults) {
       searchResults.style.display = 'block';
     } else {
-      resultsList.innerHTML = '<div style="padding: 2rem; text-align: center; color: #888;">Nu au fost găsite rezultate pentru "<strong>' + query + '</strong>"</div>';
+      resultsList.innerHTML = '<div style="padding: 2rem; text-align: center; color: #888;">Nu au fost găsite rezultate pentru "<strong>' + escapeHtml(query) + '</strong>"</div>';
       searchResults.style.display = 'block';
     }
   }
@@ -1392,26 +1759,26 @@ function initializeGlobalSearch() {
     const div = document.createElement('div');
     div.className = 'result-item';
     
-    let html = `<span class="result-type ${category}">${getCategoryLabel(category)}</span>`;
+    let html = `<span class="result-type ${category}">${escapeHtml(getCategoryLabel(category))}</span>`;
     
     if (category === 'professors') {
-      html += `<div class="result-title">${item.name}</div>
-               <div class="result-description">${item.subject} • ⭐ ${item.rating}/5</div>`;
+      html += `<div class="result-title">${escapeHtml(item.name)}</div>
+               <div class="result-description">${escapeHtml(item.subject)} • ⭐ ${escapeHtml(item.rating)}/5</div>`;
     } else if (category === 'documents') {
-      html += `<div class="result-title">${item.title}</div>
-               <div class="result-description">${item.type} • ${item.size}</div>`;
+      html += `<div class="result-title">${escapeHtml(item.title)}</div>
+               <div class="result-description">${escapeHtml(item.type)} • ${escapeHtml(item.size)}</div>`;
     } else if (category === 'posts') {
-      html += `<div class="result-title">${item.title}</div>
-               <div class="result-description">de ${item.author} • ${item.category || 'postare'}${item.content ? ' • ' + item.content.slice(0, 90) : ''}</div>`;
+      html += `<div class="result-title">${escapeHtml(item.title)}</div>
+               <div class="result-description">de ${escapeHtml(item.author)} • ${escapeHtml(item.category || 'postare')}${item.content ? ' • ' + escapeHtml(item.content.slice(0, 90)) : ''}</div>`;
     } else if (category === 'announcements') {
-      html += `<div class="result-title">${item.title}</div>
-               <div class="result-description">${item.source}</div>`;
+      html += `<div class="result-title">${escapeHtml(item.title)}</div>
+               <div class="result-description">${escapeHtml(item.source)}</div>`;
     } else if (category === 'reviews') {
-      html += `<div class="result-title">${item.title}</div>
-               <div class="result-description">⭐ ${item.rating}/5 • ${item.comment.slice(0, 90)}</div>`;
+      html += `<div class="result-title">${escapeHtml(item.title)}</div>
+               <div class="result-description">⭐ ${escapeHtml(item.rating)}/5 • ${escapeHtml(item.comment.slice(0, 90))}</div>`;
     } else if (category === 'questions') {
-      html += `<div class="result-title">${item.title}</div>
-               <div class="result-description">${item.content ? item.content.slice(0, 90) : ''}</div>`;
+      html += `<div class="result-title">${escapeHtml(item.title)}</div>
+               <div class="result-description">${item.content ? escapeHtml(item.content.slice(0, 90)) : ''}</div>`;
     }
     
     div.innerHTML = html;
@@ -1441,7 +1808,7 @@ function initializeGlobalSearch() {
         return;
       }
 
-      showNotification('Se deschide: ' + (item.title || item.name) + ' 🔗');
+      showToast('Se deschide: ' + (item.title || item.name), 'info');
     });
     
     return div;
@@ -1685,7 +2052,23 @@ function initializeDocumentDownloadActions() {
       } catch (_) {
         window.open(fileUrl, '_blank', 'noopener,noreferrer');
       }
-      showNotification('ℹ️ Descărcare directă inițiată în tab nou.');
+      showToast('Descărcare directă inițiată în tab nou.', 'info');
+    }
+  });
+
+  // Static placeholder cards: offer clear feedback instead of no-op buttons.
+  document.addEventListener('click', (event) => {
+    const downloadBtn = event.target.closest('.doc-card .btn-download:not([data-file-url])');
+    if (downloadBtn) {
+      event.preventDefault();
+      showToast('Acest document este demonstrativ. Descarcarea va fi activa cand exista fisier in baza de date.', 'info');
+      return;
+    }
+
+    const previewBtn = event.target.closest('.doc-card .btn-preview:not([href])');
+    if (previewBtn) {
+      event.preventDefault();
+      showToast('Previzualizarea nu este disponibila pentru acest document demonstrativ.', 'warning');
     }
   });
 }
@@ -1774,6 +2157,7 @@ async function initializeQuestionsData() {
   } else {
     if (emptyState) emptyState.style.display = 'none';
     loaded.data.forEach(question => questionList.appendChild(renderQuestionCard(question)));
+    await syncQuestionVoteState(questionList, loaded.data);
   }
 
   if (!questionForm) return;
@@ -1781,23 +2165,53 @@ async function initializeQuestionsData() {
     e.preventDefault();
     const title = (titleInput?.value || '').trim();
     const description = (descriptionInput?.value || '').trim();
+    const submitBtn = questionForm.querySelector('button[type="submit"]');
+    const originalSubmitText = submitBtn?.textContent || 'Publică întrebarea';
 
     if (!title || !description) {
-      showNotification('⚠️ Completează titlul și descrierea întrebării.');
+      showToast('Completează titlul și descrierea întrebării.', 'warning');
+      return;
+    }
+
+    if (title.length < 6) {
+      showToast('Titlul trebuie să aibă minim 6 caractere.', 'warning');
+      return;
+    }
+
+    if (description.length < 10) {
+      showToast('Descrierea trebuie să aibă minim 10 caractere.', 'warning');
+      return;
+    }
+
+    if (description.length > 3000) {
+      showToast('Descrierea nu poate depăși 3000 de caractere.', 'warning');
       return;
     }
 
     try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
+        submitBtn.textContent = 'Se publică...';
+      }
+
       const saved = await saveQuestion(title, description);
       const row = saved?.data?.[0];
       if (row) {
         if (emptyState) emptyState.style.display = 'none';
         questionList.prepend(renderQuestionCard(row));
+        await syncQuestionVoteState(questionList, [row]);
       }
       questionForm.reset();
-      showNotification('✅ Întrebarea a fost publicată în baza de date.');
+      showToast('Întrebarea a fost publicată cu succes.', 'success');
     } catch (error) {
-      showNotification('❌ Nu s-a putut salva întrebarea.');
+      showToast(error.message || 'Nu s-a putut salva întrebarea.', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('is-loading');
+        submitBtn.textContent = originalSubmitText;
+      }
     }
   });
 }
@@ -1966,10 +2380,9 @@ async function initializeHomepageData() {
       typeof getProfessorReviews === 'function' ? getProfessorReviews() : Promise.resolve({ success: false, data: [] })
     ]);
 
-    const client = typeof initSupabaseClient === 'function' ? await initSupabaseClient() : null;
-    const commentsResult = client
-      ? await client.from('comments').select('id,name,email,user_id,content,created_at,post_id').order('created_at', { ascending: false })
-      : { data: [], error: null };
+    const commentsResult = typeof getAllComments === 'function'
+      ? await getAllComments()
+      : { success: false, data: [] };
 
     const professors = Array.isArray(professorsResult.data) ? professorsResult.data : [];
     const documents = Array.isArray(documentsResult.data) ? documentsResult.data : [];
@@ -2170,6 +2583,7 @@ async function initializeSubredditData() {
   } else {
     if (emptyState) emptyState.style.display = 'none';
     loaded.data.forEach(post => postsFeed.appendChild(renderPostCard(post, currentUser)));
+    await syncPostVoteState(postsFeed, loaded.data);
   }
 
   const postsCount = document.getElementById('subredditPostsCount');
@@ -2207,42 +2621,83 @@ function initializePostCreation() {
 
   postForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // Input validation
     const title = (postTitleInput?.value || '').trim() || 'Postare comunitate';
     const content = (postInput?.value || '').trim();
     const category = (postCategoryInput?.value || 'general').trim();
     const tags = (postTagsInput?.value || '').trim();
-
-    if (!content) {
-      showNotification('⚠️ Scrie ceva înainte de a posta!');
+    
+    // Validation checks with clear feedback
+    if (!title) {
+      showToast('Titlul postării este obligatoriu', 'warning');
       return;
     }
-
+    
+    if (!content) {
+      showToast('Conținutul postării este obligatoriu', 'warning');
+      postInput?.focus();
+      return;
+    }
+    
+    if (content.length < 10) {
+      showToast('Postarea trebuie să conțină cel puțin 10 caractere', 'warning');
+      return;
+    }
+    
+    if (content.length > 5000) {
+      showToast('Postarea nu poate depăși 5000 de caractere', 'warning');
+      return;
+    }
+    
     const user = getCurrentUser();
     if (!user) {
-      showNotification('❌ Trebuie să fii conectat pentru a posta.');
+      showToast('Trebuie să fii conectat pentru a posta', 'error');
+      setTimeout(() => window.location.href = 'login.html', 1500);
       return;
     }
-
+    
+    // Show loading state
+    postSubmitBtn.disabled = true;
+    postSubmitBtn.classList.add('is-loading');
+    const originalText = postSubmitBtn.textContent;
+    postSubmitBtn.textContent = 'Se salvează...';
+    
     try {
       const saved = await savePost(`[${category}] ${title}`, tags ? `${content}\n\n#taguri: ${tags}` : content);
       const newPost = saved?.data?.[0];
+      
       if (!newPost) {
-        showNotification('❌ Eroare la salvarea postării.');
+        showToast('Eroare la salvarea postării în baza de date', 'error');
+        postSubmitBtn.disabled = false;
+        postSubmitBtn.classList.remove('is-loading');
+        postSubmitBtn.textContent = originalText;
         return;
       }
-
+      
+      // Success feedback
       if (emptyState && postsFeed) emptyState.style.display = 'none';
       if (postsFeed) postsFeed.prepend(renderPostCard(newPost, user));
       postForm.reset();
-      showNotification('✅ Postare salvată în baza de date.');
+      showToast('Postare adăugată cu succes! 🎉', 'success');
       
-      // Actualizeaza profilul și numărarea postărilor
+      // Update posts count
       const postsCount = document.getElementById('subredditPostsCount');
       if (postsCount) {
         postsCount.textContent = String(parseInt(postsCount.textContent || '0') + 1);
       }
+      
+      // Reset button
+      postSubmitBtn.disabled = false;
+      postSubmitBtn.classList.remove('is-loading');
+      postSubmitBtn.textContent = originalText;
+      
     } catch (error) {
-      showNotification('❌ Eroare la postare: ' + error.message);
+      console.error('Post creation error:', error);
+      showToast(error.message || 'Eroare la creare postare', 'error');
+      postSubmitBtn.disabled = false;
+      postSubmitBtn.classList.remove('is-loading');
+      postSubmitBtn.textContent = originalText;
     }
   });
 
@@ -2272,6 +2727,52 @@ function initializePostCreation() {
     });
   }
 
+  // Add sort and refresh handlers
+  const sortSelect = document.getElementById('postSortSelect');
+  const refreshBtn = document.getElementById('refreshPostsBtn');
+  
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      const sortType = sortSelect.value;
+      const posts = Array.from(postsFeed?.querySelectorAll('.post-card') || []);
+      if (posts.length > 0) {
+        sortAndRenderPosts(posts, sortType, postsFeed, getCurrentUser());
+      }
+    });
+  }
+  
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+      refreshBtn.disabled = true;
+      
+      try {
+        // Reload posts from database
+        const loaded = await getPosts();
+        const currentUser = getCurrentUser();
+        const sortType = sortSelect ? sortSelect.value : 'recent';
+        
+        postsFeed.innerHTML = '';
+        if (loaded.success && loaded.data.length > 0) {
+          if (emptyState) emptyState.style.display = 'none';
+          const sortedPosts = sortPostsByType(loaded.data, sortType);
+          sortedPosts.forEach(post => postsFeed.appendChild(renderPostCard(post, currentUser)));
+          await syncPostVoteState(postsFeed, sortedPosts);
+        } else {
+          if (emptyState) emptyState.style.display = 'flex';
+        }
+        
+        showToast('Postări reîncărcate cu succes', 'success');
+      } catch (error) {
+        console.error('Error refreshing posts:', error);
+        showToast('Eroare la reîncărcarea postărilor', 'error');
+      } finally {
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        refreshBtn.disabled = false;
+      }
+    });
+  }
+
   // Handle action buttons on posts
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('.action-btn');
@@ -2287,8 +2788,9 @@ function initializePostCreation() {
     }
 
     if (action === 'share') {
-      navigator.clipboard?.writeText(window.location.href);
-      showNotification('↗️ Link copiat.');
+      navigator.clipboard?.writeText(window.location.href)
+        .then(() => showToast('Link copiat în clipboard.', 'success'))
+        .catch(() => showToast('Nu s-a putut copia linkul.', 'error'));
     }
   });
 }
@@ -2296,15 +2798,17 @@ function initializePostCreation() {
 function renderCommentCard(comment) {
   const item = document.createElement('div');
   item.style.cssText = 'background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);';
+  const authorName = comment.name || comment.nume || 'Anonim';
+  const commentText = comment.content || comment.comentariu || '';
   item.innerHTML = `
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
       <div style="font-size: 1.8rem;">💬</div>
       <div>
-        <h4 style="margin: 0; color: var(--text);">${escapeHtml(comment.name || 'Anonim')}</h4>
+        <h4 style="margin: 0; color: var(--text);">${escapeHtml(authorName)}</h4>
         <p style="margin: 0; color: #888; font-size: 0.85rem;">${formatTimeAgo(comment.created_at)}</p>
       </div>
     </div>
-    <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(comment.content || '')}</p>
+    <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(commentText)}</p>
   `;
   return item;
 }
@@ -2362,19 +2866,48 @@ async function initializeCommentsData() {
     const name = document.getElementById('commentName').value || 'Anonim';
     const email = document.getElementById('commentEmail').value || '';
     const comment = document.getElementById('commentText').value;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalSubmitText = submitButton?.textContent || 'Posteaza comentariu';
 
     if (!comment.trim()) {
-      showNotification('⚠️ Scrie un comentariu înainte de trimitere.');
+      showToast('Scrie un comentariu înainte de trimitere.', 'warning');
+      return;
+    }
+
+    if (comment.trim().length < 3) {
+      showToast('Comentariul trebuie să aibă minim 3 caractere.', 'warning');
+      return;
+    }
+
+    if (comment.trim().length > 2000) {
+      showToast('Comentariul nu poate depăși 2000 de caractere.', 'warning');
+      return;
+    }
+
+    if (email && !/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      showToast('Adresa de email pentru notificări nu este validă.', 'warning');
       return;
     }
 
     try {
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.classList.add('is-loading');
+        submitButton.textContent = 'Se trimite...';
+      }
+
       await saveComment(postId, name, email, comment.trim());
       form.reset();
       await loadAndRender();
-      showNotification('✅ Comentariu salvat în baza de date.');
+      showToast('Comentariul a fost salvat.', 'success');
     } catch (error) {
-      showNotification('❌ Eroare la salvarea comentariului.');
+      showToast(error.message || 'Eroare la salvarea comentariului.', 'error');
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('is-loading');
+        submitButton.textContent = originalSubmitText;
+      }
     }
   });
 }

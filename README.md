@@ -1,107 +1,108 @@
 ﻿# ULBStudent - Platform Status
 
-**Actualizat: 05.04.2026**
+Actualizat: 15.04.2026
 
-## ✅ Ce Funcționează
+## Ce merge acum
 
-- **Autentificare & Sesiune** - Login/register, rol student/profesor/admin, protecție pagini
-- **Catalog Profesori** - Listă, filtrare, profil detaliat, recenzii cu rating, helpful votes
-- **Bibliotecă Documente** - Grid cu filtre, preview, descărcare, upload profesor
-- **Discuții & Comentarii** - Pagina comunitate, creare postări (formular complet)
-- **Profil & Setări** - Pagina utilizator, tab-uri setări, tema dark/light
-- **Admin Dashboard** - Gestionare utilizatori, raportări, notificări, status updates
-- **Panel Profesor** - CRUD documente, upload cu metadate, storage integration
-- **Pagini Informative** - Contact, Raporteaza Problema, Termeni, Politica de confidențialitate
-- **Căutare Globală** - Index profesori/documente/postări, filtrare client-side
-- **UI Global** - Dark mode, footer auto-inject, toast notificări, back-to-top
+- Autentificare si sesiune: login/register, persistenta sesiunii Supabase, listener de auth si redirect dupa autentificare.
+- Roluri student/profesor/admin: detectie din baza de date pentru afisarea corecta a UI-ului si a paginilor protejate.
+- Catalog profesori: listare, filtrare, profil profesor, recenzii si helpful votes.
+- Recenzii profesori: adaugare recenzie din [profesori.html](profesori.html) si [professor-profile.html](professor-profile.html), inclusiv fallback pe schema mixta.
+- Discutii si comentarii: salvare postari, citire/salvare comentarii si voturi pe postari/intrebari.
+- Homepage data-driven: statistici, leaderboard, activitate recenta, testimoniale si anunturi renderizate din datele din DB.
+- Cautare globala: filtreaza documente, postari, profesori, anunturi si recenzii din UI.
+- Setari simplificate pentru ULBS: regiune/zone orara eliminate, tema si animatii persistate.
+- Panel profesor: validare upload fisier (extensie, MIME, limita 25MB).
+- UI si accesibilitate: toast-uri, loading states, meniu mobil responsive, lazy-loading media si imbunatatiri ARIA.
 
----
+## Ce trebuie inca facut
 
-## 🟡 Trebuie Lucrat (Parțial Implementate)
+- RLS final in Supabase pentru tabelele folosite de forum, comentarii, recenzii, documente si roluri.
+- Curatarea completa a fallback-urilor locale pentru roluri; accesul final trebuie sa depinda de sesiunea si politicile din backend.
+- Cautare server-side pentru continut mare sau dinamic; filtrarea actuala din browser este utila, dar nu suficienta ca solutie finala.
+- Flux complet pentru documente in productie: upload real in Supabase Storage, URL-uri valide si gestionare a fisierelor lipsa.
+- Real-time notifications (badge + subscribe Realtime).
+- Moderare comunitate (report queue, flagging).
+- Mesagerie privata.
+- Audit logs, bulk operations, soft delete.
+- Teste automate si CI (Jest/Cypress/Playwright/GitHub Actions).
 
-- **Uniformizare UI/UX** - Stiluri inline pe Contact, Raporteaza Problema, Discutii
-- **Unificare schema DB** - Naming mixt (profesori/professors, postari_forum/posts, utilizatori/users)
-- **Save postări/comentarii** - Formular HTML exista dar save logic funcționează parțial
-- **RLS & Storage policies** - Upload profesor dependent de RLS corect aplicat în Supabase
-- **Tabel Anunțuri** - Nu exista tabel anunturi, anunțurile sunt hardcoded
-- **Leaderboard** - Datele sunt hardcoded, nu se incarca din DB
-- **Settings save** - Dark mode merge, dar alte preferințe nu se salvează
-- **Featured reviews** - Recenziile homepage hardcoded, nu data-driven
+## Ce nu este implementat
 
----
+- Chat in timp real.
+- Notificari live pentru voturi/comentarii/mesaje.
+- Moderare avansata cu panou de review pentru raportari.
+- Sistem complet de mesaje private.
+- Analytics sau audit trail pentru actiunile importante.
+- Acoperire automata de testare end-to-end.
 
-## ❌ Ce Nu Este Implementat
+## Setup rapid
 
-- **Real-time notificări** - Tabel exista, dar zero WebSocket, zero badge în header
-- **Moderare comunitate** - Fără flag/report buttons pe postări, zero moderation queue
-- **Teste automate** - Zero Jest, zero Cypress, zero GitHub Actions CI/CD
-- **Chat AI real** - Doar UI, zero integrare LLM backend
-- **Mesagerie privată** - Zero inbox, zero conversații utilizator-utilizator
-- **Upload validare** - Fără validare tip/size fisier, fără MIME check
-- **Audit logs** - Zero tracking cine a schimbat ce și când
-- **Bulk operations** - Admin nu poate face operații în masă pe utilizatori
-- **Soft delete** - Ștergeri sunt permanente, zero restore option
-- **Loading spinners** - UI feedback slab, nu se vede status operații
+1. Ruleaza [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql) in Supabase SQL Editor.
+2. Ruleaza [supabase_professors_seed.sql](supabase_professors_seed.sql) pentru seed profesori legacy.
+3. Configureaza [supabase-client.js](supabase-client.js) cu URL + anon key.
+4. Serveste proiectul local (ex: python -m http.server 5500).
 
----
+## Modificari importante din ultimul update
 
-## 📊 Estimare Completare Proiect: ~84% Functional
+1. Consolidare auth si sesiune:
+	- [auth.js](auth.js): listener de auth, redirectionare dupa login si afisare corecta a rolului in UI.
+	- [auth.js](auth.js): rolul afisat nu mai depinde de cache-ul local ca sursa principala.
+2. Hardened homepage si cautare:
+	- [index.html](index.html): anunturile pornesc cu un singur placeholder, fara seed-uri statice duplicat.
+	- [interactive.js](interactive.js): rezultate de cautare escapate inainte de randare.
+	- [index.html](index.html): adaugat H1 semantic ascuns pentru SEO si accesibilitate.
+3. Functionalitati deja stabilizate:
+	- [auth.js](auth.js): voturi pe postari si intrebari, plus citire voturi per user.
+	- [interactive.js](interactive.js): notificari toast, meniu mobil responsive si incarcarea media pe lazy-load.
+4. Stabilitate pe recenzii si setari:
+	- [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql): schema pentru recenzii si politici RLS extinse.
+	- [settings.html](settings.html): setari simplificate pentru UX mai clar.
 
-**Effort necesar producție-ready:**
-- Real-time notificări: ~5 ore
-- Moderare: ~9 ore  
-- Teste: ~25 ore
-- AI Chat: ~7 ore
-- Messaging: ~11 ore
-- UI/UX cleanup & DB migration: ~15 ore
+## Teste
 
-**Total: ~72 ore**
+### Teste statice executate
 
----
+- Verificare erori VS Code Problems pentru fisierele modificate:
+  - [auth.js](auth.js)
+  - [professor-profile.js](professor-profile.js)
+  - [professors-filtering.js](professors-filtering.js)
+  - [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql)
+  - [settings.html](settings.html)
+- Rezultat: fara erori.
 
-## Setup inițial
+### Teste functionale recomandate (manual, dupa SQL update)
 
-`bash
-# 1. Supabase setup
-- Rulează SUPABASE_PRODUCTION_SETUP.sql în Supabase SQL Editor
-- Rulează supabase_professors_seed.sql pentru seed data
+1. Recenzie din lista profesori:
+	- Deschide [profesori.html](profesori.html)
+	- Click Adauga recenzie pe un profesor
+	- Completeaza rating + comentariu
+	- Verifica mesajul de succes si rating-ul actualizat.
 
-# 2. Credențiale
-- Update window.SUPABASE_CONFIG în supabase-client.js cu URL și anonKey
+2. Recenzie din profil profesor:
+	- Deschide [professor-profile.html](professor-profile.html?id=...)
+	- Trimite recenzie noua
+	- Verifica aparitia recenziei in lista si recalculul mediei.
 
-# 3. Serve
-- Any HTTP server pe port 5500+
-- Development: python -m http.server 5500
-`
+3. Verificare DB Supabase:
+	- Confirma insert in tabelul recenzii_profesori.
+	- Confirma read din recenzii_profesori pe id_profesor/profesor_id/professor_id.
 
----
+4. Regression check discutii:
+	- Creeaza postare in [comments.html](comments.html)
+	- Adauga comentariu in [discutie.html](discutie.html?post=...)
+	- Verifica persistenta dupa refresh.
 
-## Structură fișiere principale
+5. Verificare homepage si cautare:
+	- Deschide [index.html](index.html)
+	- Confirma ca anunturile, statisticile si activity feed se incarca o singura data.
+	- Ruleaza o cautare globala cu un text existent si unul inexistent.
 
-- index.html - Homepage cu căutare globală
-- login.html, 
-egister.html - Autentificare
-- profesori.html - Catalog profesori + filtre
-- professor-profile.html - Profil detaliat profesor + recenzii
-- documente.html - Bibliotecă documente
-- comments.html - Forum/discuții comunitate
-- professor-panel.html - Panel upload documente (profesor only)
-- dmin.html - Dashboard administrativ
-- profile.html, settings.html - Utilizator
-- uth.js - Logica autentificare Supabase
-- interactive.js - Interactivitate globală, search, dark mode (~2400 linii)
-- professors-filtering.js - Filtrare profesori
-- professor-profile.js - Logica profil profesor
-- styles-*.css - Stiluri modular (global, profesori, documente, comunitate)
+6. Verificare roluri si sesiune:
+	- Logheaza-te cu un cont student si unul profesor.
+	- Verifica afisarea meniului corect si accesul la pagini protejate.
+	- Da refresh si confirma ca sesiunea ramane activa.
 
----
+## Observatie
 
-## Probleme în curs (parțial implementate)
-
-1. **Uniformizare UI/UX** - Stiluri inline pe mai multe pagini
-2. **Unificare schema DB** - Naming mixt în code și DB
-3. **Postări/comentarii save** - Form HTML exista, backend lipsă
-4. **RLS & Storage** - Upload profesor dependent de configurare
-5. **Anunțuri & Leaderboard** - Hardcoded în HTML
-
-Actualizat: 05.04.2026
+Daca proiectul Supabase nu are inca structura actualizata, recenziile pot pica pana rulezi [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql) (versiunea noua din repo).

@@ -390,6 +390,21 @@
       };
 
       const PROFESSOR_DOCUMENTS_BUCKET = 'documente';
+      const MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024;
+      const ALLOWED_FILE_EXTENSIONS = new Set(['pdf', 'doc', 'docx', 'ppt', 'pptx', 'zip', 'rar', 'txt', 'png', 'jpg', 'jpeg']);
+      const ALLOWED_MIME_TYPES = new Set([
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/zip',
+        'application/x-zip-compressed',
+        'application/x-rar-compressed',
+        'text/plain',
+        'image/png',
+        'image/jpeg'
+      ]);
 
       function parseSubjectList(row = {}) {
         const raw = row.materie || row.materie_predata || row.taught_subject || row.specialization || '';
@@ -602,6 +617,24 @@
         let uploadWarning = '';
         const file = fileInput.files?.[0];
         if (file) {
+          const extension = String(file.name || '').split('.').pop()?.toLowerCase() || '';
+          const mimeType = String(file.type || '').toLowerCase();
+
+          if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+            setMessage('Fisierul este prea mare. Dimensiunea maxima acceptata este 25 MB.');
+            return;
+          }
+
+          if (!ALLOWED_FILE_EXTENSIONS.has(extension)) {
+            setMessage('Tip de fisier neacceptat. Foloseste PDF, DOC/DOCX, PPT/PPTX, ZIP/RAR, TXT, PNG sau JPG.');
+            return;
+          }
+
+          if (mimeType && !ALLOWED_MIME_TYPES.has(mimeType)) {
+            setMessage('MIME type invalid pentru upload. Verifica fisierul selectat.');
+            return;
+          }
+
           const uploadResult = await uploadDocumentFile(file);
           storageBucket = uploadResult.bucket || '';
           storagePath = uploadResult.path || '';

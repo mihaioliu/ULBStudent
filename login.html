@@ -9,6 +9,7 @@
     
     <title>Conectare - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="toast-notifications.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -104,7 +105,7 @@
       </form>
 
       <!-- Error Message -->
-      <div id="loginError" style="margin-top: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid var(--accent); border-radius: 8px; color: var(--accent); font-weight: 600; display: none;">
+      <div id="loginError" role="alert" aria-live="assertive" style="margin-top: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid var(--accent); border-radius: 8px; color: var(--accent); font-weight: 600; display: none;">
       </div>
 
       <!-- Loading -->
@@ -177,39 +178,86 @@
       document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const email = document.getElementById('loginEmail').value;
+        const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const rememberMe = document.getElementById('rememberMe').checked;
         
+        const submitBtn = e.target.querySelector('button[type="submit"]');
         const errorDiv = document.getElementById('loginError');
         const loadingDiv = document.getElementById('loginLoading');
         
+        // Clear previous errors
         errorDiv.style.display = 'none';
+        
+        // Validation
+        if (!email || !password) {
+          errorDiv.textContent = '❌ Email și parolă sunt obligatorii';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
+        if (!/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+          errorDiv.textContent = '❌ Email invalid';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
+        if (password.length < 6) {
+          errorDiv.textContent = '❌ Parola trebuie să aibă minim 6 caractere';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
         loadingDiv.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
+        const originalSubmitText = submitBtn.textContent;
+        submitBtn.textContent = 'Se conectează...';
         
         try {
           await loginWithEmail(email, password);
+          
           if (rememberMe) {
             localStorage.setItem('rememberMe', 'true');
           }
-          // Redirect based on role (profesor/student)
-          await routeByUserRole({
-            professorDashboard: 'profile.html',
-            studentDashboard: 'index.html'
-          });
+          
+          // Ensure session is persisted before redirect
+          const { authenticated, user } = await checkAuthStatus();
+          if (authenticated && user) {
+            // Redirect based on role
+            await routeByUserRole({
+              professorDashboard: 'profile.html',
+              studentDashboard: 'index.html'
+            });
+          } else {
+            throw new Error('Sesiunea nu s-a putut inițializa. Încearcă din nou.');
+          }
         } catch (error) {
-          errorDiv.textContent = '❌ ' + error.message;
+          errorDiv.textContent = '❌ ' + (error.message || 'Eroare la conectare');
           errorDiv.style.display = 'block';
           loadingDiv.style.display = 'none';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('is-loading');
+          submitBtn.textContent = originalSubmitText;
           console.error('Login error:', error);
         }
       });
 
       document.getElementById('googleLoginBtn').addEventListener('click', async function() {
+        const notify = (message, type = 'info') => {
+          if (typeof showToast === 'function') {
+            showToast(message, type);
+            return;
+          }
+          if (typeof showNotification === 'function') {
+            showNotification(message, type);
+          }
+        };
+
         try {
           await loginWithGoogle();
         } catch (error) {
-          alert('❌ Eroare la conectare cu Google: ' + error.message);
+          notify('Eroare la conectare cu Google: ' + (error.message || 'necunoscută'), 'error');
         }
       });
     </script>

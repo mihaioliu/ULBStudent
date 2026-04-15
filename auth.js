@@ -10,6 +10,8 @@ const TABLES = {
   FORUM_POSTS: 'postari_forum',
   POSTS_LEGACY: 'posts',
   COMMENTS: 'comments',
+  COMMENTS_LEGACY: 'comentarii',
+  VOTES: 'voturi',
   QUESTIONS: 'questions',
   MATCHES: 'matches',
   PROFESSOR_REVIEWS: 'recenzii_profesori',
@@ -187,15 +189,9 @@ async function detectUserRole(userId, email = '') {
 }
 
 async function resolveAndCacheUserRole(user) {
-  const cachedRole = localStorage.getItem('role');
   const normalizedEmail = String(user?.email || '').trim().toLowerCase();
 
   if (String(user?.user_metadata?.role || '').toLowerCase() === 'admin' || normalizedEmail === 'admin@ulbstudent.ro') {
-    localStorage.setItem('role', 'admin');
-    return 'admin';
-  }
-
-  if (cachedRole === 'admin') {
     localStorage.setItem('role', 'admin');
     return 'admin';
   }
@@ -205,19 +201,10 @@ async function resolveAndCacheUserRole(user) {
     return 'profesor';
   }
 
-  if (cachedRole === 'professor') {
-    localStorage.setItem('role', 'profesor');
-    return 'profesor';
-  }
-
   if (user?.id) {
     const detectedRole = await detectUserRole(user.id, user.email || '');
     localStorage.setItem('role', detectedRole);
     return detectedRole;
-  }
-
-  if (cachedRole === 'profesor' || cachedRole === 'student' || cachedRole === 'admin') {
-    return cachedRole;
   }
 
   localStorage.setItem('role', 'student');
@@ -526,44 +513,32 @@ async function checkAuthStatus() {
       return { authenticated: false, user: null };
     }
 
-    // Check localStorage for cached session
-    const cachedToken = localStorage.getItem('supabase.auth.token');
-    const cachedUser = localStorage.getItem('currentUser');
-    
-    if (cachedToken && cachedUser) {
-      try {
-        const tokenData = JSON.parse(cachedToken);
-        const userData = JSON.parse(cachedUser);
-        
-        // Verify token is still valid
-        const { data, error } = await client.auth.getUser(tokenData.access_token);
-        
-        if (!error && data?.user) {
-          await resolveAndCacheUserRole(userData);
-          console.log('✅ User authenticated (cached):', userData.email);
-          return { authenticated: true, user: userData };
-        }
-      } catch (e) {
-        console.warn('⚠️ Could not verify cached token:', e.message);
-      }
-    }
-
-    // Try to get session from Supabase
+    // PRIMARY: Get fresh session from Supabase
     const { data, error } = await client.auth.getSession();
     
-    if (error) {
-      console.warn('⚠️ Could not get session:', error.message);
-      return { authenticated: false, user: null };
-    }
-
-    if (data?.session?.user) {
+    if (!error && data?.session?.user) {
       // Update localStorage with fresh session
       localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
       localStorage.setItem('currentUser', JSON.stringify(data.session.user));
       await resolveAndCacheUserRole(data.session.user);
       
-      console.log('✅ User authenticated:', data.session.user.email);
+      console.log('✅ User authenticated (fresh session):', data.session.user.email);
       return { authenticated: true, user: data.session.user };
+    }
+
+    // FALLBACK: Check localStorage cache if session fetch failed
+    const cachedToken = localStorage.getItem('supabase.auth.token');
+    const cachedUser = localStorage.getItem('currentUser');
+    
+    if (cachedToken && cachedUser) {
+      try {
+        const userData = JSON.parse(cachedUser);
+        await resolveAndCacheUserRole(userData);
+        console.log('✅ User authenticated (cached):', userData.email);
+        return { authenticated: true, user: userData };
+      } catch (e) {
+        console.warn('⚠️ Could not verify cached data:', e.message);
+      }
     }
 
     console.log('ℹ️ No active session');
@@ -572,6 +547,68 @@ async function checkAuthStatus() {
     console.error('❌ Auth check error:', error.message);
     return { authenticated: false, user: null };
   }
+}
+
+/**
+ * Initialize Session on Page Load (run this on every page)
+ * Restores session from Supabase and updates UI
+ */
+async function initializeSession() {
+  try {
+    const { authenticated, user } = await checkAuthStatus();
+    
+    if (authenticated && user) {
+      console.log(`✅ Session initialized for ${user.email}`);
+      return { authenticated: true, user };
+    }
+    
+    console.log('ℹ️ No session on page load');
+    return { authenticated: false, user: null };
+  } catch (error) {
+    console.error('❌ Session initialization failed:', error.message);
+    return { authenticated: false, user: null };
+  }
+}
+
+let authStateSubscription = null;
+
+async function syncSessionCache(session) {
+  if (!session?.user) {
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('role');
+    return;
+  }
+
+  localStorage.setItem('supabase.auth.token', JSON.stringify(session));
+  localStorage.setItem('currentUser', JSON.stringify(session.user));
+
+  try {
+    await resolveAndCacheUserRole(session.user);
+  } catch (error) {
+    console.warn('⚠️ Could not refresh role cache from auth state:', error.message);
+  }
+}
+
+async function initializeAuthStateListener() {
+  if (authStateSubscription) {
+    return;
+  }
+
+  const client = await initSupabaseClient();
+  const { data } = client.auth.onAuthStateChange(async (_event, session) => {
+    await syncSessionCache(session);
+
+    // Keep header in sync with the latest session state without forcing a reload.
+    updateHeaderWithUserInfo().catch((error) => {
+      console.warn('⚠️ Could not refresh header after auth state change:', error.message);
+    });
+  });
+
+  authStateSubscription = data?.subscription || null;
+
+  const { data: sessionData } = await client.auth.getSession();
+  await syncSessionCache(sessionData?.session || null);
 }
 
 /**
@@ -877,8 +914,9 @@ async function savePost(title, content) {
       throw new Error('User not authenticated');
     }
 
+    // Prefer tabla legacy `posts` pentru compatibilitate cu FK-ul uzual din `comments.post_id`.
     const primaryInsert = await client
-      .from(TABLES.FORUM_POSTS)
+      .from(TABLES.POSTS_LEGACY)
       .insert([{
         user_id: user.id,
         title,
@@ -890,10 +928,10 @@ async function savePost(title, content) {
     let data = primaryInsert.data;
     let error = primaryInsert.error;
 
-    // Fallback pentru schema veche
+    // Fallback pentru schema noua
     if (error) {
       const fallbackInsert = await client
-        .from(TABLES.POSTS_LEGACY)
+        .from(TABLES.FORUM_POSTS)
         .insert([{
           user_id: user.id,
           title,
@@ -923,18 +961,75 @@ async function saveComment(postId, name, email, content) {
     const client = await initSupabaseClient();
     const user = getCurrentUser();
 
-    const { data, error } = await client
-      .from(TABLES.COMMENTS)
-      .insert([{
-        post_id: postId,
-        user_id: user?.id || null,
-        name: name,
-        email: email,
-        content: content
-      }])
-      .select();
+    const numericPostId = Number(postId);
+    const postIdCandidates = [
+      postId,
+      Number.isFinite(numericPostId) ? numericPostId : null
+    ].filter((value, index, array) => value !== null && array.indexOf(value) === index);
 
-    if (error) throw new Error(error.message);
+    const attempts = [];
+    postIdCandidates.forEach((candidate) => {
+      attempts.push({
+        table: TABLES.COMMENTS,
+        payload: {
+          post_id: candidate,
+          user_id: user?.id || null,
+          name,
+          email,
+          content
+        }
+      });
+      attempts.push({
+        table: TABLES.COMMENTS,
+        payload: {
+          id_post: candidate,
+          user_id: user?.id || null,
+          nume: name,
+          email,
+          comentariu: content,
+          content
+        }
+      });
+      attempts.push({
+        table: TABLES.COMMENTS_LEGACY,
+        payload: {
+          post_id: candidate,
+          user_id: user?.id || null,
+          name,
+          email,
+          content
+        }
+      });
+      attempts.push({
+        table: TABLES.COMMENTS_LEGACY,
+        payload: {
+          id_post: candidate,
+          user_id: user?.id || null,
+          nume: name,
+          email,
+          comentariu: content,
+          content
+        }
+      });
+    });
+
+    let data = null;
+    let lastError = null;
+    for (const attempt of attempts) {
+      const result = await client
+        .from(attempt.table)
+        .insert([attempt.payload])
+        .select();
+
+      if (!result.error) {
+        data = result.data;
+        lastError = null;
+        break;
+      }
+      lastError = result.error;
+    }
+
+    if (lastError) throw new Error(lastError.message);
     
     console.log('✅ Comment saved to database:', data);
     return { success: true, data };
@@ -1289,7 +1384,7 @@ async function getPosts() {
   try {
     const client = await initSupabaseClient();
     const primarySelect = await client
-      .from(TABLES.FORUM_POSTS)
+      .from(TABLES.POSTS_LEGACY)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -1298,7 +1393,7 @@ async function getPosts() {
 
     if (error) {
       const fallbackSelect = await client
-        .from(TABLES.POSTS_LEGACY)
+        .from(TABLES.FORUM_POSTS)
         .select('*')
         .order('created_at', { ascending: false });
       data = fallbackSelect.data;
@@ -1323,7 +1418,7 @@ async function getPostById(postId) {
     const client = await initSupabaseClient();
 
     const primarySelect = await client
-      .from(TABLES.FORUM_POSTS)
+      .from(TABLES.POSTS_LEGACY)
       .select('*')
       .eq('id', postId)
       .limit(1)
@@ -1334,7 +1429,7 @@ async function getPostById(postId) {
 
     if (error || !data) {
       const fallbackSelect = await client
-        .from(TABLES.POSTS_LEGACY)
+        .from(TABLES.FORUM_POSTS)
         .select('*')
         .eq('id', postId)
         .limit(1)
@@ -1359,18 +1454,85 @@ async function getComments(postId) {
   try {
     const client = await initSupabaseClient();
 
-    const { data, error } = await client
-      .from(TABLES.COMMENTS)
-      .select('*')
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true });
+    const numericPostId = Number(postId);
+    const postIdCandidates = [
+      postId,
+      Number.isFinite(numericPostId) ? numericPostId : null
+    ].filter((value, index, array) => value !== null && array.indexOf(value) === index);
 
-    if (error) throw new Error(error.message);
+    const attempts = [];
+    postIdCandidates.forEach((candidate) => {
+      attempts.push({ table: TABLES.COMMENTS, column: 'post_id', value: candidate });
+      attempts.push({ table: TABLES.COMMENTS, column: 'id_post', value: candidate });
+      attempts.push({ table: TABLES.COMMENTS_LEGACY, column: 'post_id', value: candidate });
+      attempts.push({ table: TABLES.COMMENTS_LEGACY, column: 'id_post', value: candidate });
+    });
+
+    let data = [];
+    let lastError = null;
+
+    for (const attempt of attempts) {
+      const result = await client
+        .from(attempt.table)
+        .select('*')
+        .eq(attempt.column, attempt.value)
+        .order('created_at', { ascending: true });
+
+      if (!result.error) {
+        data = Array.isArray(result.data) ? result.data : [];
+        if (data.length > 0) {
+          lastError = null;
+          break;
+        }
+        lastError = null;
+        continue;
+      }
+
+      lastError = result.error;
+    }
+
+    if (lastError) throw new Error(lastError.message);
     
     return { success: true, data };
   } catch (error) {
     console.error('❌ Error fetching comments:', error.message);
     return { success: false, data: [] };
+  }
+}
+
+async function getAllComments() {
+  try {
+    const client = await initSupabaseClient();
+    const attempts = [
+      { table: TABLES.COMMENTS },
+      { table: TABLES.COMMENTS_LEGACY }
+    ];
+
+    let lastError = null;
+    for (const attempt of attempts) {
+      const result = await client
+        .from(attempt.table)
+        .select('id,name,email,user_id,content,comentariu,created_at,post_id,id_post')
+        .order('created_at', { ascending: false });
+
+      if (!result.error) {
+        const rows = Array.isArray(result.data) ? result.data : [];
+        return {
+          success: true,
+          data: rows.map((row) => ({
+            ...row,
+            content: row.content || row.comentariu || ''
+          }))
+        };
+      }
+
+      lastError = result.error;
+    }
+
+    throw new Error(lastError?.message || 'Nu s-au putut incarca comentariile.');
+  } catch (error) {
+    console.error('❌ Error fetching all comments:', error.message);
+    return { success: false, data: [], error: error.message };
   }
 }
 
@@ -1490,6 +1652,84 @@ async function upsertProfessors(professors) {
 async function updatePostVotes(postId, voteDirection) {
   try {
     const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(false);
+
+    const normalizeDirection = voteDirection === 'down' ? 'down' : 'up';
+
+    const applyVoteModel = async (tableName) => {
+      const { data: currentPost, error: fetchError } = await client
+        .from(tableName)
+        .select('id,votes')
+        .eq('id', postId)
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchError || !currentPost) {
+        return { error: fetchError || new Error('Post not found') };
+      }
+
+      if (!user?.id) {
+        const newVotes = Number(currentPost.votes || 0) + (normalizeDirection === 'up' ? 1 : -1);
+        const { data, error } = await client
+          .from(tableName)
+          .update({ votes: newVotes })
+          .eq('id', postId)
+          .select();
+
+        return { data: data?.[0], error, newVotes, userVote: normalizeDirection };
+      }
+
+      const existingVote = await client
+        .from(TABLES.VOTES)
+        .select('id,vote_type')
+        .eq('user_id', user.id)
+        .eq('post_id', postId)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingVote.error && existingVote.error.code !== 'PGRST116') {
+        return { error: existingVote.error };
+      }
+
+      let delta = 0;
+      let nextUserVote = normalizeDirection;
+      if (existingVote.data?.id) {
+        if (existingVote.data.vote_type === normalizeDirection) {
+          const deleteResult = await client
+            .from(TABLES.VOTES)
+            .delete()
+            .eq('id', existingVote.data.id);
+
+          if (deleteResult.error) return { error: deleteResult.error };
+          delta = normalizeDirection === 'up' ? -1 : 1;
+          nextUserVote = null;
+        } else {
+          const updateResult = await client
+            .from(TABLES.VOTES)
+            .update({ vote_type: normalizeDirection, updated_at: new Date().toISOString() })
+            .eq('id', existingVote.data.id);
+
+          if (updateResult.error) return { error: updateResult.error };
+          delta = normalizeDirection === 'up' ? 2 : -2;
+        }
+      } else {
+        const insertResult = await client
+          .from(TABLES.VOTES)
+          .insert([{ user_id: user.id, post_id: postId, vote_type: normalizeDirection }]);
+
+        if (insertResult.error) return { error: insertResult.error };
+        delta = normalizeDirection === 'up' ? 1 : -1;
+      }
+
+      const newVotes = Number(currentPost.votes || 0) + delta;
+      const { data, error } = await client
+        .from(tableName)
+        .update({ votes: newVotes })
+        .eq('id', postId)
+        .select();
+
+      return { data: data?.[0], error, newVotes, userVote: nextUserVote };
+    };
     
     const tryUpdate = async (tableName) => {
       const { data: currentPost, error: fetchError } = await client
@@ -1510,20 +1750,122 @@ async function updatePostVotes(postId, voteDirection) {
         .eq('id', postId)
         .select();
 
-      return { data: data?.[0], error, newVotes };
+      return { data: data?.[0], error, newVotes, userVote: normalizeDirection };
     };
 
-    let result = await tryUpdate(TABLES.FORUM_POSTS);
+    // Prefer per-user voting model; fallback to legacy increment if voturi table is unavailable.
+    let result = await applyVoteModel(TABLES.FORUM_POSTS);
     if (result.error) {
-      result = await tryUpdate(TABLES.POSTS_LEGACY);
+      const couldUseLegacyFallback = String(result.error.message || '').toLowerCase().includes('voturi')
+        || String(result.error.message || '').toLowerCase().includes('does not exist')
+        || String(result.error.code || '').toLowerCase() === '42p01';
+
+      if (couldUseLegacyFallback) {
+        result = await tryUpdate(TABLES.FORUM_POSTS);
+      }
+    }
+
+    if (result.error) {
+      result = await applyVoteModel(TABLES.POSTS_LEGACY);
+      if (result.error) {
+        const couldUseLegacyFallback = String(result.error.message || '').toLowerCase().includes('voturi')
+          || String(result.error.message || '').toLowerCase().includes('does not exist')
+          || String(result.error.code || '').toLowerCase() === '42p01';
+
+        if (couldUseLegacyFallback) {
+          result = await tryUpdate(TABLES.POSTS_LEGACY);
+        }
+      }
     }
 
     if (result.error) throw new Error(result.error.message || 'Nu s-a putut actualiza votul');
     
-    return { success: true, data: result.data, newVotes: result.newVotes };
+    return { success: true, data: result.data, newVotes: result.newVotes, userVote: result.userVote ?? null };
   } catch (error) {
     console.error('❌ Error updating post votes:', error.message);
     return { success: false, error: error.message };
+  }
+}
+
+async function getCurrentUserPostVotes(postIds = []) {
+  try {
+    const normalizedIds = Array.from(new Set((postIds || []).map((id) => String(id)).filter(Boolean)));
+    if (normalizedIds.length === 0) {
+      return { success: true, data: {} };
+    }
+
+    const user = await getAuthenticatedUser(false);
+    if (!user?.id) {
+      return { success: true, data: {} };
+    }
+
+    const client = await initSupabaseClient();
+    const { data, error } = await client
+      .from(TABLES.VOTES)
+      .select('post_id,vote_type')
+      .eq('user_id', user.id)
+      .in('post_id', normalizedIds);
+
+    if (error) {
+      const message = String(error.message || '').toLowerCase();
+      if (message.includes('voturi') || message.includes('does not exist') || String(error.code || '').toLowerCase() === '42p01') {
+        return { success: true, data: {} };
+      }
+      throw new Error(error.message);
+    }
+
+    const map = {};
+    (data || []).forEach((row) => {
+      if (row?.post_id) {
+        map[String(row.post_id)] = row.vote_type === 'down' ? 'down' : 'up';
+      }
+    });
+
+    return { success: true, data: map };
+  } catch (error) {
+    console.warn('⚠️ Could not load user post votes:', error.message);
+    return { success: false, data: {}, error: error.message };
+  }
+}
+
+async function getCurrentUserQuestionVotes(questionIds = []) {
+  try {
+    const normalizedIds = Array.from(new Set((questionIds || []).map((id) => String(id)).filter(Boolean)));
+    if (normalizedIds.length === 0) {
+      return { success: true, data: {} };
+    }
+
+    const user = await getAuthenticatedUser(false);
+    if (!user?.id) {
+      return { success: true, data: {} };
+    }
+
+    const client = await initSupabaseClient();
+    const { data, error } = await client
+      .from(TABLES.VOTES)
+      .select('question_id,vote_type')
+      .eq('user_id', user.id)
+      .in('question_id', normalizedIds);
+
+    if (error) {
+      const message = String(error.message || '').toLowerCase();
+      if (message.includes('voturi') || message.includes('does not exist') || String(error.code || '').toLowerCase() === '42p01') {
+        return { success: true, data: {} };
+      }
+      throw new Error(error.message);
+    }
+
+    const map = {};
+    (data || []).forEach((row) => {
+      if (row?.question_id) {
+        map[String(row.question_id)] = row.vote_type === 'down' ? 'down' : 'up';
+      }
+    });
+
+    return { success: true, data: map };
+  } catch (error) {
+    console.warn('⚠️ Could not load user question votes:', error.message);
+    return { success: false, data: {}, error: error.message };
   }
 }
 
@@ -1534,6 +1876,8 @@ async function updatePostVotes(postId, voteDirection) {
 async function updateQuestionVotes(questionId, voteDirection) {
   try {
     const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(false);
+    const normalizeDirection = voteDirection === 'down' ? 'down' : 'up';
     
     // Fetch current votes
     const { data: currentQuestion, error: fetchError } = await client
@@ -1546,8 +1890,63 @@ async function updateQuestionVotes(questionId, voteDirection) {
     if (fetchError || !currentQuestion) {
       throw new Error('Could not fetch current question');
     }
-    
-    const newVotes = currentQuestion.upvotes + (voteDirection === 'up' ? 1 : -1);
+
+    let delta = normalizeDirection === 'up' ? 1 : -1;
+    let nextUserVote = normalizeDirection;
+
+    if (user?.id) {
+      const existingVote = await client
+        .from(TABLES.VOTES)
+        .select('id,vote_type')
+        .eq('user_id', user.id)
+        .eq('question_id', questionId)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingVote.error && existingVote.error.code !== 'PGRST116') {
+        const message = String(existingVote.error.message || '').toLowerCase();
+        const isMissingVotesTable = message.includes('voturi')
+          || message.includes('does not exist')
+          || String(existingVote.error.code || '').toLowerCase() === '42p01';
+        if (!isMissingVotesTable) {
+          throw new Error(existingVote.error.message);
+        }
+      }
+
+      if (existingVote.data?.id) {
+        if (existingVote.data.vote_type === normalizeDirection) {
+          const deleteResult = await client
+            .from(TABLES.VOTES)
+            .delete()
+            .eq('id', existingVote.data.id);
+          if (deleteResult.error) throw new Error(deleteResult.error.message);
+          delta = normalizeDirection === 'up' ? -1 : 1;
+          nextUserVote = null;
+        } else {
+          const updateResult = await client
+            .from(TABLES.VOTES)
+            .update({ vote_type: normalizeDirection, updated_at: new Date().toISOString() })
+            .eq('id', existingVote.data.id);
+          if (updateResult.error) throw new Error(updateResult.error.message);
+          delta = normalizeDirection === 'up' ? 2 : -2;
+        }
+      } else {
+        const insertVote = await client
+          .from(TABLES.VOTES)
+          .insert([{ user_id: user.id, question_id: questionId, vote_type: normalizeDirection }]);
+        if (insertVote.error) {
+          const message = String(insertVote.error.message || '').toLowerCase();
+          const isMissingVotesTable = message.includes('voturi')
+            || message.includes('does not exist')
+            || String(insertVote.error.code || '').toLowerCase() === '42p01';
+          if (!isMissingVotesTable) {
+            throw new Error(insertVote.error.message);
+          }
+        }
+      }
+    }
+
+    const newVotes = Number(currentQuestion.upvotes || 0) + delta;
     
     // Update the votes in database
     const { data, error } = await client
@@ -1558,7 +1957,7 @@ async function updateQuestionVotes(questionId, voteDirection) {
     
     if (error) throw new Error(error.message);
     
-    return { success: true, data: data?.[0], newVotes };
+    return { success: true, data: data?.[0], newVotes, userVote: nextUserVote };
   } catch (error) {
     console.error('❌ Error updating question votes:', error.message);
     return { success: false, error: error.message };
@@ -1934,45 +2333,68 @@ async function deleteProfessorDocument(documentId) {
 /**
  * Recenzii profesori (tabel: recenzii_profesori)
  */
+function buildProfessorIdCandidates(rawProfessorId) {
+  const asString = String(rawProfessorId ?? '').trim();
+  const asNumber = Number(asString);
+  const candidates = [asString];
+
+  if (Number.isFinite(asNumber) && asString !== '') {
+    candidates.push(asNumber);
+  }
+
+  return candidates.filter((value, index, list) => value !== '' && list.indexOf(value) === index);
+}
+
 async function getProfessorReviews(professorId) {
   try {
     const client = await initSupabaseClient();
-    const base = client
-      .from(TABLES.PROFESSOR_REVIEWS)
-      .select('*')
-      .order('created_at', { ascending: false });
-
     if (!professorId) {
-      const { data, error } = await base;
-      if (error) throw new Error(error.message);
-      return { success: true, data: data || [] };
+      const base = await client
+        .from(TABLES.PROFESSOR_REVIEWS)
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (base.error) throw new Error(base.error.message);
+      return { success: true, data: base.data || [] };
     }
 
-    const primary = await client
-      .from(TABLES.PROFESSOR_REVIEWS)
-      .select('*')
-      .eq('profesor_id', professorId)
-      .order('created_at', { ascending: false });
+    const idCandidates = buildProfessorIdCandidates(professorId);
+    const columnCandidates = ['id_profesor', 'profesor_id', 'professor_id'];
 
-    if (!primary.error) {
-      return { success: true, data: primary.data || [] };
+    let lastError = null;
+    let bestData = [];
+
+    for (const column of columnCandidates) {
+      for (const candidate of idCandidates) {
+        const result = await client
+          .from(TABLES.PROFESSOR_REVIEWS)
+          .select('*')
+          .eq(column, candidate)
+          .order('created_at', { ascending: false });
+
+        if (!result.error) {
+          const rows = Array.isArray(result.data) ? result.data : [];
+          if (rows.length > 0) {
+            return { success: true, data: rows };
+          }
+          bestData = rows;
+          lastError = null;
+          continue;
+        }
+
+        lastError = result.error;
+      }
     }
 
-    const fallback = await client
-      .from(TABLES.PROFESSOR_REVIEWS)
-      .select('*')
-      .eq('professor_id', professorId)
-      .order('created_at', { ascending: false });
-
-    if (fallback.error) throw new Error(fallback.error.message);
-    return { success: true, data: fallback.data || [] };
+    if (lastError) throw new Error(lastError.message);
+    return { success: true, data: bestData };
   } catch (error) {
     console.error('❌ Error fetching recenzii_profesori:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
 
-async function saveProfessorReview(professorId, rating, reviewText) {
+async function saveProfessorReview(professorId, rating, reviewText, reviewContext = {}) {
   try {
     const client = await initSupabaseClient();
     const user = await getAuthenticatedUser(true);
@@ -1982,32 +2404,71 @@ async function saveProfessorReview(professorId, rating, reviewText) {
     const normalizedRating = Number(rating);
     const userId = user?.id || null;
 
+    if (!normalizedProfessorId) {
+      throw new Error('Profesor invalid pentru recenzie.');
+    }
+
+    if (!normalizedReviewText) {
+      throw new Error('Comentariul recenziei este obligatoriu.');
+    }
+
+    if (!Number.isFinite(normalizedRating) || normalizedRating < 1 || normalizedRating > 5) {
+      throw new Error('Rating invalid.');
+    }
+
+    const numericProfessorId = Number(normalizedProfessorId);
+    const numericProfessorCandidate = Number.isFinite(numericProfessorId) ? numericProfessorId : null;
+
+    const professorName = String(reviewContext.professorName || '').trim();
+    const professorSubject = String(reviewContext.professorSubject || '').trim();
+    const professorEmail = String(reviewContext.professorEmail || '').trim().toLowerCase();
+
     const payloadVariants = [
       {
-        id_profesor: normalizedProfessorId,
+        id_profesor: numericProfessorCandidate,
         user_id: userId,
         rating: normalizedRating,
-        comentariu: normalizedReviewText
+        comentariu: normalizedReviewText,
+        title: professorName,
+        materie: professorSubject,
+        email: professorEmail
       },
       {
         id_profesor: normalizedProfessorId,
         user_id: userId,
         rating: normalizedRating,
-        review_text: normalizedReviewText
+        review_text: normalizedReviewText,
+        title: professorName,
+        subject: professorSubject,
+        email: professorEmail
       },
       {
         profesor_id: normalizedProfessorId,
         user_id: userId,
         rating: normalizedRating,
-        comentariu: normalizedReviewText
+        comentariu: normalizedReviewText,
+        professor_name: professorName,
+        materie: professorSubject,
+        email: professorEmail
       },
       {
         professor_id: normalizedProfessorId,
         user_id: userId,
         rating: normalizedRating,
-        comment: normalizedReviewText
+        review_text: normalizedReviewText,
+        professor_name: professorName,
+        subject: professorSubject,
+        email: professorEmail
       }
-    ];
+    ].map((variant) => {
+      const cleaned = {};
+      Object.entries(variant).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          cleaned[key] = value;
+        }
+      });
+      return cleaned;
+    });
 
     let lastError = null;
     for (const payload of payloadVariants) {
@@ -2118,7 +2579,9 @@ async function protectPage() {
     'index.html',
     'documente.html',
     'subreddit.html',
-    'comments.html'
+    'comments.html',
+    'discutie.html',
+    'profesori.html'
   ];
   
   // Protected pages - require authentication
@@ -2126,7 +2589,8 @@ async function protectPage() {
     'profile.html',
     'settings.html',
     'admin.html',
-    'professor-panel.html'
+    'professor-panel.html',
+    'professor-profile.html'
   ];
   
   if (publicPages.includes(currentPage)) {
@@ -2134,11 +2598,31 @@ async function protectPage() {
   }
   
   if (protectedPages.includes(currentPage)) {
-    const { authenticated } = await checkAuthStatus();
+    const { authenticated, user } = await checkAuthStatus();
     
     if (!authenticated) {
       console.log('🔒 Page protected. Redirecting to login...');
-      window.location.href = 'login.html';
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('role');
+      window.location.href = 'login.html?redirect=' + encodeURIComponent(currentPage);
+      return;
+    }
+
+    // Server-validated role checks for sensitive pages.
+    const restrictedPagesByRole = {
+      'admin.html': ['admin'],
+      'professor-panel.html': ['profesor', 'admin'],
+      'professor-profile.html': ['profesor', 'admin']
+    };
+
+    const allowedRoles = restrictedPagesByRole[currentPage];
+    if (allowedRoles) {
+      const role = await resolveAndCacheUserRole(user || getCurrentUser());
+      if (!allowedRoles.includes(role)) {
+        console.warn(`⛔ Access denied for ${currentPage}. Required roles: ${allowedRoles.join(', ')}, got: ${role}`);
+        window.location.href = 'index.html';
+      }
     }
   }
 }
@@ -2170,8 +2654,8 @@ async function updateHeaderWithUserInfo() {
     
     // Step 2: Display user from localStorage INSTANTLY
     if (hasValidStorage && displayUser) {
-      await resolveAndCacheUserRole(displayUser);
-      showUserMenuInHeader(headerActions, displayUser);
+      const resolvedRole = await resolveAndCacheUserRole(displayUser);
+      showUserMenuInHeader(headerActions, displayUser, resolvedRole);
       
       // Step 3: Verify authentication async in background (non-blocking)
       checkAuthStatus().then(({ authenticated, user }) => {
@@ -2192,8 +2676,8 @@ async function updateHeaderWithUserInfo() {
       // Still verify in background
       checkAuthStatus().then(({ authenticated, user }) => {
         if (authenticated && user) {
-          resolveAndCacheUserRole(user).then(() => {
-          showUserMenuInHeader(headerActions, user);
+          resolveAndCacheUserRole(user).then((resolvedRole) => {
+            showUserMenuInHeader(headerActions, user, resolvedRole);
           });
         }
       }).catch(err => {
@@ -2237,7 +2721,7 @@ function showLoginButtonsInHeader(headerActions) {
 /**
  * Display user menu in header with profile info
  */
-function showUserMenuInHeader(headerActions, user) {
+function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   // Remove login buttons if any
   const oldSignIn = headerActions.querySelector('.btn-signin');
   const oldSignUp = headerActions.querySelector('.btn-signup');
@@ -2271,9 +2755,8 @@ function showUserMenuInHeader(headerActions, user) {
   
   const userEmail = user.email || 'Student';
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
-  const storedRole = localStorage.getItem('role');
-  const accountIsAdmin = storedRole === 'admin' || String(user.user_metadata?.role || '').toLowerCase() === 'admin' || String(userEmail).toLowerCase() === 'admin@ulbstudent.ro';
-  const accountIsProfessor = storedRole === 'profesor' || storedRole === 'professor' || user.user_metadata?.account_type === 'professor';
+  const accountIsAdmin = resolvedRole === 'admin' || String(user.user_metadata?.role || '').toLowerCase() === 'admin' || String(userEmail).toLowerCase() === 'admin@ulbstudent.ro';
+  const accountIsProfessor = resolvedRole === 'profesor' || resolvedRole === 'professor' || user.user_metadata?.account_type === 'professor';
   const accountType = accountIsAdmin ? 'ADMIN' : (accountIsProfessor ? 'Profesor' : 'Student');
   const roleColor = accountIsAdmin ? '#ef4444' : (accountIsProfessor ? '#f97316' : '#0ea5e9');
   
@@ -2527,23 +3010,65 @@ function escapeHtml(text) {
   return text?.replace(/[&<>"']/g, m => map[m]) || '';
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+Object.assign(window, {
+  loginWithEmail,
+  loginWithGoogle,
+  logoutUser,
+  checkAuthStatus,
+  initializeSession,
+  initializeAuthStateListener,
+  getCurrentUser,
+  getAuthenticatedUser,
+  routeByUserRole,
+  protectPage,
+  updateHeaderWithUserInfo,
+  saveQuestion,
+  savePost,
+  saveComment,
+  getQuestions,
+  getPosts,
+  getComments,
+  getAllComments,
+  getProfessors,
+  getDocuments,
+  getCurrentUserPostVotes,
+  getCurrentUserQuestionVotes,
+  updatePostVotes,
+  updateQuestionVotes,
+  getProfessorReviews,
+  saveProfessorReview
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   const isAuthPage = currentPage === 'login.html' || currentPage === 'register.html';
 
-  // Render quickly from local cache first to avoid visible delay in header account box.
-  const headerRenderPromise = updateHeaderWithUserInfo();
-  
-  // Initialize Supabase on all pages
-  await initSupabaseClient();
-  
-  // Protect pages and update header on all pages
-  if (!isAuthPage) {
-    await protectPage();
-  }
-  
-  // Ensure first render completed, then refresh with latest session state.
-  await headerRenderPromise;
-  await updateHeaderWithUserInfo();
+  // Render quickly from cached data first to avoid visible delays in account UI.
+  const headerRenderPromise = updateHeaderWithUserInfo().catch((error) => {
+    console.warn('⚠️ Initial header render failed:', error.message);
+  });
+
+  // Initialize auth stack in background so page interactivity is never blocked.
+  initializeAuthStateListener().catch((error) => {
+    console.warn('⚠️ Auth state listener init failed:', error.message);
+  });
+
+  initSupabaseClient()
+    .then(() => {
+      if (!isAuthPage) {
+        return protectPage().catch((error) => {
+          console.warn('⚠️ Page protection check failed:', error.message);
+        });
+      }
+      return null;
+    })
+    .finally(() => {
+      headerRenderPromise.finally(() => {
+        updateHeaderWithUserInfo().catch((error) => {
+          console.warn('⚠️ Header refresh failed:', error.message);
+        });
+      });
+    });
+
   initializeSearchableDropdowns();
 });

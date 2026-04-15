@@ -1,6 +1,6 @@
 async function loadProfessorProfile() {
   const params = new URLSearchParams(window.location.search);
-  const professorId = params.get('id');
+  const professorId = String(params.get('id') || '').trim();
 
   const nameEl = document.getElementById('profName');
   const specializationEl = document.getElementById('profSpecialization');
@@ -17,6 +17,28 @@ async function loadProfessorProfile() {
   const reviewModalSubtitle = document.getElementById('reviewModalSubtitle');
 
   let currentProfessor = null;
+  const fallbackName = params.get('name') || 'Profesor';
+  const fallbackSpec = params.get('specializare') || '-';
+
+  const getProfessorDisplay = () => {
+    if (currentProfessor) {
+      return {
+        id: String(currentProfessor.id || professorId || '').trim(),
+        fullName: currentProfessor.nume_complet || currentProfessor.full_name || fallbackName,
+        specialization: currentProfessor.specializare || currentProfessor.specialization || fallbackSpec,
+        email: currentProfessor.email || currentProfessor.institutional_email || '-',
+        subjects: currentProfessor.materie || currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || '-'
+      };
+    }
+
+    return {
+      id: professorId,
+      fullName: fallbackName,
+      specialization: fallbackSpec,
+      email: '-',
+      subjects: fallbackSpec
+    };
+  };
 
   const openModal = () => {
     if (!reviewModal) return;
@@ -36,49 +58,69 @@ async function loadProfessorProfile() {
     const client = await initSupabaseClient();
 
     if (professorId) {
-      const { data, error } = await client
-        .from('profesori')
-        .select('*')
-        .eq('id', professorId)
-        .limit(1)
-        .maybeSingle();
+      const professorTables = ['profesori', 'professors'];
+      for (const table of professorTables) {
+        const direct = await client
+          .from(table)
+          .select('*')
+          .eq('id', professorId)
+          .limit(1)
+          .maybeSingle();
 
-      if (!error && data) {
-        currentProfessor = data;
+        if (!direct.error && direct.data) {
+          currentProfessor = direct.data;
+          break;
+        }
+
+        const numericId = Number(professorId);
+        if (Number.isFinite(numericId)) {
+          const numeric = await client
+            .from(table)
+            .select('*')
+            .eq('id', numericId)
+            .limit(1)
+            .maybeSingle();
+
+          if (!numeric.error && numeric.data) {
+            currentProfessor = numeric.data;
+            break;
+          }
+        }
       }
     }
 
-    if (!currentProfessor) {
-      const fallbackName = params.get('name') || 'Profesor';
-      const fallbackSpec = params.get('specializare') || '-';
-      nameEl.textContent = fallbackName;
-      specializationEl.textContent = `Specializare: ${fallbackSpec}`;
-      emailEl.textContent = '-';
-      subjectsEl.textContent = '-';
-    } else {
-      const fullName = currentProfessor.nume_complet || currentProfessor.full_name || 'Profesor';
-      const specialization = currentProfessor.specializare || currentProfessor.specialization || '-';
-      const email = currentProfessor.email || currentProfessor.institutional_email || '-';
-      const subjects = currentProfessor.materie || currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || '-';
+    if (!currentProfessor && typeof getProfessors === 'function') {
+      const listResult = await getProfessors();
+      const rows = Array.isArray(listResult.data) ? listResult.data : [];
+      currentProfessor = rows.find((row) => String(row.id || '') === professorId) || null;
 
-      nameEl.textContent = fullName;
-      specializationEl.textContent = `Specializare: ${specialization}`;
-      emailEl.textContent = email;
-      subjectsEl.textContent = subjects || '-';
-      if (reviewModalSubtitle) {
-        reviewModalSubtitle.textContent = `Profesor: ${fullName} • ${specialization}`;
+      if (!currentProfessor && fallbackName) {
+        const normalizedFallbackName = fallbackName.trim().toLowerCase();
+        currentProfessor = rows.find((row) => {
+          const fullName = String(row.nume_complet || row.full_name || '').trim().toLowerCase();
+          return fullName && fullName === normalizedFallbackName;
+        }) || null;
       }
+    }
+
+    const professorDisplay = getProfessorDisplay();
+    nameEl.textContent = professorDisplay.fullName;
+    specializationEl.textContent = `Specializare: ${professorDisplay.specialization}`;
+    emailEl.textContent = professorDisplay.email;
+    subjectsEl.textContent = professorDisplay.subjects || '-';
+    if (reviewModalSubtitle) {
+      reviewModalSubtitle.textContent = `Profesor: ${professorDisplay.fullName} • ${professorDisplay.specialization}`;
     }
 
     async function renderReviews() {
-      if (!currentProfessor?.id) {
+      if (!professorDisplay.id) {
         reviewsListEl.innerHTML = '';
         reviewsEmptyEl.style.display = 'block';
         ratingEl.textContent = '0/5 (0 recenzii)';
         return;
       }
 
-      const reviewsResult = await getProfessorReviews(currentProfessor.id);
+      const reviewsResult = await getProfessorReviews(professorDisplay.id);
       const rows = reviewsResult.success ? reviewsResult.data : [];
 
       reviewsListEl.innerHTML = '';
@@ -137,7 +179,7 @@ async function loadProfessorProfile() {
     reviewForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!currentProfessor?.id) {
+      if (!professorDisplay.id) {
         showNotification('Profesor invalid. Revino in lista profesori.');
         return;
       }
@@ -150,9 +192,13 @@ async function loadProfessorProfile() {
         return;
       }
 
-      const saveResult = await saveProfessorReview(currentProfessor.id, rating, comment);
+      const saveResult = await saveProfessorReview(professorDisplay.id, rating, comment, {
+        professorName: professorDisplay.fullName,
+        professorSubject: professorDisplay.subjects,
+        professorEmail: professorDisplay.email
+      });
       if (!saveResult.success) {
-        showNotification('Nu s-a putut salva recenzia.');
+        showNotification(saveResult.error || 'Nu s-a putut salva recenzia.');
         return;
       }
 

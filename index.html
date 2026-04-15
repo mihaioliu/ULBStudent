@@ -14,6 +14,7 @@
     <title>ULBStudent - Comunitatea Studenților ULBS | Platformă Studiu</title>
     <link rel="stylesheet" href="styles-global.css" />
     <link rel="stylesheet" href="styles-professors.css" />
+    <link rel="stylesheet" href="toast-notifications.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -49,6 +50,7 @@
 
     <!-- Continut principal -->
     <main id="home">
+      <h1 style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">ULBStudent - Comunitatea studenților ULBS</h1>
       <!-- Advanced Global Search Section -->
       <section class="advanced-search-section">
         <div class="section-header">
@@ -104,37 +106,10 @@
         </div>
         
         <div class="announcements-container" id="announcementsFeed" aria-live="polite">
-          <div class="announcement-card urgent">
-            <div class="announcement-badge">🚨 URGENT</div>
-            <h4>S-a mutat sala de curs!</h4>
-            <p class="announcement-meta">Arhitectura Calculatoarelor - Prof. Alexandru Dinu • acum 30 min</p>
-            <p class="announcement-text">Sala de curs s-a mutat de la A142 la B307. Atenție: sesiunea de astazi la ora 14:00 va fi în noua locație!</p>
-            <div class="announcement-footer">
-              <span class="posted-time">⏰ 30 minute în urmă</span>
-              <button class="btn-mark-read">Marchez ca citit</button>
-            </div>
-          </div>
-
-          <div class="announcement-card important">
-            <div class="announcement-badge">⚠️ IMPORTANT</div>
-            <h4>Termenul pentru proiect a fost prelungit</h4>
-            <p class="announcement-meta">Programare I - Prof. Ion Cristian • acum 2 ore</p>
-            <p class="announcement-text">Din cauza cererilor studenților, deadline-ul pentru proiect a fost mutat de la 15 martie la 20 martie.</p>
-            <div class="announcement-footer">
-              <span class="posted-time">⏰ 2 ore în urmă</span>
-              <button class="btn-mark-read">Marchez ca citit</button>
-            </div>
-          </div>
-
           <div class="announcement-card info">
-            <div class="announcement-badge">ℹ️ INFO</div>
-            <h4>Examen amânat din cauza tehnică</h4>
-            <p class="announcement-meta">Rețele de Date - Prof. Maria Popescu • acum 5 ore</p>
-            <p class="announcement-text">Examenul de laborator programat pentru astazi a fost amânat. Data nouă va fi anunțată în următoarele 24 ore.</p>
-            <div class="announcement-footer">
-              <span class="posted-time">⏰ 5 ore în urmă</span>
-              <button class="btn-mark-read">Marchez ca citit</button>
-            </div>
+            <h4>Se încarcă anunțurile...</h4>
+            <p class="announcement-meta">Sincronizăm datele recente din platformă.</p>
+            <p class="announcement-text">Conținutul va fi afișat automat imediat ce răspunde baza de date.</p>
           </div>
         </div>
       </section>
@@ -412,9 +387,9 @@
           <h4>📚 ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
           <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-            <a href="#" title="Facebook" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
-            <a href="#" title="Discord" style="color: #5865f2;"><i class="fab fa-discord"></i></a>
-            <a href="#" title="GitHub" style="color: #333;"><i class="fab fa-github"></i></a>
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="ULBStudent pe Facebook" title="Facebook" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
+            <a href="https://discord.com" target="_blank" rel="noopener noreferrer" aria-label="Comunitate ULBStudent pe Discord" title="Discord" style="color: #5865f2;"><i class="fab fa-discord"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="ULBStudent pe GitHub" title="GitHub" style="color: #333;"><i class="fab fa-github"></i></a>
           </div>
         </div>
         

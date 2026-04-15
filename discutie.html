@@ -18,7 +18,7 @@
   <body>
     <header>
       <div class="header-content">
-        <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+        <a href="index.html" class="header-logo-link">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
         </a>
         <p class="tagline">Comunitatea ta de studiu</p>
@@ -40,8 +40,8 @@
       </div>
     </header>
 
-    <main class="container" style="max-width: 980px; margin: 2rem auto 3rem; padding: 0 1.5rem;">
-      <section class="subreddit-banner" style="margin-bottom: 1.2rem;">
+    <main class="container discussion-detail-container">
+      <section class="subreddit-banner discussion-detail-banner">
         <div class="sub-info">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="Logo ULBStudent" class="sub-logo-horizontal">
           <div>
@@ -51,61 +51,61 @@
         </div>
       </section>
 
-      <a href="comments.html" class="join-btn" style="display: inline-block; margin-bottom: 1.2rem; text-decoration: none;">Inapoi la toate discutiile</a>
+      <a href="comments.html" class="join-btn join-inline-back">Inapoi la toate discutiile</a>
 
-      <div id="commentsPostContainer" style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid var(--accent);">
-        <h2 style="color: var(--text); margin: 0 0 1rem 0;">Inca nu exista detalii pentru aceasta postare</h2>
-        <p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">
+      <div id="commentsPostContainer" class="comment-post-preview">
+        <h2 class="comment-post-title">Inca nu exista detalii pentru aceasta postare</h2>
+        <p class="comment-post-description">
           Deschide aceasta pagina din butonul Comenteaza al unei postari.
         </p>
       </div>
 
-      <div style="margin-top: 1.2rem; background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-        <h3 style="margin-top: 0; color: var(--accent);">Adauga un comentariu</h3>
-        <form id="commentForm" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="comment-form-shell">
+        <h3 class="comment-form-title">Adauga un comentariu</h3>
+        <form id="commentForm" class="comment-form-layout">
           <div>
-            <label for="commentName" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nume (optional)</label>
+            <label for="commentName" class="comment-form-label">Nume (optional)</label>
             <input
               type="text"
               id="commentName"
               name="name"
-              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              class="comment-input"
               placeholder="Cum doresti sa fii creditat?"
             >
           </div>
 
           <div>
-            <label for="commentText" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Comentariul tau *</label>
+            <label for="commentText" class="comment-form-label">Comentariul tau *</label>
             <textarea
               id="commentText"
               name="comment"
               required
-              style="width: 100%; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; min-height: 150px; resize: vertical;"
+              class="comment-input comment-textarea"
               placeholder="Partajeaza-ti gandurile, raspunsurile sau intrebarile..."
             ></textarea>
           </div>
 
           <div>
-            <label for="commentEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email (pentru notificari)</label>
+            <label for="commentEmail" class="comment-form-label">Email (pentru notificari)</label>
             <input
               type="email"
               id="commentEmail"
               name="email"
-              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              class="comment-input"
               placeholder="email@exemplu.ro"
             >
           </div>
 
-          <div style="display: flex; gap: 1rem;">
+          <div class="comment-form-actions">
             <button
               type="submit"
-              style="flex: 1; padding: 0.75rem 1.5rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+              class="comment-submit-btn"
             >
               <i class="fas fa-paper-plane"></i> Posteaza comentariu
             </button>
             <button
               type="reset"
-              style="flex: 0 1 150px; padding: 0.75rem 1.5rem; background: var(--light-gray); color: var(--text); border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+              class="comment-reset-btn"
             >
               Sterge
             </button>
@@ -113,24 +113,24 @@
         </form>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem;">
-        <h3 id="commentsTitle" style="color: var(--text); margin: 0 0 1rem 0;">0 Comentarii</h3>
+      <div class="comments-stack">
+        <h3 id="commentsTitle" class="comments-title">0 Comentarii</h3>
         <div id="commentsList"></div>
-        <p id="commentsEmptyState" style="color: #888; background: var(--light-gray); border: 1px dashed var(--border-color); border-radius: 10px; padding: 1rem;">Inca nu exista comentarii.</p>
+        <p id="commentsEmptyState" class="comments-empty">Inca nu exista comentarii.</p>
       </div>
     </main>
 
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" style="height: 60px; width: auto; margin-bottom: 1rem;">
+          <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" class="footer-logo">
           <h4>ULBStudent</h4>
           <p>Platforma de suport pentru comunitatea studentilor ULBS.</p>
         </div>
 
         <div class="footer-section">
           <h4>Linkuri Rapide</h4>
-          <ul style="list-style: none; padding: 0;">
+          <ul class="footer-list-reset">
             <li><a href="index.html">Pagina Principala</a></li>
             <li><a href="documente.html">Documente</a></li>
             <li><a href="comments.html">Discutii</a></li>
@@ -139,7 +139,7 @@
 
         <div class="footer-section">
           <h4>Ajutor</h4>
-          <ul style="list-style: none; padding: 0;">
+          <ul class="footer-list-reset">
             <li><a href="politica-confidentialitate.html">Politica Confidentialitatii</a></li>
             <li><a href="termeni-conditii.html">Termeni si Conditii</a></li>
             <li><a href="contact.html">Contact</a></li>

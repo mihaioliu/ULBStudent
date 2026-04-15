@@ -255,7 +255,7 @@
       </form>
 
       <!-- Error Message -->
-      <div id="registerError" style="margin-top: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid var(--accent); border-radius: 8px; color: var(--accent); font-weight: 600; display: none;">
+      <div id="registerError" role="alert" aria-live="assertive" style="margin-top: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid var(--accent); border-radius: 8px; color: var(--accent); font-weight: 600; display: none;">
       </div>
 
       <!-- Loading -->
@@ -363,34 +363,54 @@
 
         const errorDiv = document.getElementById('registerError');
         const loadingDiv = document.getElementById('registerLoading');
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn ? submitBtn.textContent : 'Creează Cont';
+        const notify = (message, type = 'info') => {
+          if (typeof showToast === 'function') {
+            showToast(message, type);
+            return;
+          }
+          if (typeof showNotification === 'function') {
+            showNotification(message, type);
+          }
+        };
 
         errorDiv.style.display = 'none';
 
         if (!agreeTerms) {
           errorDiv.textContent = '❌ Trebuie să accepți Termenii și Condițiile';
           errorDiv.style.display = 'block';
+          notify('Trebuie să accepți Termenii și Condițiile.', 'warning');
           return;
         }
 
         if (password !== confirmPassword) {
           errorDiv.textContent = '❌ Parolele nu se potrivesc';
           errorDiv.style.display = 'block';
+          notify('Parolele nu se potrivesc.', 'warning');
           return;
         }
 
         if (password.length < 8) {
           errorDiv.textContent = '❌ Parola trebuie să conțină minim 8 caractere';
           errorDiv.style.display = 'block';
+          notify('Parola trebuie să conțină minim 8 caractere.', 'warning');
           return;
         }
 
         if (isProfessor && teachingYears.length === 0) {
           errorDiv.textContent = '❌ Selectează cel puțin un an de predare';
           errorDiv.style.display = 'block';
+          notify('Selectează cel puțin un an de predare.', 'warning');
           return;
         }
 
         loadingDiv.style.display = 'block';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.classList.add('is-loading');
+          submitBtn.textContent = 'Se creează contul...';
+        }
 
         try {
           const professorData = isProfessor ? {
@@ -410,13 +430,20 @@
             professorData
           );
 
-          alert('✅ Cont creat cu succes! Te-ai logat automat.');
+          notify('Cont creat cu succes! Te-ai logat automat.', 'success');
           window.location.href = 'index.html';
         } catch (error) {
           errorDiv.textContent = '❌ ' + error.message;
           errorDiv.style.display = 'block';
-          loadingDiv.style.display = 'none';
+          notify(error.message || 'Nu s-a putut crea contul.', 'error');
           console.error('Register error:', error);
+        } finally {
+          loadingDiv.style.display = 'none';
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            submitBtn.textContent = originalBtnText;
+          }
         }
       });
     </script>

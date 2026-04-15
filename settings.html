@@ -83,26 +83,10 @@
 
             <div class="setting-item">
               <div>
-                <h4>Regiune Oras</h4>
-                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Setupeaza locatia ta</p>
+                <h4>Campus</h4>
+                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Platforma este dedicata studentilor ULBS</p>
               </div>
-              <select id="regionSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
-                <option value="bucharesti" selected>București</option>
-                <option value="cluj">Cluj-Napoca</option>
-                <option value="timisoara">Timișoara</option>
-              </select>
-            </div>
-
-            <div class="setting-item">
-              <div>
-                <h4>Zona Orar (Timezone)</h4>
-                <p style="color: var(--text-secondary); margin: 0.2rem 0 0 0;">Pentru sincronizare corectă</p>
-              </div>
-              <select id="timezoneSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
-                <option value="EET" selected>EET (UTC+2)</option>
-                <option value="EEST">EEST (UTC+3)</option>
-                <option value="UTC">UTC</option>
-              </select>
+              <div style="padding: 0.6rem 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--light-gray); color: var(--text); font-weight: 600;">ULBS - Sibiu</div>
             </div>
           </div>
         </div>
@@ -323,10 +307,13 @@
 
       // Settings Save
       document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+        const selectedTheme = document.querySelector('input[name="theme"]:checked')?.value || 'light';
+        const normalizedTheme = selectedTheme === 'light' ? 'light' : 'dark';
+        const selectedFontSize = document.getElementById('fontSizeSetting')?.value || 'normal';
+        const animationsEnabled = document.getElementById('animationsSetting')?.checked ?? true;
+
         const settingsPayload = {
           language: document.getElementById('languageSetting').value,
-          region: document.getElementById('regionSetting').value,
-          timezone: document.getElementById('timezoneSetting').value,
           notifications: {
             email: document.getElementById('emailNotifSetting')?.checked ?? true,
             comments: document.getElementById('commentNotifSetting')?.checked ?? true,
@@ -339,9 +326,9 @@
             contactMode: document.getElementById('contactSetting')?.value || 'friends'
           },
           appearance: {
-            theme: document.querySelector('input[name="theme"]:checked')?.value || 'light',
-            fontSize: document.getElementById('fontSizeSetting')?.value || 'normal',
-            animations: document.getElementById('animationsSetting')?.checked ?? true
+            theme: normalizedTheme,
+            fontSize: selectedFontSize,
+            animations: animationsEnabled
           }
         };
 
@@ -353,6 +340,9 @@
 
         // Keep a local cache for immediate UX fallback.
         localStorage.setItem('app_settings_cache', JSON.stringify(settingsPayload));
+        localStorage.setItem('theme', normalizedTheme);
+        document.documentElement.setAttribute('data-font-size', selectedFontSize);
+        document.documentElement.setAttribute('data-animations', animationsEnabled ? 'on' : 'off');
         showNotification('✅ Setări salvate în baza de date.');
       });
 
@@ -363,8 +353,6 @@
 
         const defaults = {
           language: 'ro',
-          region: 'bucharesti',
-          timezone: 'EET',
           notifications: {
             email: true,
             comments: true,
@@ -390,6 +378,9 @@
         }
 
         localStorage.setItem('app_settings_cache', JSON.stringify(defaults));
+        localStorage.setItem('theme', 'light');
+        document.documentElement.setAttribute('data-font-size', 'normal');
+        document.documentElement.setAttribute('data-animations', 'on');
         showNotification('✅ Setările au fost resetate.');
         setTimeout(() => window.location.reload(), 400);
       });
@@ -399,8 +390,6 @@
         if (!settings || typeof settings !== 'object') return;
 
         if (settings.language) document.getElementById('languageSetting').value = settings.language;
-        if (settings.region) document.getElementById('regionSetting').value = settings.region;
-        if (settings.timezone) document.getElementById('timezoneSetting').value = settings.timezone;
 
         if (settings.notifications) {
           if (typeof settings.notifications.email === 'boolean') document.getElementById('emailNotifSetting').checked = settings.notifications.email;
@@ -418,8 +407,12 @@
         if (settings.appearance) {
           if (settings.appearance.fontSize) document.getElementById('fontSizeSetting').value = settings.appearance.fontSize;
           if (typeof settings.appearance.animations === 'boolean') document.getElementById('animationsSetting').checked = settings.appearance.animations;
-          const themeInput = document.querySelector(`input[name="theme"][value="${settings.appearance.theme || 'light'}"]`);
+          const normalizedTheme = (settings.appearance.theme || 'light') === 'light' ? 'light' : 'dark';
+          const themeInput = document.querySelector(`input[name="theme"][value="${normalizedTheme}"]`);
           if (themeInput) themeInput.checked = true;
+
+          document.documentElement.setAttribute('data-font-size', settings.appearance.fontSize || 'normal');
+          document.documentElement.setAttribute('data-animations', settings.appearance.animations === false ? 'off' : 'on');
         }
       };
 

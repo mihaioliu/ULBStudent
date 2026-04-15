@@ -103,8 +103,8 @@ async function loadProfessors() {
         </div>
         <div class="prof-actions">
           <button class="btn-action btn-primary" onclick="copyEmail('${email}')">Copiaza email</button>
-          <button class="btn-action btn-secondary" onclick="showProfessorProfile(${prof.id}, '${encodeURIComponent(fullName)}', '${encodeURIComponent(subject)}')">Detalii</button>
-          <button class="btn-action btn-secondary" onclick="addProfessorReview(${prof.id})">Adauga recenzie</button>
+          <button class="btn-action btn-secondary" onclick="showProfessorProfile('${encodeURIComponent(String(prof.id || ''))}', '${encodeURIComponent(fullName)}', '${encodeURIComponent(subject)}')">Detalii</button>
+          <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adauga recenzie</button>
         </div>
       </div>
     `;
@@ -196,7 +196,11 @@ function ensureProfessorReviewModal() {
       return;
     }
 
-    const saved = await saveProfessorReview(activeReviewProfessor.id, rating, comment);
+    const saved = await saveProfessorReview(activeReviewProfessor.id, rating, comment, {
+      professorName: activeReviewProfessor.name,
+      professorSubject: activeReviewProfessor.specialization,
+      professorEmail: activeReviewProfessor.email
+    });
     if (!saved.success) {
       if (typeof showNotification === 'function') {
         showNotification(saved.error || 'Nu s-a putut salva recenzia.');
@@ -446,8 +450,8 @@ function renderProfessors() {
       </div>
       <div class="prof-actions">
         <button class="btn-action btn-primary" onclick="copyEmail('${prof.email}')">Copiaza email</button>
-        <button class="btn-action btn-secondary" onclick="showProfessorProfile(${prof.id}, '${encodeURIComponent(prof.name)}', '${encodeURIComponent(prof.specialization)}')">Detalii</button>
-        <button class="btn-action btn-secondary" onclick="addProfessorReview(${prof.id})">Adauga recenzie</button>
+        <button class="btn-action btn-secondary" onclick="showProfessorProfile('${encodeURIComponent(String(prof.id || ''))}', '${encodeURIComponent(prof.name)}', '${encodeURIComponent(prof.specialization)}')">Detalii</button>
+        <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adauga recenzie</button>
       </div>
     </div>
   `).join('');
@@ -463,8 +467,13 @@ async function addProfessorReview(professorId) {
 
   ensureProfessorReviewModal();
 
-  const professor = professorsData.find((item) => Number(item.id) === Number(professorId)) || filteredProfessors.find((item) => Number(item.id) === Number(professorId));
-  activeReviewProfessor = professor || { id: professorId, name: 'Profesor' };
+  const decodedProfessorId = decodeURIComponent(String(professorId || ''));
+  const professor = professorsData.find((item) => String(item.id) === decodedProfessorId)
+    || filteredProfessors.find((item) => String(item.id) === decodedProfessorId)
+    || professorsData.find((item) => Number(item.id) === Number(decodedProfessorId))
+    || filteredProfessors.find((item) => Number(item.id) === Number(decodedProfessorId));
+
+  activeReviewProfessor = professor || { id: decodedProfessorId, name: 'Profesor' };
 
   const modal = document.getElementById('professorReviewModal');
   const title = document.getElementById('professorReviewModalTitle');
@@ -498,7 +507,8 @@ function copyEmail(email) {
 
 function showProfessorProfile(professorId, encodedName, encodedSpecialization) {
   const params = new URLSearchParams();
-  if (professorId) params.set('id', String(professorId));
+  const decodedProfessorId = decodeURIComponent(String(professorId || ''));
+  if (decodedProfessorId) params.set('id', decodedProfessorId);
   if (encodedName) params.set('name', decodeURIComponent(encodedName));
   if (encodedSpecialization) params.set('specializare', decodeURIComponent(encodedSpecialization));
   window.location.href = `professor-profile.html?${params.toString()}`;
