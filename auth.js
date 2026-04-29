@@ -2742,9 +2742,9 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
     display: flex;
     align-items: center;
     gap: ${isMobileScreen ? '0.45rem' : '0.75rem'};
-    background: linear-gradient(135deg, rgba(230, 57, 70, 0.16) 0%, rgba(230, 57, 70, 0.26) 100%);
-    border: 1px solid rgba(230, 57, 70, 0.35);
-    box-shadow: 0 8px 18px rgba(230, 57, 70, 0.18);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.16) 0%, rgba(212, 175, 55, 0.26) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    box-shadow: 0 8px 18px rgba(212, 175, 55, 0.18);
     backdrop-filter: blur(10px);
     padding: ${isMobileScreen ? '0.42rem 0.62rem' : '0.45rem 0.78rem'};
     border-radius: 10px;
@@ -2758,7 +2758,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const accountIsAdmin = resolvedRole === 'admin' || String(user.user_metadata?.role || '').toLowerCase() === 'admin' || String(userEmail).toLowerCase() === 'admin@ulbstudent.ro';
   const accountIsProfessor = resolvedRole === 'profesor' || resolvedRole === 'professor' || user.user_metadata?.account_type === 'professor';
   const accountType = accountIsAdmin ? 'ADMIN' : (accountIsProfessor ? 'Profesor' : 'Student');
-  const roleColor = accountIsAdmin ? '#ef4444' : (accountIsProfessor ? '#f97316' : '#0ea5e9');
+  const roleColor = accountIsAdmin ? 'rgba(212, 175, 55, 1)' : (accountIsProfessor ? '#f97316' : '#0ea5e9');
   
   const showEmail = window.innerWidth > 480; // Hide email on very small screens
   
@@ -2767,7 +2767,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
       <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.05rem' : '1.28rem'}; color: var(--accent);"></i>
       <div style="color: var(--text); display: flex; flex-direction: column;">
         <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.74rem' : '0.82rem'};">${escapeHtml(userName)}</div>
-        <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsAdmin ? '#fecaca' : (accountIsProfessor ? '#ffd166' : roleColor)}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
+        <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsAdmin ? 'rgba(212, 175, 55, 1)' : (accountIsProfessor ? '#ffd166' : roleColor)}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
         ${showEmail ? `<div style="font-size: 0.66rem; opacity: 0.82;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>
@@ -2793,7 +2793,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
     min-width: 200px;
     margin-top: 0.5rem;
     display: none;
-    z-index: 1000;
+    z-index: 9999;
     overflow: hidden;
     max-width: 90vw;
     backdrop-filter: blur(12px);

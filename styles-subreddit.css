@@ -466,6 +466,14 @@ body.dark-mode #postContentInput::placeholder {
   padding: 0 1.5rem;
 }
 
+/* Remove global main background layer on Discussions pages */
+main.discussions-container,
+main.discussion-detail-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 .discussion-detail-container {
   max-width: 980px;
   margin: 2rem auto 3rem;

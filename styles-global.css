@@ -6,8 +6,8 @@
   --surface: #ffffff; /* White */
   --text: #1a2332; /* Navy blue - darker for better contrast */
   --text-secondary: #5a6b7d;
-  --accent: #e63946; /* Red */
-  --accent-hover: #d63447;
+  --accent: rgba(212, 175, 55, 1); /* Gold for light mode */
+  --accent-hover: rgba(192, 158, 45, 1);
   --muted: #daa520; /* Gold */
   --bronze: #cd7f32; /* Bronze */
   --light-gray: #f8fafc;
@@ -227,19 +227,21 @@ footer {
 
 header {
   padding: 0.95rem 1.25rem 0.85rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "logo nav actions";
   align-items: center;
-  gap: 0.8rem;
-  text-align: center;
+  column-gap: 1rem;
+  row-gap: 0;
+  text-align: left;
   position: relative;
+  z-index: 20;
 }
 
 .header-logo {
-  width: clamp(260px, 32vw, 500px);
+  width: clamp(150px, 18vw, 240px);
   height: auto;
-  max-width: min(560px, 92vw);
+  max-width: min(240px, 30vw);
   object-fit: contain;
 }
 
@@ -256,12 +258,25 @@ header {
   align-items: center;
   justify-content: flex-end;
   gap: 0.55rem;
-  position: absolute;
-  right: 1.25rem;
-  top: 0.95rem;
+  position: static;
   transform: none;
   min-height: 44px;
   min-width: 210px;
+  grid-area: actions;
+  justify-self: end;
+  z-index: 21;
+}
+
+.header-content {
+  grid-area: logo;
+  justify-self: start;
+  align-self: center;
+}
+
+header nav {
+  grid-area: nav;
+  justify-self: center;
+  width: auto;
 }
 
 .btn-theme-toggle,
@@ -1210,7 +1225,7 @@ nav ul {
   list-style: none;
   display: flex;
   gap: 0.8rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
 }
 
@@ -1229,16 +1244,16 @@ nav .nav-link {
 
 nav .nav-link:hover {
   transform: translateY(-3px);
-  background: var(--accent);
+  background: rgba(212, 175, 55, 1);
   color: var(--surface);
-  box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
 }
 
 /* Link activ */
 nav .nav-link.active {
-  background: var(--accent);
+  background: rgba(212, 175, 55, 1);
   color: var(--surface);
-  box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
   animation: navPulse 0.5s ease;
 }
 
@@ -1257,6 +1272,43 @@ nav .nav-link.active {
 
 .nav-toggle-btn i {
   font-size: 0.95rem;
+}
+
+/* Dark mode: păstrează accentul roșu pentru linkurile din nav */
+html.dark-mode nav .nav-link:hover,
+html.dark-mode nav .nav-link.active,
+body.dark-mode nav .nav-link:hover,
+body.dark-mode nav .nav-link.active {
+  background: var(--accent);
+  color: var(--surface);
+  box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+}
+
+/* Force site buttons to use accent on light mode; revert in dark mode via variables */
+button,
+[class*="btn"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.post-submit-btn,
+.reset-filters-btn,
+.btn-action,
+.view-profile-btn,
+.view-reviews-btn,
+.btn-download,
+.btn-signup,
+.btn-signin {
+  background: var(--accent) !important;
+  color: white !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Dark mode: restore red accent (overrides above use var(--accent) which is set below) */
+html.dark-mode,
+body.dark-mode {
+  --accent: #e63946;
+  --accent-hover: #d63447;
 }
 
 @keyframes navPulse {
@@ -1596,6 +1648,7 @@ footer {
 /* Responsive */
 @media (max-width: 768px) {
   header {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0.6rem;
