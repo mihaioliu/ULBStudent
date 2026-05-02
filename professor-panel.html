@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -6,8 +6,12 @@
     <meta name="description" content="Panou profesor - ULBStudent" />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     <title>Panou Profesor - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -128,7 +132,7 @@
 
       .prof-btn {
         border: 0;
-        border-radius: 10px;
+        border-radius: 999px;
         padding: 0.85rem 1rem;
         font-weight: 700;
         cursor: pointer;
@@ -194,7 +198,7 @@
 
       .prof-row-actions button {
         border: 0;
-        border-radius: 8px;
+        border-radius: 999px;
         padding: 0.5rem 0.75rem;
         cursor: pointer;
         font-weight: 700;
@@ -248,15 +252,15 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link">Discutii</a></li>
+          <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
-          <i class="fas fa-moon"></i>
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
         </button>
       </div>
     </header>
@@ -265,8 +269,8 @@
       <section class="prof-hero">
         <div>
           <p style="margin:0 0 0.35rem; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">Panou profesor</p>
-          <h1 id="professorName">Se incarca...</h1>
-          <p id="professorMeta">Conectare la profilul profesorului si documentele aferente.</p>
+          <h1 id="professorName">Se încarcă...</h1>
+          <p id="professorMeta">Conectare la profilul profesorului și documentele aferente.</p>
           <div class="prof-badges" id="subjectBadges"></div>
         </div>
         <div class="prof-stats">
@@ -291,7 +295,7 @@
 
       <div class="prof-grid">
         <section class="prof-card">
-          <h2>Adauga sau modifica document</h2>
+          <h2>Adaugă sau modifică document</h2>
           <form id="professorDocumentForm" class="prof-form">
             <input type="hidden" id="documentId" />
             <label>
@@ -299,7 +303,7 @@
               <input type="text" id="documentTitle" placeholder="Ex: Curs JavaScript avansat" required />
             </label>
             <label>
-              Materie atribuita
+              Materie atribuită
               <select id="documentSubject" required></select>
             </label>
             <label>
@@ -324,31 +328,31 @@
             </label>
             <label>
               Descriere
-              <textarea id="documentDescription" placeholder="Descrie ce include materialul si cui i se adreseaza." required></textarea>
+              <textarea id="documentDescription" placeholder="Descrie ce include materialul și cui i se adresează." required></textarea>
             </label>
             <label>
-              Incarca fisier
+              Încarcă fișier
               <input type="file" id="documentFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.txt,.png,.jpg,.jpeg" />
             </label>
             <label>
-              Sau URL fisier
+              Sau URL fișier
               <input type="url" id="documentUrl" placeholder="https://..." />
             </label>
             <div class="prof-form-actions">
-              <button type="submit" class="prof-btn prof-btn-primary" id="saveDocumentBtn">Salveaza document</button>
-              <button type="button" class="prof-btn prof-btn-secondary" id="resetDocumentBtn">Curata formularul</button>
+              <button type="submit" class="prof-btn prof-btn-primary" id="saveDocumentBtn">Salvează document</button>
+              <button type="button" class="prof-btn prof-btn-secondary" id="resetDocumentBtn">Curăță formularul</button>
             </div>
           </form>
           <div class="prof-help">
-            Documentele sunt legate automat de contul profesorului conectat si pot fi editate doar din acest panou.
+            Documentele sunt legate automat de contul profesorului conectat și pot fi editate doar din acest panou.
           </div>
         </section>
 
         <section class="prof-card">
           <h2>Documentele mele</h2>
           <div class="prof-toolbar">
-            <input type="text" id="documentsSearch" placeholder="Cauta dupa titlu, materie sau tip..." />
-            <button type="button" class="prof-btn prof-btn-secondary" id="refreshDocumentsBtn">Reincarca</button>
+            <input type="text" id="documentsSearch" placeholder="Caută după titlu, materie sau tip..." />
+            <button type="button" class="prof-btn prof-btn-secondary" id="refreshDocumentsBtn">Reîncarcă</button>
           </div>
           <div class="prof-table-wrap">
             <table class="prof-table">
@@ -359,13 +363,13 @@
                   <th>Tip</th>
                   <th>An</th>
                   <th>Fișier</th>
-                  <th>Actiuni</th>
+                  <th>Acțiuni</th>
                 </tr>
               </thead>
               <tbody id="documentsTableBody"></tbody>
             </table>
           </div>
-          <p id="documentsEmpty" class="prof-empty" style="display:none;">Nu exista inca documente pentru acest profesor.</p>
+          <p id="documentsEmpty" class="prof-empty" style="display:none;">Nu există încă documente pentru acest profesor.</p>
         </section>
       </div>
     </main>
@@ -374,7 +378,7 @@
       <div class="footer-content">
         <div class="footer-section">
           <h4>ULBStudent</h4>
-          <p>Panoul profesorului pentru materiale, materii si documente proprii.</p>
+          <p>Panoul profesorului pentru materiale, materii și documente proprii.</p>
         </div>
       </div>
     </footer>
@@ -514,7 +518,7 @@
             <td>
               <div class="prof-row-actions">
                 <button type="button" class="prof-row-edit" data-action="edit-document" data-id="${escapeHtml(docId)}">Editeaza</button>
-                <button type="button" class="prof-row-delete" data-action="delete-document" data-id="${escapeHtml(docId)}">Sterge</button>
+                <button type="button" class="prof-row-delete" data-action="delete-document" data-id="${escapeHtml(docId)}">Șterge</button>
               </div>
             </td>
           `;
@@ -550,7 +554,7 @@
             bucket: PROFESSOR_DOCUMENTS_BUCKET,
             path: storagePath,
             publicUrl: '',
-            error: error?.message || 'Nu s-a putut incarca fisierul.'
+            error: error?.message || 'Nu s-a putut încărca fișierul.'
           };
         }
       }
@@ -573,7 +577,7 @@
         const docsResult = await getProfessorDocuments(context.professor.user_id || context.user.id, context.professor.institutional_email || context.professor.email || context.user.email || '');
         state.documents = docsResult.success ? docsResult.data : [];
         if (!docsResult.success) {
-          setMessage(docsResult.error || 'Nu s-au putut incarca documentele.');
+          setMessage(docsResult.error || 'Nu s-au putut încărca documentele.');
         }
 
         renderStats();
@@ -585,14 +589,14 @@
         form.reset();
         document.getElementById('documentId').value = '';
         renderSubjectOptions(state.subjects[0] || '');
-        document.getElementById('saveDocumentBtn').textContent = 'Salveaza document';
+        document.getElementById('saveDocumentBtn').textContent = 'Salvează document';
       }
 
       async function handleSaveDocument(event) {
         event.preventDefault();
 
         if (!state.professor) {
-          setMessage('Nu exista un profesor asociat acestui cont.');
+          setMessage('Nu există un profesor asociat acestui cont.');
           return;
         }
 
@@ -606,7 +610,7 @@
         const documentId = document.getElementById('documentId').value.trim();
 
         if (!title || !subject || !type || !year || !description) {
-          setMessage('Completeaza toate campurile obligatorii.');
+          setMessage('Completează toate câmpurile obligatorii.');
           return;
         }
 
@@ -626,12 +630,12 @@
           }
 
           if (!ALLOWED_FILE_EXTENSIONS.has(extension)) {
-            setMessage('Tip de fisier neacceptat. Foloseste PDF, DOC/DOCX, PPT/PPTX, ZIP/RAR, TXT, PNG sau JPG.');
+            setMessage('Tip de fișier neacceptat. Folosește PDF, DOC/DOCX, PPT/PPTX, ZIP/RAR, TXT, PNG sau JPG.');
             return;
           }
 
           if (mimeType && !ALLOWED_MIME_TYPES.has(mimeType)) {
-            setMessage('MIME type invalid pentru upload. Verifica fisierul selectat.');
+            setMessage('MIME type invalid pentru upload. Verifică fișierul selectat.');
             return;
           }
 
@@ -647,7 +651,7 @@
 
         if (!fileUrl) {
           if (!fileName && !urlField) {
-            setMessage('Adauga un fisier sau un URL valid.');
+            setMessage('Adaugă un fișier sau un URL valid.');
             return;
           }
         }
@@ -684,7 +688,7 @@
         }
 
         if (uploadWarning) {
-          setMessage(`${documentId ? 'Document actualizat' : 'Document salvat'}, dar fara link public de fisier. ${uploadWarning}`);
+          setMessage(`${documentId ? 'Document actualizat' : 'Document salvat'}, dar fără link public de fișier. ${uploadWarning}`);
         } else {
           setMessage(documentId ? 'Document actualizat.' : 'Document salvat.');
         }

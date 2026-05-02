@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.git/
+.vscode/
+*.sql
+*.md
+coverage/
+.cache/

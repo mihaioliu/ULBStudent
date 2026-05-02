@@ -1,0 +1,43 @@
+{
+  "name": "ULBStudent",
+  "short_name": "ULBStudent",
+  "description": "Platforma premium pentru studenții ULBS: profesori, documente, discuții și resurse academice.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#e63946",
+  "lang": "ro",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/assets/Logos%20and%20icons/ulbstudent-icon-circle.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/Logos%20and%20icons/ulbstudent-icon-square.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Profesori",
+      "short_name": "Profesori",
+      "url": "/profesori.html"
+    },
+    {
+      "name": "Documente",
+      "short_name": "Documente",
+      "url": "/documente.html"
+    },
+    {
+      "name": "Discuții",
+      "short_name": "Discuții",
+      "url": "/comments.html"
+    }
+  ]
+}

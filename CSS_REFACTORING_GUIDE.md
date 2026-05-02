@@ -1,70 +1,47 @@
-# Structura CSS Refactorizata
+# ULBStudent - Sistem CSS
 
-Bun venit! CSS-ul a fost reorganizat in mai multe fisiere pentru mentenabilitate si performanta mai bune.
+CSS-ul este impartit pe niveluri ca sa ramana usor de mentinut si coerent vizual.
 
-## Fisiere CSS disponibile
+## Fisiere active
 
-- **styles.css** (original) - pastrat pentru compatibilitate
-- **styles-global.css** - stiluri globale comune (header, footer, variabile, dark mode)
-- **styles-subreddit.css** - stiluri specifice pentru subreddit.html
-- **styles-documents.css** - stiluri specifice pentru documente.html
-- **styles-professors.css** - stiluri specifice pentru profesori.html
+- `styles-global.css` - baza globala, layout, header, footer, formulare, dark mode si responsive.
+- `app-polish.css` - strat premium peste toate paginile: carduri, umbre, glass, butoane, spacing.
+- `styles-documents.css` - biblioteca de documente.
+- `styles-professors.css` - catalog profesori, profil profesor si recenzii.
+- `styles-subreddit.css` - forum, postari, comentarii si sondaje.
+- `toast-notifications.css` - notificari/toast.
 
-## Cum incluzi CSS-ul in fiecare pagina
+## Reguli de lucru
 
-### Pagini simple (index, login, register, profile, settings etc.)
+1. Pastreaza variabilele globale in `styles-global.css`.
+2. Pune finisajele transversale in `app-polish.css`.
+3. Pune stilurile de pagina in fisierul dedicat paginii.
+4. Nu crea CSS duplicat pentru acelasi component daca exista deja clasa globala.
+5. Testeaza mereu light mode, dark mode si mobil.
 
-```html
-<link rel="stylesheet" href="styles-global.css">
-```
+## Includere recomandata
 
-### subreddit.html
-
-```html
-<link rel="stylesheet" href="styles-global.css">
-<link rel="stylesheet" href="styles-subreddit.css">
-```
-
-### documente.html
+Paginile trebuie sa includa cel putin:
 
 ```html
-<link rel="stylesheet" href="styles-global.css">
-<link rel="stylesheet" href="styles-documents.css">
+<link rel="stylesheet" href="styles-global.css" />
+<link rel="stylesheet" href="app-polish.css" />
 ```
 
-### profesori.html
+Paginile specializate mai includ fisierul dedicat:
 
 ```html
-<link rel="stylesheet" href="styles-global.css">
-<link rel="stylesheet" href="styles-professors.css">
+<link rel="stylesheet" href="styles-documents.css" />
+<link rel="stylesheet" href="styles-professors.css" />
+<link rel="stylesheet" href="styles-subreddit.css" />
 ```
 
-## Beneficii
+## Checklist QA vizual
 
-- Incarcare mai eficienta: fiecare pagina ia doar CSS-ul necesar
-- Mentenabilitate mai buna: stilurile sunt separate pe zone clare
-- Reutilizare corecta: stilurile comune stau in styles-global.css
-- Debugging mai simplu: gasesti rapid unde trebuie modificat
-
-## Checklist de verificare
-
-1. Verifica fiecare pagina pe desktop.
-2. Verifica fiecare pagina pe mobil.
-3. Testeaza tema dark mode pe toate paginile.
-4. Verifica elementele de header/footer si formularele.
-
-## Optional: foloseste styles-global.css ca styles.css principal
-
-1. Sterge styles.css original.
-2. Redenumeste styles-global.css in styles.css.
-3. Actualizeaza link-urile din paginile HTML.
-4. Ruleaza verificari vizuale dupa schimbare.
-
-## Revert
-
-Daca ceva nu merge, revino la styles.css original si la includerile initiale.
-
----
-
-**Creat:** 31.03.2026
-**Versiune:** 1.1
+- Header si meniu mobil functionale.
+- Textul nu iese din container.
+- Butoanele au hover/focus.
+- Formularele au stari de loading/error/success.
+- Cardurile au spacing si border-radius consistent.
+- Footerul este coerent pe desktop si mobil.
+- Nu exista overflow orizontal pe telefon.

@@ -1,56 +1,109 @@
-/**
+﻿/**
  * INTERACTIVE.JS - ULBStudent Platform Interactivity
  * Gestionează: teme, votare, notificări, căutare, gamificație, theme toggle
  */
 
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize core interactions FIRST (non-blocking)
+  initializeShellPolish();
   initializeUnifiedFooter();       // 🧩 Footer unificat pe toate paginile
   initializeAppSettings();         // ⚙️ Preferinte persistente (tema/font/animații)
-  initializeThemeToggle();          // 🌓 Tema (Light/Dark/Night)
-  initializeVotingSystem();         // 👍 Sistem de upvote/downvote
-  initializeNavigation();           // 🔗 Marcaje active în meniu
-  initializeMobileNavigation();     // 📱 Hamburger menu pe mobil
+  initializeThemeToggle();          // Tema (Light/Dark/Night)
+  initializeVotingSystem();         // Sistem de upvote/downvote
+  initializeNavigation();           // Marcaje active în meniu
+  initializeMobileNavigation();     // Hamburger menu pe mobil
   initializeAccessibilityEnhancements(); // ♿ Atribute ARIA de bază
-  initializeLazyMedia();            // 🖼️ Lazy-loading imagini/media
-  initializeScrollEffects();        // 📜 Animații pe scroll
-  initializeSearchBar();            // 🔍 Căutare cu focus effect
-  initializeQuestionFilters();      // 🎯 Filtrare întrebări
-  initializeLikeButton();           // ❤️ Favorite questions
+  initializeLazyMedia();            // Lazy-loading imagini/media
+  initializeScrollEffects();        // Animații pe scroll
+  initializeSearchBar();            // Căutare cu focus effect
+  initializeQuestionFilters();      // Filtrare întrebări
+  initializeLikeButton();           // Favorite questions
   initializeBackToTop();            // ⬆️ Buton sus
   initializeAIChat();               // 🤖 Chat AI
-  initializeSmoothScrollLinks();    // 📜 Smooth scroll pentru anchor links
-  handleAnchorOnPageLoad();         // 🎯 Scroll la anchor dacă URL are #
-  initializePostActions();          // 🔗 Acțiuni pe postări (comentează, share)
-  initializeAuthButtons();          // 🔐 Sign in/up
-  initializeGamification();         // 🎮 Puncte și badges
+  initializeSmoothScrollLinks();    // Smooth scroll pentru anchor links
+  handleAnchorOnPageLoad();         // Scroll la anchor dacă URL are #
+  initializePostActions();          // Acțiuni pe postări (comentează, share)
+  initializeAuthButtons();          // Sign in/up
+  initializeGamification();         // Puncte și badges
   initializeReviewInteractions();   // ⭐ Click pe recenzii
-  initializeAnnouncementButtons();  // 📢 Marcare anunțuri
-  initializeGlobalSearch();         // 🔎 Căutare globală
+  initializeAnnouncementButtons();  // Marcare anunțuri
+  initializeGlobalSearch();         // Căutare globală
   initializeScrollAnimations();     // ✨ Animații secțiuni pe scroll
-  initializeDocumentsData();        // 📄 Documente din tabelul `documente`
+  initializePremiumLandingInteractions(); // Micro-interacțiuni pentru landing premium
+  initializeCommandPalette();        // Ctrl + K pentru navigare rapidă
+  initializeStatCounters();          // Counter animation pentru impact
+  initializeDocumentsData();        // Documente din tabelul `documente`
   initializeDocumentDownloadActions(); // ⬇️ Descărcare reală documente
-  initializeDocumentFilters();      // 📚 Filtrare documente
-  initializePostCreation();         // 📝 Sistem de postări
+  initializeDocumentFilters();      // Filtrare documente
+  initializePostCreation();         // Sistem de postări
   initializeQuestionsData();        // ❓ Întrebări din baza de date
-  initializeSubredditData();        // 👤 Profil + postări din baza de date
-  initializeCommentsData();         // 💬 Comentarii din baza de date
-  initializeFeaturedProfessors();    // 👨‍🏫 Nume profesori din baza de date
-  initializeHomepageData();          // 🏠 Secțiuni homepage alimentate din DB
-  initializeSearchableDropdowns();    // 🔎 Căutare în dropdown-uri mari
+  initializeSubredditData();        // Profil + postări din baza de date
+  initializeCommentsData();         // Comentarii din baza de date
+  initializeFeaturedProfessors();    // Nume profesori din baza de date
+  initializeHomepageData();          // Secțiuni homepage alimentate din DB
+  initializeHomeSectionSliders();    // ↔️ Slider pe secțiuni homepage
+  initializeSearchableDropdowns();    // Căutare în dropdown-uri mari
 
-  // 🔐 ASYNC: Protect pages and initialize session in BACKGROUND (non-blocking)
+  // ASYNC: Protect pages and initialize session in BACKGROUND (non-blocking)
   Promise.all([
     protectPage().catch(err => console.warn('Page protection check failed:', err.message)),
     updateHeaderWithUserInfo().catch(err => console.warn('Header update failed:', err.message))
   ]).finally(() => {
     // Always mark page as ready, even if auth checks fail
-    console.log('✅ Page initialization complete');
+    console.log('Page initialization complete');
   });
 
   // Show page only after core initialization
   document.body.classList.add('page-ready');
 });
+
+function initializeShellPolish() {
+  const header = document.querySelector('header');
+  if (!header) return;
+
+  const headerContent = header.querySelector('.header-content');
+  const existingLogo = headerContent?.querySelector('img.header-logo');
+  const textBrand = headerContent?.querySelector('h1');
+
+  if (headerContent && !existingLogo && textBrand?.textContent?.trim().toLowerCase() === 'ulbstudent') {
+    headerContent.innerHTML = `
+      <a href="index.html" class="header-logo-link" aria-label="ULBStudent acasă">
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+      </a>
+    `;
+  }
+
+  const nav = header.querySelector('nav');
+  if (nav && !nav.getAttribute('aria-label')) {
+    nav.setAttribute('aria-label', 'Navigare principală');
+  }
+
+  header.querySelectorAll('.nav-link').forEach((link) => {
+    const normalized = link.textContent.trim().toLowerCase();
+    if (normalized.includes('pagina princip')) {
+      link.textContent = 'Acasă';
+    }
+  });
+
+  const signInBtn = header.querySelector('.btn-signin');
+  const signUpBtn = header.querySelector('.btn-signup');
+  const themeBtn = header.querySelector('.btn-theme-toggle');
+
+  if (signInBtn) {
+    signInBtn.type = 'button';
+    signInBtn.setAttribute('aria-label', 'Conectare în cont');
+  }
+
+  if (signUpBtn) {
+    signUpBtn.type = 'button';
+    signUpBtn.setAttribute('aria-label', 'Creare cont nou');
+  }
+
+  if (themeBtn) {
+    themeBtn.type = 'button';
+    themeBtn.setAttribute('aria-label', 'Schimbă tema');
+  }
+}
 
 function initializeAppSettings() {
   let settings = {};
@@ -89,35 +142,43 @@ function initializeUnifiedFooter() {
   footer.innerHTML = `
     <div class="footer-content">
       <div class="footer-section">
-        <img src="assets/Logos%20and%20icons/ulbsfmi-logo-white.png" alt="ULBS FMI" class="footer-brand-logo">
-        <p>Comunitate pentru studentii ULBS: intrebari, resurse, colaborare si progres academic.</p>
+        <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent" class="footer-brand-logo">
+        <p>Comunitate digitală pentru studenții ULBS: profesori, documente, întrebări, progres academic și decizii mai clare.</p>
+        <div class="footer-socials" aria-label="Social media ULBStudent">
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="https://discord.com" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord" aria-hidden="true"></i></a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github" aria-hidden="true"></i></a>
+        </div>
       </div>
       <div class="footer-section">
         <h4>Pagini importante</h4>
         <ul>
-          <li><a href="index.html">Acasa</a></li>
+          <li><a href="index.html">Acasă</a></li>
+          <li><a href="index.html#platforma">Despre proiect</a></li>
+          <li><a href="index.html#functionalitati">Funcționalități</a></li>
           <li><a href="subreddit.html">Forum</a></li>
           <li><a href="documente.html">Documente</a></li>
           <li><a href="profesori.html">Profesori</a></li>
         </ul>
       </div>
       <div class="footer-section">
-        <h4>Cont si suport</h4>
+        <h4>Cont și suport</h4>
         <ul>
+          <!-- Download link removed per design: keep site navigation consistent -->
           <li><a href="contact.html">Contact</a></li>
-          <li><a href="raporteaza-problema.html">Raporteaza problema</a></li>
+          <li><a href="raporteaza-problema.html">Raportează problema</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h4>Legal</h4>
         <ul>
-          <li><a href="termeni-conditii.html">Termeni si conditii</a></li>
-          <li><a href="politica-confidentialitate.html">Politica de confidentialitate</a></li>
+          <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
+          <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; ${year} ULBS Student Hub. Toate drepturile rezervate.</p>
+      <p>&copy; ${year} ULBStudent. Toate drepturile rezervate.</p>
     </div>
   `;
 }
@@ -142,7 +203,7 @@ function initializeThemeToggle() {
       applyTheme(newTheme);
       localStorage.setItem('theme', newTheme); // Salvez preferința
 
-      // Sincronizez si cache-ul de setari pentru persistenta intre pagini.
+      // Sincronizez și cache-ul de setări pentru persistență între pagini.
       try {
         const settings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
         const merged = {
@@ -165,21 +226,29 @@ function initializeThemeToggle() {
  */
 function applyTheme(theme) {
   const themeToggle = document.getElementById('themeToggle');
+  const logoColor = 'assets/Logos%20and%20icons/ulbstudent-logo-color.png';
+  const logoWhite = 'assets/Logos%20and%20icons/ulbstudent-logo-white.png';
   
   if (theme === 'dark') {
     // Dark mode
     document.body.classList.add('dark-mode');
     document.documentElement.classList.add('dark-mode');
+    document.querySelectorAll('img.header-logo').forEach((logo) => {
+      logo.src = logoWhite;
+    });
     if (themeToggle) {
-      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
       themeToggle.title = 'Mod clar';
     }
   } else {
     // Light mode: implicit, culori vive și luminoase
     document.body.classList.remove('dark-mode');
     document.documentElement.classList.remove('dark-mode');
+    document.querySelectorAll('img.header-logo').forEach((logo) => {
+      logo.src = logoColor;
+    });
     if (themeToggle) {
-      themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+      themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
       themeToggle.title = 'Mod întunecat';
     }
   }
@@ -287,6 +356,99 @@ function initializeSearchableDropdowns() {
 
     select.dataset.searchEnhanced = 'true';
     applyFilter();
+  });
+}
+
+function initializeHomeSectionSliders() {
+  const sliderButtons = document.querySelectorAll('.section-slider-btn[data-slider-target][data-direction]');
+  if (!sliderButtons.length) return;
+
+  const getVisibleIndex = (track, cards) => {
+    if (!track || !cards.length) return 0;
+    const ratio = track.scrollLeft / Math.max(track.clientWidth, 1);
+    return Math.max(0, Math.min(cards.length - 1, Math.round(ratio)));
+  };
+
+  const updateActiveCardState = (track) => {
+    if (!track) return;
+    const cards = Array.from(track.children || []);
+    if (!cards.length) return;
+
+    const visibleIndex = getVisibleIndex(track, cards);
+    cards.forEach((card, index) => {
+      card.classList.toggle('is-active', index === visibleIndex);
+    });
+  };
+
+  const updateControls = (track) => {
+    if (!track) return;
+    const controls = document.querySelectorAll(`.section-slider-btn[data-slider-target="${track.id}"]`);
+    if (!controls.length) return;
+
+    const cards = Array.from(track.children || []);
+    const hasMultipleCards = cards.length > 1;
+    controls.forEach((btn) => {
+      btn.disabled = !hasMultipleCards;
+      btn.style.opacity = hasMultipleCards ? '1' : '0.35';
+      btn.style.pointerEvents = hasMultipleCards ? 'auto' : 'none';
+    });
+  };
+
+  sliderButtons.forEach((button) => {
+    if (button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-slider-target');
+      const direction = Number(button.getAttribute('data-direction') || 1);
+      const track = targetId ? document.getElementById(targetId) : null;
+      if (!track) return;
+
+      const cards = Array.from(track.children || []);
+      if (!cards.length) return;
+
+      const visibleIndex = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
+      const nextIndex = Math.max(0, Math.min(cards.length - 1, visibleIndex + direction));
+      const nextCard = cards[nextIndex];
+      if (!nextCard) return;
+
+      track.classList.add('is-sliding');
+      track.scrollTo({ left: nextCard.offsetLeft, behavior: 'smooth' });
+
+      window.setTimeout(() => {
+        track.classList.remove('is-sliding');
+        updateActiveCardState(track);
+      }, 420);
+    });
+  });
+
+  const uniqueTrackIds = new Set(
+    Array.from(sliderButtons)
+      .map((button) => button.getAttribute('data-slider-target'))
+      .filter(Boolean)
+  );
+
+  uniqueTrackIds.forEach((trackId) => {
+    const track = document.getElementById(trackId);
+    if (!track) return;
+
+    updateActiveCardState(track);
+    updateControls(track);
+
+    const observer = new MutationObserver(() => updateControls(track));
+    observer.observe(track, { childList: true });
+
+    let scrollTicking = false;
+    track.addEventListener('scroll', () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      window.requestAnimationFrame(() => {
+        updateActiveCardState(track);
+        scrollTicking = false;
+      });
+    }, { passive: true });
+
+    window.setTimeout(() => updateActiveCardState(track), 80);
   });
 }
 
@@ -523,7 +685,7 @@ function initializeMobileNavigation() {
     toggleBtn.className = 'nav-toggle-btn';
     toggleBtn.setAttribute('aria-label', 'Deschide meniul de navigare');
     toggleBtn.setAttribute('aria-expanded', 'false');
-    toggleBtn.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i><span>Meniu</span>';
+    toggleBtn.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i><span>Meniu</span>';
     header.insertBefore(toggleBtn, nav);
   }
 
@@ -568,7 +730,7 @@ function initializeAccessibilityEnhancements() {
   }
 
   document.querySelectorAll('.btn-theme-toggle:not([aria-label])').forEach((btn) => {
-    btn.setAttribute('aria-label', 'Schimba tema');
+    btn.setAttribute('aria-label', 'Schimbă tema');
   });
 
   document.querySelectorAll('button:not([aria-label])').forEach((btn) => {
@@ -693,7 +855,7 @@ function initializeSearchBar() {
       console.log('Searching for:', { professor, specialization, subject, year });
 
       if (terms.length === 0) {
-        showNotification('⚠️ Completează cel puțin un filtru de căutare.');
+        showNotification('Completează cel puțin un filtru de căutare.');
         return;
       }
 
@@ -853,7 +1015,7 @@ function initToastContainer() {
   container.id = 'toast-container';
   container.setAttribute('role', 'region');
   container.setAttribute('aria-live', 'polite');
-  container.setAttribute('aria-label', 'Notificari aplicatie');
+  container.setAttribute('aria-label', 'Notificări aplicație');
   document.body.appendChild(container);
 }
 
@@ -893,7 +1055,7 @@ function showToast(message, type = 'info', duration = 4000) {
       <i class="toast-icon">${icon}</i>
       <span class="toast-text">${escapeHtml(message)}</span>
     </div>
-    <button class="toast-close" aria-label="Inchide notificare">×</button>
+    <button class="toast-close" aria-label="Închide notificare">×</button>
   `;
   
   container.appendChild(toast);
@@ -917,15 +1079,15 @@ function removeToast(toastEl) {
 
 // Backwards compatibility - showNotification now uses toast system
 function showNotification(message, type = 'info') {
-  // Parse emoji and message to determine type
-  if (message.includes('✅') || message.includes('succes')) {
-    showToast(message.replace(/^✅\s*/, ''), 'success');
-  } else if (message.includes('❌') || message.includes('roare')) {
-    showToast(message.replace(/^❌\s*/, ''),  'error');
-  } else if (message.includes('⚠️') || message.includes('avertis')) {
-    showToast(message.replace(/^⚠️\s*/, ''), 'warning');
+  const cleanMessage = String(message || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+  if (/succes|salvat|actualizat|creat/i.test(cleanMessage)) {
+    showToast(cleanMessage, 'success');
+  } else if (/eroare|eșuat|invalid|nu s-a/i.test(cleanMessage)) {
+    showToast(cleanMessage, 'error');
+  } else if (/avertis|atenție|trebuie/i.test(cleanMessage)) {
+    showToast(cleanMessage, 'warning');
   } else {
-    showToast(message, type);
+    showToast(cleanMessage || message, type);
   }
 }
 
@@ -1042,9 +1204,9 @@ function initializeAIChat() {
   const aiChatBtn = document.createElement('button');
   aiChatBtn.id = 'aiChatBtn';
   aiChatBtn.className = 'fab-button show';
-  aiChatBtn.innerHTML = '<img src="assets/Logos%20and%20icons/ulbstudent-icon-circle-border.png" alt="AI" class="ai-btn-icon">';
-  aiChatBtn.title = 'Deschide chat AI';
-  aiChatBtn.setAttribute('aria-label', 'Deschide chat AI');
+  aiChatBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span class="fab-label">Ajutor AI</span>';
+  aiChatBtn.title = 'Deschide asistentul ULBStudent';
+  aiChatBtn.setAttribute('aria-label', 'Deschide asistentul ULBStudent');
   
   fabContainer.insertBefore(aiChatBtn, fabContainer.firstChild);
   
@@ -1054,22 +1216,22 @@ function initializeAIChat() {
   chatModal.innerHTML = `
     <div class="chat-window">
       <div class="chat-header">
-        <h3><i class="fas fa-robot" style="margin-right: 8px;"></i>Eliot</h3>
-        <button class="chat-close-btn" id="chatCloseBtn">&times;</button>
+        <h3><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>Eliot</h3>
+        <button class="chat-close-btn" id="chatCloseBtn" aria-label="Închide asistentul">&times;</button>
       </div>
       <div class="chat-messages" id="chatMessages">
         <div class="chat-message ai">
-          <div class="message-bubble">Salut! Sunt Eliot, asistentul AI. Cum te pot ajuta astazi?</div>
+          <div class="message-bubble">Salut! Sunt Eliot, asistentul ULBStudent. Cum te pot ajuta astăzi?</div>
         </div>
       </div>
       <div class="chat-input-area">
         <input 
           type="text" 
           id="chatInput" 
-          placeholder="Scrie mesajul tau..." 
+          placeholder="Scrie mesajul tău..."
           autocomplete="off"
         />
-        <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+        <button id="chatSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   `;
@@ -1122,14 +1284,14 @@ function initializeAIChat() {
     const anonKey = config.anonKey || '';
 
     if (!baseUrl || !anonKey) {
-      addChatMessage('Configuratia Supabase lipseste. Verifica fisierul supabase-client.js.', 'ai');
+      addChatMessage('Configurația Supabase lipsește. Verifică fișierul supabase-client.js.', 'ai');
       return;
     }
 
     const functionUrl = `${baseUrl}/functions/v1/chat-facultate`;
 
     const typingId = `typing-${Date.now()}`;
-    addChatMessage('Se genereaza raspunsul...', 'ai', typingId);
+    addChatMessage('Se generează răspunsul...', 'ai', typingId);
 
     input.disabled = true;
     if (sendBtn) sendBtn.disabled = true;
@@ -1161,19 +1323,19 @@ function initializeAIChat() {
       try {
         data = rawBody ? JSON.parse(rawBody) : {};
       } catch {
-        data = { error: rawBody || 'Raspuns invalid de la server.' };
+        data = { error: rawBody || 'Răspuns invalid de la server.' };
       }
 
       const typingMessage = document.querySelector(`[data-chat-id="${typingId}"]`);
       if (typingMessage) typingMessage.remove();
 
       if (!res.ok) {
-        const errorText = data?.error || `Serverul a raspuns cu codul ${res.status}.`;
+        const errorText = data?.error || `Serverul a răspuns cu codul ${res.status}.`;
         addChatMessage(errorText, 'ai');
         return;
       }
 
-      const reply = data?.reply || 'Nu am primit un raspuns valid de la server.';
+      const reply = data?.reply || 'Nu am primit un răspuns valid de la server.';
       addChatMessage(reply, 'ai');
     } catch (error) {
       const typingMessage = document.querySelector(`[data-chat-id="${typingId}"]`);
@@ -1311,15 +1473,15 @@ function initializePostActions() {
     const postId = postCard?.getAttribute('data-post-id');
     
     if (action === 'comments' && postId) {
-      // Redirect la pagina dedicata discutiei pentru postarea selectata
+      // Redirect la pagina dedicată discutiei pentru postarea selectata
       window.location.href = `discutie.html?post=${encodeURIComponent(postId)}`;
     } else if (action === 'share') {
-      // Share functionality - copia link direct catre discutia postarii
+      // Share functionality - copiază link direct către discuția postării.
       const shareUrl = new URL(`discutie.html?post=${encodeURIComponent(postId)}`, window.location.href).toString();
       navigator.clipboard.writeText(shareUrl).then(() => {
         // Show visual feedback
         const originalText = actionBtn.innerHTML;
-        actionBtn.innerHTML = '✅ Link copiat!';
+        actionBtn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> Link copiat';
         setTimeout(() => {
           actionBtn.innerHTML = originalText;
         }, 2000);
@@ -1445,9 +1607,9 @@ function initializeGamification() {
       if (!this.classList.contains('locked')) {
         const badgeName = this.querySelector('.badge-name').textContent;
         const badgeInfo = {
-          'Boboc Curios': 'Ai dat deja 10 răspunsuri! 🎓 Bine ai în comunitate!',
-          'Salvator': 'Ai ajutat alți studenți cu 50 upvote-uri! 🆘 Ești un erou!',
-          'Expert Calculatoare': 'Ai postări despre Calculatoare cu peste 100 upvote-uri! 💻'
+          'Boboc Curios': 'Ai dat deja 10 răspunsuri. Bine ai în comunitate!',
+          'Salvator': 'Ai ajutat alți studenți cu 50 upvote-uri. Ești un membru de bază al comunității!',
+          'Expert Calculatoare': 'Ai postări despre Calculatoare cu peste 100 upvote-uri.'
         };
         
         if (badgeInfo[badgeName]) {
@@ -1478,13 +1640,13 @@ function initializeReviewInteractions() {
           return;
         }
 
-        this.textContent = `👍 ${result.count} găsit util`;
+        this.innerHTML = `<i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> ${result.count} găsit util`;
         this.style.transform = 'scale(1.15)';
         setTimeout(() => {
           this.style.transform = 'scale(1)';
         }, 150);
 
-        showNotification(result.added ? 'Mulțumim pentru feedback! ❤️' : 'Feedback-ul util a fost retras.');
+        showNotification(result.added ? 'Mulțumim pentru feedback.' : 'Feedback-ul util a fost retras.');
 
         let userReputation = JSON.parse(localStorage.getItem('userReputation')) || { points: 0 };
         userReputation.points += result.added ? 1 : 0;
@@ -1492,7 +1654,7 @@ function initializeReviewInteractions() {
         return;
       }
       
-      // Extract the first number from text (e.g. "👍 425 găsit util").
+      // Extract the first number from the helpful counter.
       const countMatch = String(this.textContent || '').match(/\d+/);
       let count = countMatch ? parseInt(countMatch[0], 10) : 0;
       
@@ -1500,7 +1662,7 @@ function initializeReviewInteractions() {
       count++;
       
       // Update display
-      this.textContent = `👍 ${count} găsit util`;
+      this.innerHTML = `<i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> ${count} găsit util`;
       
       // Add animation
       this.style.transform = 'scale(1.15)';
@@ -1509,7 +1671,7 @@ function initializeReviewInteractions() {
       }, 150);
 
       // Show feedback
-      showNotification('Mulțumim pentru feedback! ❤️');
+      showNotification('Mulțumim pentru feedback.');
       
       // Track reputation (simulate point gain)
       let userReputation = JSON.parse(localStorage.getItem('userReputation')) || { points: 0 };
@@ -1543,7 +1705,7 @@ function initializeAnnouncementButtons() {
     btn.textContent = '✓ Citit';
     btn.disabled = true;
 
-    showNotification('Anunț marcat ca citit! 📖');
+    showNotification('Anunț marcat ca citit.');
 
     const readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements')) || [];
     const announcementId = card.dataset.announcementId || card.querySelector('h4')?.textContent || 'announcement';
@@ -1816,11 +1978,11 @@ function initializeGlobalSearch() {
 
   function getCategoryLabel(category) {
     const labels = {
-      professors: '👨‍🏫 Profesor',
-      documents: '📄 Document',
-      posts: '💬 Postare',
-      announcements: '📢 Anunț',
-      reviews: '⭐ Recenzie'
+      professors: 'Profesor',
+      documents: 'Document',
+      posts: 'Postare',
+      announcements: 'Anunț',
+      reviews: 'Recenzie'
     };
     return labels[category] || category;
   }
@@ -1848,7 +2010,7 @@ function initializeGlobalSearch() {
  */
 function initializeScrollAnimations() {
   const sections = document.querySelectorAll(
-    '.statistics-section, .recent-activity-section, .testimonials-section, .reviews-section, .leaderboard-section, .announcements-section'
+    '.studio-section, .feature-showcase-section, .advanced-search-section, .statistics-section, .recent-activity-section, .testimonials-section, .reviews-section, .leaderboard-section, .announcements-section'
   );
   
   // Intersection Observer options
@@ -1875,8 +2037,223 @@ function initializeScrollAnimations() {
   });
 }
 
+function initializePremiumLandingInteractions() {
+  const home = document.getElementById('home');
+  if (!home) return;
+
+  const interactiveCards = home.querySelectorAll(
+    '.value-card, .studio-board-card, .feature-tile, .hero-product-panel, .review-card, .testimonial-card, .stat-card'
+  );
+
+  interactiveCards.forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const rect = card.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+      card.style.setProperty('--tilt-x', `${(-y * 3).toFixed(2)}deg`);
+      card.style.setProperty('--tilt-y', `${(x * 3).toFixed(2)}deg`);
+      card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+      card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+    });
+
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--tilt-x');
+      card.style.removeProperty('--tilt-y');
+      card.style.removeProperty('--spot-x');
+      card.style.removeProperty('--spot-y');
+    });
+  });
+
+  home.querySelectorAll('.hero-cta, .feature-tile, .value-card').forEach((element) => {
+    element.addEventListener('pointerdown', () => {
+      element.classList.remove('is-pressing');
+      void element.offsetWidth;
+      element.classList.add('is-pressing');
+      window.setTimeout(() => element.classList.remove('is-pressing'), 360);
+    });
+  });
+}
+
+function initializeCommandPalette() {
+  if (document.getElementById('commandPalette')) return;
+
+  const commands = [
+    { label: 'Acasă', hint: 'Deschide landing page-ul ULBStudent', href: 'index.html', icon: 'fa-house' },
+    { label: 'Profesori', hint: 'Caută profesori și recenzii', href: 'profesori.html', icon: 'fa-user-tie' },
+    { label: 'Documente', hint: 'Biblioteca de resurse academice', href: 'documente.html', icon: 'fa-folder-open' },
+    { label: 'Discuții', hint: 'Forum și întrebări ale comunității', href: 'comments.html', icon: 'fa-comments' },
+    { label: 'Profil', hint: 'Vezi contul și progresul tău', href: 'profile.html', icon: 'fa-user' },
+    { label: 'Setări', hint: 'Temă, notificări și preferințe', href: 'settings.html', icon: 'fa-sliders' },
+    { label: 'Contact', hint: 'Suport și feedback', href: 'contact.html', icon: 'fa-paper-plane' },
+    { label: 'Raportează problemă', hint: 'Trimite un bug sau o sugestie', href: 'raporteaza-problema.html', icon: 'fa-shield-halved' }
+  ];
+
+  const palette = document.createElement('div');
+  palette.id = 'commandPalette';
+  palette.className = 'command-palette';
+  palette.setAttribute('role', 'dialog');
+  palette.setAttribute('aria-modal', 'true');
+  palette.setAttribute('aria-label', 'Command palette ULBStudent');
+  palette.innerHTML = `
+    <div class="command-palette-panel">
+      <div class="command-palette-search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="commandPaletteInput" type="search" placeholder="Caută pagini, resurse sau acțiuni..." autocomplete="off">
+        <span class="command-palette-kbd">Esc</span>
+      </div>
+      <div class="command-palette-list" id="commandPaletteList"></div>
+    </div>
+  `;
+
+  document.body.appendChild(palette);
+
+  const input = palette.querySelector('#commandPaletteInput');
+  const list = palette.querySelector('#commandPaletteList');
+
+  const normalize = (value) => String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const openPalette = () => {
+    palette.classList.add('is-open');
+    document.body.classList.add('command-palette-open');
+    renderCommands(input.value);
+    window.setTimeout(() => input.focus(), 0);
+  };
+
+  const closePalette = () => {
+    palette.classList.remove('is-open');
+    document.body.classList.remove('command-palette-open');
+    input.value = '';
+  };
+
+  const runCommand = (command) => {
+    closePalette();
+    if (command.download) {
+      const link = document.createElement('a');
+      link.href = command.href;
+      link.download = '';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return;
+    }
+    window.location.href = command.href;
+  };
+
+  const renderCommands = (query = '') => {
+    const needle = normalize(query);
+    const filtered = commands.filter((command) => {
+      const haystack = normalize(`${command.label} ${command.hint}`);
+      return haystack.includes(needle);
+    });
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="command-palette-empty">Nu am găsit o comandă potrivită.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((command, index) => `
+      <button class="command-palette-item" type="button" data-command-index="${commands.indexOf(command)}" aria-selected="${index === 0 ? 'true' : 'false'}">
+        <i class="fa-solid ${command.icon}" aria-hidden="true"></i>
+        <span>
+          <strong>${command.label}</strong>
+          <span>${command.hint}</span>
+        </span>
+      </button>
+    `).join('');
+  };
+
+  document.addEventListener('keydown', (event) => {
+    const isCommandShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    if (isCommandShortcut) {
+      event.preventDefault();
+      if (palette.classList.contains('is-open')) {
+        closePalette();
+      } else {
+        openPalette();
+      }
+    }
+
+    if (event.key === 'Escape' && palette.classList.contains('is-open')) {
+      closePalette();
+    }
+  });
+
+  input.addEventListener('input', () => renderCommands(input.value));
+
+  list.addEventListener('click', (event) => {
+    const button = event.target.closest('.command-palette-item');
+    if (!button) return;
+    const command = commands[Number(button.dataset.commandIndex)];
+    if (command) runCommand(command);
+  });
+
+  palette.addEventListener('click', (event) => {
+    if (event.target === palette) {
+      closePalette();
+    }
+  });
+}
+
+function initializeStatCounters() {
+  const statValues = document.querySelectorAll('#platformStatsGrid .stat-content h3, .hero-trust-row strong');
+  if (!statValues.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting || entry.target.dataset.counted === 'true') return;
+
+      const element = entry.target;
+      const original = element.textContent.trim();
+      const match = original.match(/([\d.,]+)/);
+      if (!match) {
+        element.dataset.counted = 'true';
+        observer.unobserve(element);
+        return;
+      }
+
+      const numeric = Number(match[1].replace(/\./g, '').replace(',', '.'));
+      if (!Number.isFinite(numeric)) {
+        element.dataset.counted = 'true';
+        observer.unobserve(element);
+        return;
+      }
+
+      const suffix = original.replace(match[1], '');
+      const usesDecimal = match[1].includes(',') || match[1].includes('.');
+      const duration = 900;
+      const start = performance.now();
+
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = numeric * eased;
+        const display = usesDecimal && numeric < 10
+          ? current.toFixed(1).replace('.', ',')
+          : Math.round(current).toLocaleString('ro-RO');
+        element.textContent = `${display}${suffix}`;
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          element.textContent = original;
+        }
+      }
+
+      element.dataset.counted = 'true';
+      requestAnimationFrame(tick);
+      observer.unobserve(element);
+    });
+  }, { threshold: 0.4 });
+
+  statValues.forEach((value) => observer.observe(value));
+}
+
 /**
- * 📚 DOCUMENT FILTERING - Filtrare documente după an și categorie
+ * DOCUMENT FILTERING - Filtrare documente după an și categorie
  */
 function initializeDocumentFilters() {
   const yearFilter = document.getElementById('yearFilter');
@@ -1888,7 +2265,7 @@ function initializeDocumentFilters() {
   const docsGrid = document.getElementById('docsGrid');
   const specializationInputs = Array.from(document.querySelectorAll('.faculties-list input[type="checkbox"]'));
   
-  if (!yearFilter) return; // Nu șu pe pagina de documente
+  if (!yearFilter) return; // Nu suntem pe pagina de documente
 
   const normalizeText = (value) => String(value || '')
     .toLowerCase()
@@ -1929,15 +2306,18 @@ function initializeDocumentFilters() {
     
     // Filter
     docCards.forEach(card => {
-      const cardMeta = (card.querySelector('.doc-meta')?.textContent || '').toLowerCase();
+      const rawMeta = card.querySelector('.doc-meta')?.textContent || '';
+      const cardMeta = normalizeText(rawMeta);
       const cardText = normalizeText(card.textContent || '');
-      const cardYear = card.getAttribute('data-year') || cardMeta.match(/anul\s*(\d+)/i)?.[1] || '';
-      const cardCategory = card.getAttribute('data-category') || cardMeta;
-      const cardSpecialization = normalizeText(card.getAttribute('data-specialization') || cardMeta);
-      
+      const cardYear = String(card.getAttribute('data-year') || rawMeta.match(/anul\s*(\d+)/i)?.[1] || '').trim();
+      const cardCategory = normalizeText(card.getAttribute('data-category') || rawMeta);
+      const cardSpecialization = normalizeText(card.getAttribute('data-specialization') || rawMeta);
+      const cardDiscipline = normalizeText(card.getAttribute('data-discipline') || rawMeta);
+      const normalizedDiscipline = normalizeText(selectedDiscipline.replace(/-/g, ' '));
+
       const matchYear = !selectedYear || cardYear === selectedYear;
-      const matchCategory = !selectedCategory || cardCategory.includes(selectedCategory.toLowerCase());
-      const matchDiscipline = !selectedDiscipline || normalizeText(cardMeta).includes(normalizeText(selectedDiscipline.replace(/-/g, ' ')));
+      const matchCategory = !selectedCategory || cardCategory.includes(normalizeText(selectedCategory));
+      const matchDiscipline = !normalizedDiscipline || cardMeta.includes(normalizedDiscipline) || cardDiscipline.includes(normalizedDiscipline);
       const matchSearch = !selectedSearch || cardText.includes(selectedSearch);
       const matchSpecialization = selectedSpecializations.length === 0 || selectedSpecializations.some((spec) => cardSpecialization.includes(spec));
       
@@ -1948,7 +2328,7 @@ function initializeDocumentFilters() {
       }
     });
 
-    // Sortare simpla pe numar descarcari sau rating cand selectul exista.
+    // Sortare simplă pe număr de descărcări sau rating când selectul există.
     if (selectedSort && docsGrid) {
       const visibleCards = Array.from(docsGrid.querySelectorAll('.doc-card')).filter((card) => card.style.display !== 'none');
       visibleCards.sort((a, b) => {
@@ -1988,28 +2368,42 @@ function renderDynamicDocumentCard(documentRow) {
   const type = escapeHtml(documentRow.tip || documentRow.type || 'Material');
   const department = escapeHtml(documentRow.departament || documentRow.department || 'Departament ULB');
   const professorName = escapeHtml(documentRow.nume_profesor || documentRow.professor_name || documentRow.full_name || documentRow.author_name || 'Profesor');
-  const description = escapeHtml(documentRow.descriere || documentRow.description || 'Fara descriere');
+  const description = escapeHtml(documentRow.descriere || documentRow.description || 'Fără descriere');
   const downloads = Number(documentRow.downloads || documentRow.numar_descarcari || 0);
   const rating = Number(documentRow.rating || 0);
   const fileUrl = documentRow.file_url || documentRow.url_fisier || '#';
   const fileName = escapeHtml(documentRow.file_name || documentRow.nume_fisier || `${(documentRow.titlu || documentRow.title || 'document').toString().trim() || 'document'}.pdf`);
 
+  const normalizeDepartment = (value) => String(value || '').toLowerCase();
+  const deptValue = normalizeDepartment(department);
+  let deptGroup = 'engineering';
+  if (/(medicin|farmacie|sanitar)/.test(deptValue)) deptGroup = 'medical';
+  else if (/(socio|uman|litere|psih|educatie|comunicare|istor|filosof|arte)/.test(deptValue)) deptGroup = 'socio';
+  else if (/(arte|muzic|teatru|design)/.test(deptValue)) deptGroup = 'arts';
+  else if (/(drept|juridic|lege)/.test(deptValue)) deptGroup = 'law';
+
+  card.setAttribute('data-year', year === '-' ? '' : year);
+  card.setAttribute('data-category', type);
+  card.setAttribute('data-specialization', specialization);
+  card.setAttribute('data-discipline', subject);
+  card.setAttribute('data-dept-group', deptGroup);
+
   card.innerHTML = `
     <div class="doc-header">
-      <i class="fas fa-file-pdf"></i>
+      <i class="fa-solid fa-file-pdf"></i>
       <h3>${title}</h3>
     </div>
     <p class="doc-meta">${subject} | Anul ${year} | ${type}</p>
     <p class="doc-faculty">${department}</p>
-    <p class="doc-author">👨‍🏫 ${professorName}</p>
+    <p class="doc-author"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> ${professorName}</p>
     <p class="doc-description">${description}</p>
     <div class="doc-stats">
-      <span class="doc-stat">📥 ${downloads} descarcari</span>
-      <span class="doc-stat">⭐ ${rating || '-'}/5</span>
+      <span class="doc-stat"><i class="fa-solid fa-download" aria-hidden="true"></i> ${downloads} descărcări</span>
+      <span class="doc-stat"><i class="fa-solid fa-star" aria-hidden="true"></i> ${rating || '-'}/5</span>
     </div>
     <div class="doc-actions">
-      <button type="button" class="btn-download" data-file-url="${escapeHtml(fileUrl)}" data-file-name="${fileName}"><i class="fas fa-download"></i> Descarca</button>
-      <a class="btn-preview" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-eye"></i> Previzualizare</a>
+      <button type="button" class="btn-download" data-file-url="${escapeHtml(fileUrl)}" data-file-name="${fileName}"><i class="fa-solid fa-download"></i> Descarcă</button>
+      <a class="btn-preview" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-eye"></i> Previzualizare</a>
     </div>
   `;
 
@@ -2026,7 +2420,7 @@ function initializeDocumentDownloadActions() {
     const fileName = btn.getAttribute('data-file-name') || 'document';
 
     if (!fileUrl || fileUrl === '#') {
-      showNotification('⚠️ Fișier indisponibil pentru descărcare.');
+      showNotification('Fișier indisponibil pentru descărcare.');
       return;
     }
 
@@ -2056,25 +2450,26 @@ function initializeDocumentDownloadActions() {
     }
   });
 
-  // Static placeholder cards: offer clear feedback instead of no-op buttons.
+  // Document cards without a real file still give clear feedback instead of no-op buttons.
   document.addEventListener('click', (event) => {
     const downloadBtn = event.target.closest('.doc-card .btn-download:not([data-file-url])');
     if (downloadBtn) {
       event.preventDefault();
-      showToast('Acest document este demonstrativ. Descarcarea va fi activa cand exista fisier in baza de date.', 'info');
+      showToast('Nu există încă fișier atașat pentru acest document.', 'info');
       return;
     }
 
     const previewBtn = event.target.closest('.doc-card .btn-preview:not([href])');
     if (previewBtn) {
       event.preventDefault();
-      showToast('Previzualizarea nu este disponibila pentru acest document demonstrativ.', 'warning');
+      showToast('Previzualizarea nu este disponibilă fără un fișier atașat.', 'warning');
     }
   });
 }
 
 async function initializeDocumentsData() {
   const docsGrid = document.getElementById('docsGrid');
+  const disciplineFilter = document.getElementById('discipleFilter');
   if (!docsGrid || typeof getDocuments !== 'function') return;
 
   try {
@@ -2085,15 +2480,48 @@ async function initializeDocumentsData() {
 
     if (!result.success || !Array.isArray(result.data) || sanitizedDocuments.length === 0) {
       const empty = document.createElement('div');
-      empty.style.cssText = 'grid-column: 1/-1; padding: 1.1rem; border: 1px dashed var(--border-color); border-radius: 10px; color: var(--text-secondary); background: var(--light-gray);';
-      empty.textContent = 'Nu exista documente in Supabase pentru moment.';
+      empty.className = 'empty-state-card';
+      empty.innerHTML = `
+        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+        <h3>Biblioteca este pregatita</h3>
+        <p>Nu există documente publicate încă. După conectarea conținutului din Supabase, materialele vor apărea automat aici.</p>
+      `;
       docsGrid.appendChild(empty);
       return;
     }
 
+    if (disciplineFilter) {
+      const seen = new Set();
+      const disciplines = [];
+
+      sanitizedDocuments.forEach((row) => {
+        const value = String(row.materie || row.subject || row.taught_subject || row.disciplina || '').trim();
+        if (!value) return;
+        const key = value.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        disciplines.push(value);
+      });
+
+      disciplines.sort((a, b) => a.localeCompare(b));
+
+      const options = ['<option value="">Toate disciplinele</option>'];
+      disciplines.forEach((name) => {
+        options.push(`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`);
+      });
+      disciplineFilter.innerHTML = options.join('');
+    }
+
     sanitizedDocuments.forEach((row) => docsGrid.appendChild(renderDynamicDocumentCard(row)));
   } catch (error) {
-    console.warn('Nu s-au putut incarca documentele din DB:', error.message);
+    console.warn('Nu s-au putut încărca documentele din DB:', error.message);
+    docsGrid.innerHTML = `
+      <div class="empty-state-card">
+        <i class="fa-solid fa-cloud" aria-hidden="true"></i>
+        <h3>Nu am putut încărca documentele</h3>
+        <p>Verifică setările Supabase sau conexiunea și reîncarcă pagina.</p>
+      </div>
+    `;
   }
 }
 
@@ -2527,11 +2955,229 @@ async function initializeHomepageData() {
   }
 }
 
+function parsePostDisplay(title = '', content = '') {
+  const safeTitle = String(title || '');
+  const safeContent = String(content || '');
+  const categoryMatch = safeTitle.match(/^\s*\[([^\]]+)\]\s*/i);
+  const rawCategory = categoryMatch ? categoryMatch[1].trim().toLowerCase() : '';
+
+  const categoryLabels = {
+    general: 'General',
+    intrebare: 'Întrebare',
+    resursa: 'Resursă',
+    anunt: 'Anunț'
+  };
+
+  const categoryLabel = categoryLabels[rawCategory] || 'General';
+  const cleanedTitle = safeTitle.replace(/^\s*\[[^\]]+\]\s*/i, '').trim();
+  const cleanedContent = safeContent.replace(/\n\n#taguri:.*$/is, '').trim();
+
+  return {
+    categoryLabel,
+    title: cleanedTitle,
+    content: cleanedContent
+  };
+}
+
+function parsePollDisplay(content = '') {
+  const rawContent = String(content || '');
+  const pollMatch = rawContent.match(/\[SONDAJ\]([\s\S]*?)(?:\[\/SONDAJ\]|$)/i);
+
+  if (!pollMatch) return null;
+
+  const lines = pollMatch[1]
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) return null;
+
+  let question = '';
+  let mode = 'single';
+  const options = [];
+
+  lines.forEach((line, index) => {
+    const lower = line.toLowerCase();
+    const value = line.includes(':') ? line.split(':').slice(1).join(':').trim() : line.trim();
+
+    if (lower.startsWith('întrebare:') || lower.startsWith('intrebare:')) {
+      question = value;
+      return;
+    }
+
+    if (lower.startsWith('mod:') || lower.startsWith('tip:')) {
+      mode = /multi/i.test(value) ? 'multiple' : 'single';
+      return;
+    }
+
+    if (lower.startsWith('opțiuni:') || lower.startsWith('optiuni:')) {
+      return;
+    }
+
+    if (line.startsWith('-')) {
+      options.push(line.replace(/^-\s*/, '').trim());
+      return;
+    }
+
+    if (index === 0 && !question) {
+      question = line;
+    }
+  });
+
+  const cleanedOptions = options.filter(Boolean);
+
+  if (!question) {
+    question = lines[0] || 'Sondaj fără întrebare';
+  }
+
+  if (!cleanedOptions.length) {
+    return null;
+  }
+
+  return {
+    question,
+    mode,
+    options: cleanedOptions
+  };
+}
+
+function getPollStorageKey(postId) {
+  return `ulbstudent_poll_votes_${postId}`;
+}
+
+function loadPollState(postId, optionCount) {
+  const fallback = {
+    counts: Array.from({ length: optionCount }, () => 0),
+    selected: [],
+    voted: false
+  };
+
+  try {
+    const parsed = JSON.parse(localStorage.getItem(getPollStorageKey(postId)) || 'null');
+    if (!parsed || !Array.isArray(parsed.counts)) return fallback;
+
+    return {
+      counts: Array.from({ length: optionCount }, (_, index) => Number(parsed.counts[index] || 0)),
+      selected: Array.isArray(parsed.selected) ? parsed.selected.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value >= 0) : [],
+      voted: Boolean(parsed.voted)
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function savePollState(postId, state) {
+  localStorage.setItem(getPollStorageKey(postId), JSON.stringify(state));
+}
+
+function buildPollMarkup(post, poll) {
+  const state = loadPollState(post.id, poll.options.length);
+  const totalVotes = state.counts.reduce((sum, value) => sum + Number(value || 0), 0);
+  const inputType = poll.mode === 'multiple' ? 'checkbox' : 'radio';
+  const modeLabel = poll.mode === 'multiple' ? 'Mai multe răspunsuri' : 'Un singur răspuns';
+
+  const optionsMarkup = poll.options.map((option, index) => {
+    const votes = Number(state.counts[index] || 0);
+    const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+    const inputId = `poll-${post.id}-${index}`;
+    return `
+      <label class="post-poll-option" for="${escapeHtml(inputId)}">
+        <input id="${escapeHtml(inputId)}" type="${inputType}" name="poll-${escapeHtml(String(post.id))}" value="${index}" ${state.voted && state.selected.includes(index) ? 'checked' : ''} ${state.voted ? 'disabled' : ''}>
+        <span>${escapeHtml(option)}</span>
+        <span class="poll-option-meta">${percent}%</span>
+      </label>
+      <div class="poll-result-track" aria-hidden="true"><span class="poll-result-fill" style="width: ${percent}%"></span></div>
+    `;
+  }).join('');
+
+  return `
+    <div class="post-poll-card" data-poll-state="${state.voted ? 'voted' : 'fresh'}">
+      <div class="post-poll-head">
+        <div>
+          <span class="post-category-label">Sondaj</span>
+          <p class="post-poll-question">${escapeHtml(poll.question)}</p>
+        </div>
+        <span class="poll-mode-badge">${escapeHtml(modeLabel)}</span>
+      </div>
+      <div class="post-poll-options">
+        ${optionsMarkup}
+      </div>
+      <div class="post-poll-footer">
+        <span>${totalVotes} voturi</span>
+        <button type="button" class="poll-submit-btn" data-poll-submit ${state.voted ? 'disabled' : ''}>${state.voted ? 'Ai votat' : 'Trimite votul'}</button>
+      </div>
+    </div>
+  `;
+}
+
+async function hydratePollCard(card, post) {
+  if (!card || !post?.id || typeof initSupabaseClient !== 'function') return;
+
+  try {
+    const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(false);
+    const { data: pollRow } = await client
+      .from('polls')
+      .select('id, allow_multiple_answers, question')
+      .eq('post_id', post.id)
+      .maybeSingle();
+
+    if (!pollRow?.id) return;
+
+    const [{ data: optionRows }, { data: voteRows }, { data: userVoteRow }] = await Promise.all([
+      client.from('poll_options').select('id, option_text, position').eq('poll_id', pollRow.id).order('position', { ascending: true }),
+      client.from('poll_votes').select('voter_id, selected_option_ids').eq('poll_id', pollRow.id),
+      user?.id ? client.from('poll_votes').select('id, selected_option_ids').eq('poll_id', pollRow.id).eq('voter_id', user.id).maybeSingle() : Promise.resolve({ data: null })
+    ]);
+
+    if (!optionRows?.length) return;
+
+    const counts = optionRows.map(() => 0);
+    (voteRows || []).forEach((row) => {
+      const selectedIds = Array.isArray(row.selected_option_ids) ? row.selected_option_ids : [];
+      selectedIds.forEach((optionId) => {
+        const index = optionRows.findIndex((option) => String(option.id) === String(optionId));
+        if (index >= 0) counts[index] += 1;
+      });
+    });
+
+    const totalVotes = counts.reduce((sum, value) => sum + value, 0);
+    const optionNodes = Array.from(card.querySelectorAll('.post-poll-option'));
+    const trackNodes = Array.from(card.querySelectorAll('.poll-result-track .poll-result-fill'));
+    const footer = card.querySelector('.post-poll-footer span');
+    const submitBtn = card.querySelector('[data-poll-submit]');
+
+    optionNodes.forEach((optionNode, index) => {
+      const meta = optionNode.querySelector('.poll-option-meta');
+      if (meta) {
+        const percent = totalVotes > 0 ? Math.round((counts[index] / totalVotes) * 100) : 0;
+        meta.textContent = `${percent}%`;
+      }
+    });
+
+    trackNodes.forEach((fillNode, index) => {
+      const percent = totalVotes > 0 ? Math.round((counts[index] / totalVotes) * 100) : 0;
+      fillNode.style.width = `${percent}%`;
+    });
+
+    if (footer) footer.textContent = `${totalVotes} voturi`;
+    if (userVoteRow?.id && submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Ai votat';
+    }
+  } catch (error) {
+    console.warn('Poll hydration failed:', error?.message || error);
+  }
+}
+
 function renderPostCard(post, currentUser) {
   const card = document.createElement('div');
   card.className = 'post-card';
   card.setAttribute('data-post-id', post.id);
   const author = currentUser?.email ? currentUser.email.split('@')[0] : 'student';
+  const parsed = parsePostDisplay(post.title, post.content);
+  const poll = parsePollDisplay(parsed.content);
+  const displayText = poll ? 'Sondaj publicat' : (parsed.title || parsed.content || 'Postare fără conținut');
   card.innerHTML = `
     <div class="post-votes">
       <i class="fa-solid fa-arrow-up"></i>
@@ -2540,14 +3186,173 @@ function renderPostCard(post, currentUser) {
     </div>
     <div class="post-body">
       <span class="post-meta">Postat de u/${escapeHtml(author)} • ${formatTimeAgo(post.created_at)}</span>
-      <h4>${escapeHtml(post.content || post.title || 'Postare fără conținut')}</h4>
+      <h4><span class="post-category-label">${escapeHtml(parsed.categoryLabel)}</span> ${escapeHtml(displayText)}</h4>
+      ${poll ? buildPollMarkup(post, poll) : ''}
       <div class="post-actions">
-        <button class="action-btn" data-action="comments">💬 Comentează</button>
-        <button class="action-btn" data-action="share">↗️ Share</button>
+        <button class="action-btn" data-action="comments"><i class="fa-solid fa-comment" aria-hidden="true"></i> Comentează</button>
+        <button class="action-btn" data-action="share"><i class="fa-solid fa-share" aria-hidden="true"></i> Distribuie</button>
       </div>
     </div>
   `;
+
+  if (poll) {
+    const submitBtn = card.querySelector('[data-poll-submit]');
+    const pollInputs = Array.from(card.querySelectorAll('.post-poll-option input'));
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async () => {
+        const selectedIndexes = pollInputs
+          .filter((input) => input.checked)
+          .map((input) => Number(input.value))
+          .filter((value) => Number.isInteger(value));
+
+        if (selectedIndexes.length === 0) {
+          showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
+          return;
+        }
+
+        if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
+          showToast('Acest sondaj permite un singur răspuns.', 'warning');
+          return;
+        }
+
+        let persistedInDatabase = false;
+
+        try {
+          const client = await initSupabaseClient();
+          const user = await getAuthenticatedUser(false);
+
+          if (user?.id) {
+            const { data: pollRow, error: pollError } = await client
+              .from('polls')
+              .select('id, allow_multiple_answers')
+              .eq('post_id', post.id)
+              .maybeSingle();
+
+            if (pollError) throw pollError;
+
+            if (pollRow?.id) {
+              const { data: optionRows, error: optionError } = await client
+                .from('poll_options')
+                .select('id, position')
+                .eq('poll_id', pollRow.id)
+                .order('position', { ascending: true });
+
+              if (optionError) throw optionError;
+
+              const existingVote = await client
+                .from('poll_votes')
+                .select('id')
+                .eq('poll_id', pollRow.id)
+                .eq('voter_id', user.id)
+                .maybeSingle();
+
+              if (existingVote.data?.id) {
+                showToast('Ai votat deja acest sondaj.', 'warning');
+                return;
+              }
+
+              const selectedOptionIds = selectedIndexes
+                .map((index) => optionRows?.[index]?.id)
+                .filter(Boolean);
+
+              if (!selectedOptionIds.length) {
+                showToast('Nu s-au găsit opțiunile sondajului.', 'error');
+                return;
+              }
+
+              if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
+                showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                return;
+              }
+
+              const { error: voteError } = await client.from('poll_votes').insert([{
+                poll_id: pollRow.id,
+                voter_id: user.id,
+                selected_option_ids: selectedOptionIds
+              }]);
+
+              if (voteError) throw voteError;
+              persistedInDatabase = true;
+            }
+          }
+        } catch (error) {
+          console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
+        }
+
+        const nextState = loadPollState(post.id, poll.options.length);
+        selectedIndexes.forEach((index) => {
+          nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
+        });
+        nextState.selected = selectedIndexes;
+        nextState.voted = true;
+        savePollState(post.id, nextState);
+
+        card.replaceWith(renderPostCard(post, currentUser));
+        showToast(
+          persistedInDatabase
+            ? 'Votul a fost salvat în Supabase.'
+            : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
+          persistedInDatabase ? 'success' : 'info'
+        );
+      });
+    }
+
+    hydratePollCard(card, post);
+  }
+
   return card;
+}
+
+let postsRealtimeSubscription = null;
+let commentsRealtimeSubscription = null;
+
+async function setupRealtimePosts(postsFeed, currentUser) {
+  if (!postsFeed || postsRealtimeSubscription) return;
+  const client = await initSupabaseClient();
+
+  const handleInsert = (payload) => {
+    const newPost = payload?.new;
+    if (!newPost?.id) return;
+    if (postsFeed.querySelector(`[data-post-id="${newPost.id}"]`)) return;
+    postsFeed.prepend(renderPostCard(newPost, currentUser));
+  };
+
+  postsRealtimeSubscription = client
+    .channel('realtime-posts')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, handleInsert)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'postari_forum' }, handleInsert)
+    .subscribe();
+}
+
+async function setupRealtimeComments(postId, commentsList, commentsTitle, emptyState) {
+  if (!postId || !commentsList || commentsRealtimeSubscription) return;
+  const client = await initSupabaseClient();
+
+  const normalize = (value) => String(value ?? '').trim();
+  const normalizedPostId = normalize(postId);
+
+  const handleInsert = (payload) => {
+    const newComment = payload?.new;
+    if (!newComment) return;
+
+    const commentPostId = normalize(newComment.post_id || newComment.id_post);
+    if (!commentPostId || commentPostId !== normalizedPostId) return;
+
+    commentsList.appendChild(renderCommentCard(newComment));
+    if (emptyState) emptyState.style.display = 'none';
+
+    if (commentsTitle) {
+      const currentCount = Number((commentsTitle.textContent || '').match(/\d+/)?.[0] || 0);
+      commentsTitle.textContent = `${currentCount + 1} comentarii`;
+    }
+  };
+
+  commentsRealtimeSubscription = client
+    .channel(`realtime-comments-${normalizedPostId}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, handleInsert)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comentarii' }, handleInsert)
+    .subscribe();
 }
 
 async function initializeSubredditData() {
@@ -2582,7 +3387,9 @@ async function initializeSubredditData() {
     if (emptyState) emptyState.style.display = 'flex';
   } else {
     if (emptyState) emptyState.style.display = 'none';
-    loaded.data.forEach(post => postsFeed.appendChild(renderPostCard(post, currentUser)));
+    const fragment = document.createDocumentFragment();
+    loaded.data.forEach(post => fragment.appendChild(renderPostCard(post, currentUser)));
+    postsFeed.appendChild(fragment);
     await syncPostVoteState(postsFeed, loaded.data);
   }
 
@@ -2604,6 +3411,8 @@ async function initializeSubredditData() {
       commentsCount.textContent = '0';
     }
   }
+
+  await setupRealtimePosts(postsFeed, currentUser);
 }
 
 function initializePostCreation() {
@@ -2612,12 +3421,283 @@ function initializePostCreation() {
   const postInput = document.getElementById('postContentInput');
   const postCategoryInput = document.getElementById('postCategoryInput');
   const postTagsInput = document.getElementById('postTagsInput');
-  const postTestBtn = document.getElementById('postTestBtn');
+  const postAttachmentInput = document.getElementById('postAttachmentInput');
+  const postAttachmentList = document.getElementById('postAttachmentList');
   const postSubmitBtn = document.querySelector('.post-submit-btn');
   const postsFeed = document.getElementById('postsFeed');
   const emptyState = document.getElementById('postsEmptyState');
+  const pollModal = document.getElementById('pollComposerModal');
+  const pollQuestionInput = document.getElementById('pollQuestionInput');
+  const pollOptionsList = document.getElementById('pollOptionsList');
+  const pollAddOptionBtn = document.getElementById('pollAddOptionBtn');
+  const pollSaveBtn = document.getElementById('pollSaveBtn');
+  const pollComposerError = document.getElementById('pollComposerError');
+  const pollModeButtons = pollModal ? Array.from(pollModal.querySelectorAll('[data-poll-mode]')) : [];
+  const pollCloseButtons = pollModal ? Array.from(pollModal.querySelectorAll('[data-poll-close]')) : [];
+  let activePollMode = 'single';
 
   if (!postForm) return;
+
+  const clearPollError = () => {
+    if (pollComposerError) pollComposerError.textContent = '';
+  };
+
+  const setPollError = (message) => {
+    if (pollComposerError) pollComposerError.textContent = message || '';
+  };
+
+  const setPollSaveLoading = (isLoading) => {
+    if (!pollSaveBtn) return;
+
+    pollSaveBtn.disabled = isLoading;
+    pollSaveBtn.classList.toggle('is-loading', isLoading);
+    pollSaveBtn.textContent = isLoading ? 'Se pregătește...' : 'Adaugă sondajul';
+
+    [pollQuestionInput, pollAddOptionBtn, ...pollModeButtons].forEach((element) => {
+      if (!element) return;
+      element.disabled = isLoading;
+      element.setAttribute('aria-disabled', String(isLoading));
+    });
+
+    pollOptionsList?.querySelectorAll('input, button').forEach((element) => {
+      element.disabled = isLoading;
+      element.setAttribute('aria-disabled', String(isLoading));
+    });
+  };
+
+  const setPollMode = (mode) => {
+    activePollMode = mode === 'multiple' ? 'multiple' : 'single';
+    pollModeButtons.forEach((button) => {
+      const isActive = button.dataset.pollMode === activePollMode;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  };
+
+  const createPollOptionRow = (value = '') => {
+    if (!pollOptionsList) return null;
+    const row = document.createElement('div');
+    row.className = 'poll-option-row';
+    row.innerHTML = `
+      <input type="text" class="post-input poll-option-input" maxlength="120" placeholder="Opțiune" value="${escapeHtml(value)}" />
+      <button type="button" class="poll-option-remove" aria-label="Șterge opțiunea">
+        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+      </button>
+    `;
+
+    const removeBtn = row.querySelector('.poll-option-remove');
+    removeBtn?.addEventListener('click', () => {
+      if (pollOptionsList.querySelectorAll('.poll-option-row').length <= 2) {
+        showToast('Sondajul trebuie să aibă cel puțin 2 opțiuni.', 'warning');
+        return;
+      }
+      row.remove();
+    });
+
+    return row;
+  };
+
+  const ensurePollRows = () => {
+    if (!pollOptionsList) return;
+    if (!pollOptionsList.children.length) {
+      pollOptionsList.appendChild(createPollOptionRow('Da'));
+      pollOptionsList.appendChild(createPollOptionRow('Nu'));
+    }
+  };
+
+  const openPollModal = () => {
+    if (!pollModal) return;
+    if (pollOptionsList) {
+      pollOptionsList.innerHTML = '';
+      pollOptionsList.appendChild(createPollOptionRow('Da'));
+      pollOptionsList.appendChild(createPollOptionRow('Nu'));
+    }
+    clearPollError();
+    setPollMode('single');
+    pollQuestionInput && (pollQuestionInput.value = '');
+    pollModal.classList.add('is-open');
+    pollModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    pollQuestionInput?.focus();
+  };
+
+  const closePollModal = () => {
+    if (!pollModal) return;
+    pollModal.classList.remove('is-open');
+    pollModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    clearPollError();
+  };
+
+  const collectPollData = () => {
+    const question = String(pollQuestionInput?.value || '').trim();
+    const rawOptions = Array.from(pollOptionsList?.querySelectorAll('.poll-option-input') || [])
+      .map((input) => String(input.value || '').trim());
+    const hasEmptyOption = rawOptions.some((option) => option.length === 0);
+    const options = rawOptions.filter(Boolean);
+
+    if (!question) {
+      return { error: 'Adaugă o întrebare pentru sondaj.' };
+    }
+
+    if (hasEmptyOption) {
+      return { error: 'Nu lăsa opțiuni goale.' };
+    }
+
+    if (options.length < 2) {
+      return { error: 'Sondajul are nevoie de minimum 2 opțiuni valide.' };
+    }
+
+    return {
+      question,
+      mode: activePollMode,
+      options
+    };
+  };
+
+  const buildPollBlock = ({ question, mode, options }) => {
+    return [
+      '[SONDAJ]',
+      `Întrebare: ${question}`,
+      `Mod: ${mode}`,
+      'Opțiuni:',
+      ...options.map((option) => `- ${option}`),
+      '[/SONDAJ]'
+    ].join('\n');
+  };
+
+  if (pollModal) {
+    pollModal.querySelectorAll('[data-poll-close]').forEach((button) => {
+      button.addEventListener('click', closePollModal);
+    });
+    pollModal.addEventListener('click', (event) => {
+      if (event.target === pollModal) {
+        closePollModal();
+      }
+    });
+    pollModeButtons.forEach((button) => {
+      button.addEventListener('click', () => setPollMode(button.dataset.pollMode || 'single'));
+    });
+    pollAddOptionBtn?.addEventListener('click', () => {
+      ensurePollRows();
+      const nextRow = createPollOptionRow('');
+      if (nextRow) {
+        pollOptionsList.appendChild(nextRow);
+        nextRow.querySelector('input')?.focus();
+      }
+    });
+    pollSaveBtn?.addEventListener('click', async () => {
+      const pollData = collectPollData();
+      if ('error' in pollData) {
+        setPollError(pollData.error);
+        showToast(pollData.error, 'warning');
+        return;
+      }
+
+      setPollSaveLoading(true);
+
+      try {
+        if (postTitleInput) postTitleInput.value = pollData.question;
+        if (postInput) postInput.value = buildPollBlock(pollData);
+
+        showToast('Sondajul a fost pregătit pentru postare.', 'success');
+        closePollModal();
+      } finally {
+        setPollSaveLoading(false);
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && pollModal.classList.contains('is-open')) {
+        closePollModal();
+      }
+    });
+  }
+
+  const appendAttachmentToContent = (url, label) => {
+    if (!postInput) return;
+    const prefix = postInput.value.trim().length > 0 ? '\n\n' : '';
+    postInput.value = `${postInput.value}${prefix}${label || 'Atașament'}: ${url}`.trim();
+  };
+
+  const uploadPostAttachment = async (file) => {
+    const client = await initSupabaseClient();
+    const user = await getAuthenticatedUser(false);
+
+    if (!user?.id) {
+      throw new Error('Trebuie să fii conectat pentru a încărca fișiere.');
+    }
+
+    const bucketName = 'post-attachments';
+    const safeName = String(file.name || 'fișier')
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9._-]/g, '');
+    const storagePath = `${user.id}/${Date.now()}-${safeName}`;
+
+    const { data, error } = await client.storage
+      .from(bucketName)
+      .upload(storagePath, file, { upsert: false, cacheControl: '3600' });
+
+    if (error) {
+      throw new Error(error.message || 'Nu s-a putut încărca fișierul.');
+    }
+
+    const publicUrl = client.storage.from(bucketName).getPublicUrl(data.path).data.publicUrl;
+    if (!publicUrl) {
+      throw new Error('Nu s-a putut genera URL public pentru fișier.');
+    }
+
+    return publicUrl;
+  };
+
+  const mediaButtons = postForm.querySelectorAll('.media-uploads .action-btn');
+  mediaButtons.forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const action = btn.dataset.action || '';
+
+      if (action === 'image') {
+        if (postAttachmentInput) postAttachmentInput.click();
+        return;
+      }
+
+      if (action === 'link') {
+        const link = window.prompt('Introdu un link valid:');
+        if (link && link.trim()) {
+          appendAttachmentToContent(link.trim(), 'Link');
+          showToast('Link adăugat în postare.', 'success');
+        }
+        return;
+      }
+      if (action === 'poll') {
+        ensurePollRows();
+        openPollModal();
+        return;
+      }
+    });
+  });
+
+  if (postAttachmentInput) {
+    postAttachmentInput.addEventListener('change', async () => {
+      const file = postAttachmentInput.files?.[0];
+      if (!file) return;
+
+      try {
+        showToast('Se încarcă fișierul...', 'info');
+        const url = await uploadPostAttachment(file);
+        appendAttachmentToContent(url, 'Atașament');
+
+        if (postAttachmentList) {
+          postAttachmentList.textContent = `Fișier atașat: ${file.name}`;
+        }
+
+        showToast('Fișier atașat cu succes!', 'success');
+      } catch (error) {
+        showToast(error.message || 'Eroare la încărcare fișier.', 'error');
+      } finally {
+        postAttachmentInput.value = '';
+      }
+    });
+  }
 
   postForm.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -2679,7 +3759,10 @@ function initializePostCreation() {
       if (emptyState && postsFeed) emptyState.style.display = 'none';
       if (postsFeed) postsFeed.prepend(renderPostCard(newPost, user));
       postForm.reset();
-      showToast('Postare adăugată cu succes! 🎉', 'success');
+      showToast('Postare adăugată cu succes.', 'success');
+      if (saved?.poll?.attempted && !saved?.poll?.saved && saved?.poll?.warning) {
+        showToast(saved.poll.warning, 'warning');
+      }
       
       // Update posts count
       const postsCount = document.getElementById('subredditPostsCount');
@@ -2701,32 +3784,6 @@ function initializePostCreation() {
     }
   });
 
-  if (postTestBtn) {
-    postTestBtn.addEventListener('click', () => {
-      const title = (postTitleInput?.value || '').trim() || 'Postare test';
-      const content = (postInput?.value || '').trim();
-
-      if (!content) {
-        showNotification('⚠️ Scrie ceva înainte de test.');
-        return;
-      }
-
-      const tempPost = {
-        id: `test-${Date.now()}`,
-        title: `[TEST] ${title}`,
-        content,
-        votes: 0,
-        created_at: new Date().toISOString(),
-        user_id: 'test-user'
-      };
-
-      if (emptyState && postsFeed) emptyState.style.display = 'none';
-      if (postsFeed) postsFeed.prepend(renderPostCard(tempPost, getCurrentUser() || { email: 'test@ulbstudent.ro' }));
-      postForm.reset();
-      showNotification('🧪 Postare test afișată local. Dispare la refresh.');
-    });
-  }
-
   // Add sort and refresh handlers
   const sortSelect = document.getElementById('postSortSelect');
   const refreshBtn = document.getElementById('refreshPostsBtn');
@@ -2743,7 +3800,7 @@ function initializePostCreation() {
   
   if (refreshBtn) {
     refreshBtn.addEventListener('click', async () => {
-      refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+      refreshBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i>';
       refreshBtn.disabled = true;
       
       try {
@@ -2767,7 +3824,7 @@ function initializePostCreation() {
         console.error('Error refreshing posts:', error);
         showToast('Eroare la reîncărcarea postărilor', 'error');
       } finally {
-        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        refreshBtn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
         refreshBtn.disabled = false;
       }
     });
@@ -2802,7 +3859,7 @@ function renderCommentCard(comment) {
   const commentText = comment.content || comment.comentariu || '';
   item.innerHTML = `
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-      <div style="font-size: 1.8rem;">💬</div>
+      <div style="font-size: 1.4rem; color: var(--accent);"><i class="fa-solid fa-comment" aria-hidden="true"></i></div>
       <div>
         <h4 style="margin: 0; color: var(--text);">${escapeHtml(authorName)}</h4>
         <p style="margin: 0; color: #888; font-size: 0.85rem;">${formatTimeAgo(comment.created_at)}</p>
@@ -2826,7 +3883,7 @@ async function initializeCommentsData() {
 
   if (!postId) {
     if (emptyState) emptyState.style.display = 'block';
-    if (commentsTitle) commentsTitle.textContent = '💭 0 Comentarii';
+    if (commentsTitle) commentsTitle.textContent = '0 comentarii';
     if (form) {
       const submitButton = form.querySelector('button[type="submit"]');
       if (submitButton) submitButton.disabled = true;
@@ -2846,7 +3903,7 @@ async function initializeCommentsData() {
     const loaded = await getComments(postId);
     commentsList.innerHTML = '';
     const rows = loaded.success ? loaded.data : [];
-    if (commentsTitle) commentsTitle.textContent = `💭 ${rows.length} Comentarii`;
+    if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
 
     if (rows.length === 0) {
       if (emptyState) emptyState.style.display = 'block';
@@ -2859,6 +3916,8 @@ async function initializeCommentsData() {
 
   await loadAndRender();
 
+  await setupRealtimeComments(postId, commentsList, commentsTitle, emptyState);
+
   if (!form) return;
 
   form.addEventListener('submit', async function(e) {
@@ -2867,7 +3926,7 @@ async function initializeCommentsData() {
     const email = document.getElementById('commentEmail').value || '';
     const comment = document.getElementById('commentText').value;
     const submitButton = form.querySelector('button[type="submit"]');
-    const originalSubmitText = submitButton?.textContent || 'Posteaza comentariu';
+    const originalSubmitText = submitButton?.textContent || 'Postează comentariu';
 
     if (!comment.trim()) {
       showToast('Scrie un comentariu înainte de trimitere.', 'warning');
@@ -2968,11 +4027,11 @@ async function initializeFeaturedProfessors() {
 
       if (titleEl) titleEl.textContent = subject;
       if (professorNameEl) professorNameEl.textContent = `${professor.academic_title || 'Prof.'} ${professorName}`;
-      if (statsItems[0]) statsItems[0].textContent = `📊 Dificultate: ${difficulty}/10`;
-      if (statsItems[1]) statsItems[1].textContent = `✅ Utilitate: ${utility}/10`;
-      if (statsItems[2]) statsItems[2].textContent = `💡 Sfat: ${advice}`;
+      if (statsItems[0]) statsItems[0].innerHTML = `<i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dificultate: ${difficulty}/10`;
+      if (statsItems[1]) statsItems[1].innerHTML = `<i class="fa-solid fa-check-circle" aria-hidden="true"></i> Utilitate: ${utility}/10`;
+      if (statsItems[2]) statsItems[2].innerHTML = `<i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Sfat: ${advice}`;
       if (reviewTextEl) reviewTextEl.textContent = reviewText;
-      if (helpfulEl) helpfulEl.textContent = `👍 ${helpful} găsit util`;
+      if (helpfulEl) helpfulEl.innerHTML = `<i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> ${helpful} găsit util`;
       if (helpfulEl) helpfulEl.dataset.reviewId = primaryReviewId;
 
       stars.forEach((star, starIndex) => {

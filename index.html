@@ -7,12 +7,22 @@
     <meta name="keywords" content="ULBS, studenți, profesori, materii, documente, comunitate, studiu" />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:title" content="ULBStudent - Comunitatea Studenților ULBS" />
     <meta property="og:description" content="Platformă de suport și comunitate pentru studenții Universității Lucian Blaga" />
     <meta property="og:type" content="website" />
-    
+    <link rel="manifest" href="public/manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
     <title>ULBStudent - Comunitatea Studenților ULBS | Platformă Studiu</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="styles-professors.css" />
     <link rel="stylesheet" href="toast-notifications.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -26,40 +36,185 @@
     <header>
       <div class="header-content">
         <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
-          <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+          <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo" loading="eager" fetchpriority="high" decoding="async">
         </a>
       </div>
-      <nav>
+      <nav aria-label="Navigare principală">
         <ul>
-          <!-- Navigare catre sectiuni -->
-          <li><a href="index.html" class="nav-link active">Pagina Principală</a></li>
+          <!-- Simplified navigation to match profesori.html -->
+          <li><a href="index.html" class="nav-link active">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema" type="button" aria-label="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
         </button>
-        <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Înregistrare</button>
+        <button class="btn-signin" type="button" aria-label="Conectare în cont">Conectare</button>
+        <button class="btn-signup" type="button" aria-label="Creare cont nou">Înregistrare</button>
       </div>
     </header>
 
     <!-- Continut principal -->
-    <main id="home">
+    <main id="home" class="ani-fade-in-up">
       <h1 style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">ULBStudent - Comunitatea studenților ULBS</h1>
+
+      <section class="hero-section" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="hero-awards" aria-label="Repere de calitate">
+            <span>Design premium</span>
+            <span>Mobile first</span>
+            <span>Dark mode</span>
+          </div>
+          <span class="hero-kicker"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Platforma comunității ULBS</span>
+          <h1 class="hero-title" id="hero-title">Campus digital pentru studenții ULBS.</h1>
+          <p class="hero-subtitle">ULBStudent transformă experiența de facultate într-un produs digital elegant: recenzii utile, documente organizate, discuții relevante și instrumente rapide.</p>
+          <div class="hero-actions">
+              <a href="profesori.html" class="hero-cta primary"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> Vezi profesorii</a>
+              <a href="documente.html" class="hero-cta secondary"><i class="fa-solid fa-folder-open" aria-hidden="true"></i> Caută documente</a>
+          </div>
+          <div class="hero-trust-row" aria-label="Indicatori comunitate">
+            <span><strong>2.450+</strong> studenți activi</span>
+            <span><strong>1.200+</strong> materiale partajate</span>
+            <span><strong>4,8/5</strong> utilitate medie</span>
+          </div>
+        </div>
+
+        <div class="hero-product-panel" aria-label="Previzualizare platformă ULBStudent">
+          <div class="panel-topbar">
+            <span></span>
+            <span></span>
+            <span></span>
+            <strong>ULBStudent Live</strong>
+          </div>
+          <div class="panel-search">
+            <i class="fa-solid fa-search" aria-hidden="true"></i>
+            <span>Arhitectura Calculatoarelor</span>
+          </div>
+          <div class="panel-card panel-card-highlight">
+            <div>
+              <small>Profesor recomandat</small>
+              <strong>Evaluări clare înainte de înscriere</strong>
+            </div>
+            <span>4.8</span>
+          </div>
+          <div class="panel-card">
+            <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+            <div>
+              <small>Documente recente</small>
+              <strong>Subiecte, cursuri și rezumate verificate</strong>
+            </div>
+          </div>
+          <div class="panel-card">
+            <i class="fa-solid fa-comments" aria-hidden="true"></i>
+            <div>
+              <small>Comunitate</small>
+              <strong>Răspunsuri rapide când ai nevoie</strong>
+            </div>
+          </div>
+          <div class="panel-metrics" aria-label="Stare platformă">
+            <span><strong>Live</strong> comunitate activă</span>
+            <span><strong>24/7</strong> acces la resurse</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="value-props-section" aria-label="Zone principale ULBStudent">
+        <a class="value-card" href="profesori.html">
+          <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+          <span>Decizii mai bune</span>
+          <strong>Recenzii despre profesori, materii și dificultate.</strong>
+        </a>
+        <a class="value-card" href="documente.html">
+          <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i>
+          <span>Pregătire mai rapidă</span>
+          <strong>Materiale organizate pentru cursuri, laboratoare și examene.</strong>
+        </a>
+        <a class="value-card" href="comments.html">
+          <i class="fa-solid fa-people-group" aria-hidden="true"></i>
+          <span>Sprijin real</span>
+          <strong>Întrebări, răspunsuri și conversații între colegi.</strong>
+        </a>
+      </section>
+
+      <section class="studio-section" id="platforma" aria-labelledby="platforma-title">
+        <div class="studio-copy">
+          <span class="section-eyebrow">Despre proiect</span>
+          <h2 id="platforma-title">Un spațiu academic construit ca un produs premium, nu ca o simplă listă de link-uri.</h2>
+          <p class="section-lead">Platforma este gândită pentru ritmul real al studenților: cauți rapid, compari informații, salvezi timp și intri în conversațiile care contează. Totul este structurat vizual ca un hub modern, clar și ușor de folosit.</p>
+        </div>
+        <div class="studio-board" aria-label="Principii de design și produs">
+          <div class="studio-board-card is-featured">
+            <span>01</span>
+            <strong>Claritate instant</strong>
+            <p>Informațiile importante sunt vizibile imediat, cu ierarhie puternică și acțiuni clare.</p>
+          </div>
+          <div class="studio-board-card">
+            <span>02</span>
+            <strong>Încredere vizuală</strong>
+            <p>Carduri coerente, contrast verificat, spațiere aerisită și stări interactive finisate.</p>
+          </div>
+          <div class="studio-board-card">
+            <span>03</span>
+            <strong>Utilitate reală</strong>
+            <p>Profesori, documente, forum și suport conectate într-o experiență simplă.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="feature-showcase-section" id="functionalitati" aria-labelledby="functionalitati-title">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Funcționalități premium</span>
+            <h2 id="functionalitati-title">Tot ce are nevoie un student, prezentat curat și memorabil.</h2>
+            <p class="section-lead">Fiecare modul are un rol clar: să reducă timpul pierdut și să crească siguranța deciziilor academice.</p>
+          </div>
+        </div>
+
+        <div class="feature-showcase-grid">
+          <a class="feature-tile feature-tile-large" href="profesori.html">
+            <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+            <span>Review-uri profesori</span>
+            <strong>Alegi informat înainte de cursuri, seminare și examene.</strong>
+          </a>
+          <a class="feature-tile" href="documente.html">
+            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+            <span>Bibliotecă academică</span>
+            <strong>Materiale filtrate pe an, materie și utilitate.</strong>
+          </a>
+          <a class="feature-tile" href="comments.html">
+            <i class="fa-solid fa-message" aria-hidden="true"></i>
+            <span>Discuții</span>
+            <strong>Întrebări rapide, răspunsuri relevante, comunitate activă.</strong>
+          </a>
+          <a class="feature-tile" href="settings.html">
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            <span>Experiență personală</span>
+            <strong>Setări, temă, profil și preferințe adaptate.</strong>
+          </a>
+          <a class="feature-tile" href="raporteaza-problema.html">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            <span>Suport și siguranță</span>
+            <strong>Raportare clară pentru probleme și feedback.</strong>
+          </a>
+        </div>
+      </section>
+
       <!-- Advanced Global Search Section -->
       <section class="advanced-search-section">
         <div class="section-header">
-          <h2>🔍 Căutare Globală Avansată</h2>
-          <p style="color: #666; margin: 0;">Caută simultan în documente, postări, profesori și anunțuri</p>
+          <div>
+            <span class="section-eyebrow">Descoperire rapidă</span>
+            <h2>Caută în tot ce contează pentru facultate</h2>
+            <p class="section-lead">Găsești simultan profesori, documente, postări, anunțuri și recenzii relevante.</p>
+          </div>
         </div>
 
         <div class="advanced-search-container">
           <div class="search-bar-advanced">
-            <i class="fas fa-search"></i>
+            <i class="fa-solid fa-search"></i>
             <input type="text" id="globalSearchInput" placeholder="Caută: Profesor, materie, document, tag..." class="global-search-input">
             <button id="globalSearchBtn" class="search-submit-btn">Caută</button>
           </div>
@@ -67,23 +222,23 @@
           <div class="search-filters">
             <label class="filter-checkbox">
               <input type="checkbox" value="professors" checked>
-              <span>👨‍🏫 Profesori</span>
+              <span><i class="fa-solid fa-user-tie" aria-hidden="true"></i> Profesori</span>
             </label>
             <label class="filter-checkbox">
               <input type="checkbox" value="documents" checked>
-              <span>📄 Documente</span>
+              <span><i class="fa-solid fa-file-lines" aria-hidden="true"></i> Documente</span>
             </label>
             <label class="filter-checkbox">
               <input type="checkbox" value="posts" checked>
-              <span>💬 Postări</span>
+              <span><i class="fa-solid fa-comments" aria-hidden="true"></i> Postări</span>
             </label>
             <label class="filter-checkbox">
               <input type="checkbox" value="announcements" checked>
-              <span>📢 Anunțuri</span>
+              <span><i class="fa-solid fa-bullhorn" aria-hidden="true"></i> Anunțuri</span>
             </label>
             <label class="filter-checkbox">
               <input type="checkbox" value="reviews" checked>
-              <span>⭐ Recenzii</span>
+              <span><i class="fa-solid fa-star" aria-hidden="true"></i> Recenzii</span>
             </label>
           </div>
         </div>
@@ -100,27 +255,42 @@
       <!-- Sectiune Anunțuri Urgente (Avizier Digital) -->
       <section class="announcements-section">
         <div class="section-header">
-          <h2>📢 Anunțuri Urgente</h2>
-          <p style="color: #e63946; margin: 0; font-weight: 500;">Informații importante de la profesori</p>
+          <div>
+            <span class="section-eyebrow">Actualizări importante</span>
+            <h2>Anunțuri urgente</h2>
+            <p class="section-lead">Informații pe care studenții trebuie să le vadă la timp.</p>
+          </div>
         </div>
-        
+
         <div class="announcements-container" id="announcementsFeed" aria-live="polite">
-          <div class="announcement-card info">
-            <h4>Se încarcă anunțurile...</h4>
-            <p class="announcement-meta">Sincronizăm datele recente din platformă.</p>
-            <p class="announcement-text">Conținutul va fi afișat automat imediat ce răspunde baza de date.</p>
+          <div class="announcement-card info" style="background: rgba(37, 99, 235, 0.05); border: 1px dashed rgba(37, 99, 235, 0.2); border-radius: 12px; padding: 2rem; text-align: center; box-shadow: var(--shadow-sm); transition: var(--transition-bounce);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-blue); margin-bottom: 1rem;"></i>
+            <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700;">Se încarcă anunțurile...</h4>
+            <p class="announcement-meta" style="color: var(--text-secondary);">Sincronizăm datele recente din platformă.</p>
+            <p class="announcement-text" style="color: var(--text-secondary); margin-top: 1rem;">Conținutul va fi afișat automat imediat ce răspunde baza de date.</p>
           </div>
         </div>
       </section>
 
+      <div class="home-split-grid home-split-grid--reviews">
       <!-- Sectiune Recenzii Materii -->
       <section class="reviews-section">
         <div class="section-header">
-          <h2>Recenzii Materii & Profesori</h2>
-          <p style="color: #888; margin: 0;">Evaluări de la studenți cu experiență</p>
+          <div>
+            <h2>Recenzii Materii & Profesori</h2>
+            <p class="section-lead">Evaluări de la studenți cu experiență</p>
+          </div>
+          <div class="section-slider-controls" aria-label="Navigare recenzii">
+            <button type="button" class="section-slider-btn" data-slider-target="featuredReviewsGrid" data-direction="-1" aria-label="Recenzia anterioară">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="section-slider-btn" data-slider-target="featuredReviewsGrid" data-direction="1" aria-label="Recenzia următoare">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
-        
-        <div class="reviews-grid" id="featuredReviewsGrid">
+
+        <div class="reviews-grid home-slider-track" id="featuredReviewsGrid">
           <div class="review-card">
             <div class="review-header">
               <h4>Arhitectura Calculatoarelor</h4>
@@ -134,12 +304,12 @@
             </div>
             <p class="professor-name" id="featuredProfessorName1">Prof. Dr. Alexandru Dinu</p>
             <div class="stats">
-              <span class="stat-item">📊 Dificultate: 8/10</span>
-              <span class="stat-item">✅ Utilitate: 9/10</span>
-              <span class="stat-item">💡 Sfat: Învață exercițiile</span>
+              <span class="stat-item"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dificultate: 8/10</span>
+              <span class="stat-item"><i class="fa-solid fa-check-circle" aria-hidden="true"></i> Utilitate: 9/10</span>
+              <span class="stat-item"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Sfat: Învață exercițiile</span>
             </div>
             <p class="review-text">Curs challenging dar foarte util. Prof. explică bine, dar sunt mulți exerciții la examen.</p>
-            <span class="helpful-count">👍 425 găsit util</span>
+            <span class="helpful-count"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> 425 găsit util</span>
           </div>
 
           <div class="review-card">
@@ -155,12 +325,12 @@
             </div>
             <p class="professor-name" id="featuredProfessorName2">Prof. Dr. Maria Popescu</p>
             <div class="stats">
-              <span class="stat-item">📊 Dificultate: 6/10</span>
-              <span class="stat-item">✅ Utilitate: 7/10</span>
-              <span class="stat-item">💡 Sfat: Laborator e important</span>
+              <span class="stat-item"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dificultate: 6/10</span>
+              <span class="stat-item"><i class="fa-solid fa-check-circle" aria-hidden="true"></i> Utilitate: 7/10</span>
+              <span class="stat-item"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Sfat: Laborator e important</span>
             </div>
             <p class="review-text">Materie ușoară dacă ești atent la laboratoare. Examenul e fair play.</p>
-            <span class="helpful-count">👍 318 găsit util</span>
+            <span class="helpful-count"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> 318 găsit util</span>
           </div>
 
           <div class="review-card">
@@ -176,12 +346,12 @@
             </div>
             <p class="professor-name" id="featuredProfessorName3">Prof. Dr. Ion Cristian</p>
             <div class="stats">
-              <span class="stat-item">📊 Dificultate: 7/10</span>
-              <span class="stat-item">✅ Utilitate: 10/10</span>
-              <span class="stat-item">💡 Sfat: Practice coding daily</span>
+              <span class="stat-item"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dificultate: 7/10</span>
+              <span class="stat-item"><i class="fa-solid fa-check-circle" aria-hidden="true"></i> Utilitate: 10/10</span>
+              <span class="stat-item"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Sfat: Exersează zilnic</span>
             </div>
             <p class="review-text">Excelent curs! Prof. e foarte implicat. Proiectele sunt interesante și practice.</p>
-            <span class="helpful-count">👍 562 găsit util</span>
+            <span class="helpful-count"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> 562 găsit util</span>
           </div>
         </div>
       </section>
@@ -189,11 +359,21 @@
       <!-- Sectiune Top Săptămânii -->
       <section class="leaderboard-section">
         <div class="section-header">
-          <h2>🏆 Top Săptămânii - Studenți Activi</h2>
-          <p style="color: #888; margin: 0;">Cei mai de ajutor membri ai comunității</p>
+          <div>
+            <h2>Topul săptămânii</h2>
+            <p class="section-lead">Cei mai de ajutor membri ai comunității</p>
+          </div>
+          <div class="section-slider-controls" aria-label="Navigare top">
+            <button type="button" class="section-slider-btn" data-slider-target="leaderboardFeed" data-direction="-1" aria-label="Membrul anterior">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="section-slider-btn" data-slider-target="leaderboardFeed" data-direction="1" aria-label="Membrul următor">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
 
-        <div class="leaderboard-table" id="leaderboardFeed" aria-live="polite">
+        <div class="leaderboard-table home-slider-track" id="leaderboardFeed" aria-live="polite">
           <div class="leaderboard-item rank1">
             <div class="rank">🥇</div>
             <div class="user-info">
@@ -237,59 +417,29 @@
           </div>
         </div>
       </section>
+      </div>
 
-      <!-- Sectiune Statistici Platformă -->
-      <section class="statistics-section">
-        <div class="section-header">
-          <h2>📊 Statistici Platformă</h2>
-          <p style="color: #888; margin: 0;">Impactul comunității ULBStudent în numere</p>
-        </div>
-        
-        <div class="stats-grid" id="platformStatsGrid" aria-live="polite">
-          <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-              <h3>2,450+</h3>
-              <p>Studenți Activi</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-content">
-              <h3>1,200+</h3>
-              <p>Documente Partajate</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">💬</div>
-            <div class="stat-content">
-              <h3>8,500+</h3>
-              <p>Discuții & Postări</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-content">
-              <h3>4.8/5</h3>
-              <p>Rating Mediu</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <div class="home-split-grid home-split-grid--community">
       <!-- Sectiune Activitate Recentă -->
       <section class="recent-activity-section">
         <div class="section-header">
-          <h2>🔥 Activitate Recentă</h2>
-          <p style="color: #888; margin: 0;">Ce se întâmplă acum în comunitate</p>
+          <div>
+            <h2>Activitate recentă</h2>
+            <p class="section-lead">Ce se întâmplă acum în comunitate</p>
+          </div>
+          <div class="section-slider-controls" aria-label="Navigare activitate">
+            <button type="button" class="section-slider-btn" data-slider-target="recentActivityFeed" data-direction="-1" aria-label="Activitatea anterioară">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="section-slider-btn" data-slider-target="recentActivityFeed" data-direction="1" aria-label="Activitatea următoare">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
-        
-        <div class="activity-feed" id="recentActivityFeed" aria-live="polite">
+
+        <div class="activity-feed home-slider-track" id="recentActivityFeed" aria-live="polite">
           <div class="activity-item">
-            <div class="activity-avatar">👨‍💻</div>
+            <div class="activity-avatar" aria-hidden="true">RP</div>
             <div class="activity-content">
               <h4>Rares Popescu</h4>
               <p>a pus o întrebare: "Cum se rezolvă Exercise 5 din Algoritmi?"</p>
@@ -299,7 +449,7 @@
           </div>
 
           <div class="activity-item">
-            <div class="activity-avatar">👩‍💼</div>
+            <div class="activity-avatar" aria-hidden="true">CI</div>
             <div class="activity-content">
               <h4>Catalina Ionescu</h4>
               <p>a pozitionat o recenzie: "Tehnologia Informației - Curs excelent"</p>
@@ -309,7 +459,7 @@
           </div>
 
           <div class="activity-item">
-            <div class="activity-avatar">👨‍🎓</div>
+            <div class="activity-avatar" aria-hidden="true">DM</div>
             <div class="activity-content">
               <h4>David Mihai</h4>
               <p>s-a alăturat grupului: "Studenți Programare An 2"</p>
@@ -319,7 +469,7 @@
           </div>
 
           <div class="activity-item">
-            <div class="activity-avatar">👩‍🎓</div>
+            <div class="activity-avatar" aria-hidden="true">EP</div>
             <div class="activity-content">
               <h4>Elena Petcu</h4>
               <p>a postat un document: "Arhitectura Calculatoarelor - Capitolul 3"</p>
@@ -333,44 +483,76 @@
       <!-- Sectiune Testimoniale Studenți -->
       <section class="testimonials-section">
         <div class="section-header">
-          <h2>💬 Povești de Succes</h2>
-          <p style="color: #888; margin: 0;">De la studenți care au beneficiat de platformă</p>
+          <div>
+            <h2>Povești de succes</h2>
+            <p class="section-lead">De la studenți care au beneficiat de platformă</p>
+          </div>
+          <div class="section-slider-controls" aria-label="Navigare povești de succes">
+            <button type="button" class="section-slider-btn" data-slider-target="testimonialsGrid" data-direction="-1" aria-label="Povestea anterioară">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="section-slider-btn" data-slider-target="testimonialsGrid" data-direction="1" aria-label="Povestea următoare">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
-        
-        <div class="testimonials-grid" id="testimonialsGrid" aria-live="polite">
+
+        <div class="testimonials-grid home-slider-track" id="testimonialsGrid" aria-live="polite">
           <div class="testimonial-card">
-            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">"ULBStudent m-a ajutat enorm la Calculatoare. Răspunsurile la întrebări au fost super utile!"</p>
+            <div class="stars-testimonial">★★★★★</div>
+            <p class="testimonial-text">"Se încarcă poveștile de succes..."</p>
             <div class="testimonial-author">
-              <div class="author-avatar">SC</div>
+              <div class="author-avatar">UL</div>
               <div>
-                <h4>Ștefan Cristea</h4>
-                <span>Anul 1 • Calculatoare</span>
+                <h4>ULBStudent</h4>
+                <span>Comunitatea se actualizează</span>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+      </div>
 
-          <div class="testimonial-card">
-            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">"Documentele partajate aici mi-au salvat sesiunea. Romi oamenii care ajuta fără reținere!"</p>
-            <div class="testimonial-author">
-              <div class="author-avatar">MG</div>
-              <div>
-                <h4>Maria Georgiu</h4>
-                <span>Anul 2 • Tehnologia Informației</span>
-              </div>
+      <!-- Sectiune Statistici Platformă -->
+      <section class="statistics-section" id="impact">
+        <div class="section-header">
+          <div>
+            <span class="section-eyebrow">Impact</span>
+            <h2>Comunitatea în cifre</h2>
+            <p class="section-lead">Impactul ULBStudent în viața academică de zi cu zi.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="platformStatsGrid" aria-live="polite">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></div>
+            <div class="stat-content">
+              <h3>2,450+</h3>
+              <p>Studenți Activi</p>
             </div>
           </div>
 
-          <div class="testimonial-card">
-            <div class="stars-testimonial">⭐⭐⭐⭐⭐</div>
-            <p class="testimonial-text">"Platforma m-a ajutat să găsesc rapid resurse și răspunsuri utile pentru proiecte."</p>
-            <div class="testimonial-author">
-              <div class="author-avatar">LI</div>
-              <div>
-                <h4>Lina Ionascu</h4>
-                <span>Anul 3 • Ingineria Sistemelor Multimedia</span>
-              </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>
+            <div class="stat-content">
+              <h3>1,200+</h3>
+              <p>Documente Partajate</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-message" aria-hidden="true"></i></div>
+            <div class="stat-content">
+              <h3>8,500+</h3>
+              <p>Discuții & Postări</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-star" aria-hidden="true"></i></div>
+            <div class="stat-content">
+              <h3>4.8/5</h3>
+              <p>Rating Mediu</p>
             </div>
           </div>
         </div>
@@ -383,46 +565,55 @@
       <div class="footer-content">
         <div class="footer-section">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" style="height: 60px; width: auto; margin-bottom: 1rem;">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
           <div style="margin-top: 1rem; display: flex; gap: 1rem;">
             <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="ULBStudent pe Facebook" title="Facebook" style="color: #1877f2;"><i class="fab fa-facebook"></i></a>
             <a href="https://discord.com" target="_blank" rel="noopener noreferrer" aria-label="Comunitate ULBStudent pe Discord" title="Discord" style="color: #5865f2;"><i class="fab fa-discord"></i></a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="ULBStudent pe GitHub" title="GitHub" style="color: #333;"><i class="fab fa-github"></i></a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="ULBStudent pe GitHub" title="GitHub" style="color: rgba(255,255,255,0.86);"><i class="fab fa-github"></i></a>
           </div>
         </div>
-        
+
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="documente.html">Bibliotecă Documente</a></li>
             <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
-        
+
         <div class="footer-section">
-          <h4>❓ Ajutor & Info</h4>
+          <h4>Ajutor & Info</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
             <li><a href="contact.html">Contactează-ne</a></li>
             <li><a href="raporteaza-problema.html">Raportează problemă</a></li>
           </ul>
         </div>
-        
+
         <div class="footer-section">
-          <h4>📞 Contact</h4>
+          <h4>Contact</h4>
           <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
-          <p style="font-size: 0.9rem; color: #888;">Realizat cu ❤️ pentru studenții ULBS</p>
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.72);">Realizat pentru studenții ULBS</p>
         </div>
       </div>
     </footer>
 
-    <script src="auth.js"></script>
-    <script src="professors-filtering.js"></script>
-    <script src="interactive.js"></script>
+    <script src="auth.js" defer></script>
+    <script src="professors-filtering.js" defer></script>
+    <script src="interactive.js" defer></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/public/sw.js').catch((error) => {
+            console.warn('Service worker registration failed:', error);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 

@@ -1,4 +1,4 @@
-// Supabase Configuration (centralized through supabase-client.js)
+﻿// Supabase Configuration (centralized through supabase-client.js)
 let supabaseClient = null;
 
 const TABLES = {
@@ -13,7 +13,6 @@ const TABLES = {
   COMMENTS_LEGACY: 'comentarii',
   VOTES: 'voturi',
   QUESTIONS: 'questions',
-  MATCHES: 'matches',
   PROFESSOR_REVIEWS: 'recenzii_profesori',
   REVIEW_HELPFUL_VOTES: 'recenzii_utile'
 };
@@ -29,7 +28,7 @@ async function waitForSupabase() {
   }
   
   if (!window.supabase) {
-    throw new Error('❌ Supabase failed to load. Check your internet connection.');
+    throw new Error('Supabase failed to load. Check your internet connection.');
   }
   
   return window.supabase;
@@ -49,14 +48,14 @@ async function initSupabaseClient() {
       const fallbackAnonKey = window.SUPABASE_CONFIG?.anonKey;
 
       if (!fallbackUrl || !fallbackAnonKey) {
-        throw new Error('Configuratia Supabase lipseste. Include supabase-client.js si completeaza cheile API.');
+        throw new Error('Configurația Supabase lipsește. Include supabase-client.js și completează cheile API.');
       }
 
       const { createClient } = window.supabase;
       supabaseClient = createClient(fallbackUrl, fallbackAnonKey);
     }
 
-    console.log('✅ Supabase client initialized (central config)');
+    console.log('Supabase client initialized (central config)');
   }
   return supabaseClient;
 }
@@ -96,11 +95,11 @@ async function loginWithEmail(email, password) {
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       await resolveAndCacheUserRole(data.user);
       
-      console.log('✅ Login successful:', data.user.email);
+      console.log('Login successful:', data.user.email);
       return { success: true, user: data.user };
     }
   } catch (error) {
-    console.error('❌ Login error:', error.message);
+    console.error('Login error:', error.message);
     throw error;
   }
 }
@@ -143,7 +142,7 @@ async function detectUserRole(userId, email = '') {
       }
     }
   } catch (error) {
-    console.warn('⚠️ Could not confirm admin role from users table:', error.message);
+    console.warn('Could not confirm admin role from users table:', error.message);
   }
 
   if (isDesignatedAdminEmail) {
@@ -317,7 +316,7 @@ async function registerNewUser(email, password, fullName, year, faculty, account
       throw new Error('Acest email este deja folosit');
     }
 
-    // 🚀 PASUL 2: INSERARE ÎN TABELUL AFERENT TIPULUI DE CONT
+    // PASUL 2: INSERARE ÎN TABELUL AFERENT TIPULUI DE CONT
     if (data?.user) {
       if (isProfessor) {
         const professorRows = [
@@ -368,7 +367,7 @@ async function registerNewUser(email, password, fullName, year, faculty, account
             if (String(legacyResult.error.message || '').toLowerCase().includes('duplicate')) {
               throw new Error('Acest email este deja folosit');
             }
-            console.error('❌ Eroare la salvarea profesorului:', legacyResult.error.message);
+            console.error('Eroare la salvarea profesorului:', legacyResult.error.message);
           }
         }
       } else {
@@ -398,7 +397,7 @@ async function registerNewUser(email, password, fullName, year, faculty, account
           }
         }
 
-        // Dublam si in utilizatori pentru compatibilitatea cu paginile existente.
+        // Dublăm și în utilizatori pentru compatibilitatea cu paginile existente.
         const userInsert = await client.from(TABLES.USERS).insert([{
           user_id: data.user.id,
           email: normalizedEmail,
@@ -412,24 +411,24 @@ async function registerNewUser(email, password, fullName, year, faculty, account
           if (errMsg.includes('duplicate')) {
             throw new Error('Acest email este deja folosit');
           }
-          console.error('❌ Eroare la salvarea profilului student:', userInsert.error.message);
+          console.error('Eroare la salvarea profilului student:', userInsert.error.message);
         }
       }
     }
 
-    console.log('✅ Registration successful. Auto-logging in...');
+    console.log('Registration successful. Auto-logging in...');
     
-    // ✅ Auto-login după registrare
+    // Auto-login după registrare
     try {
       await loginWithEmail(normalizedEmail, password);
-      console.log('✅ User auto-logged in successfully!');
+      console.log('User auto-logged in successfully!');
     } catch (loginError) {
-      console.warn('⚠️ Auto-login failed. User will need to login manually.');
+      console.warn('Auto-login failed. User will need to login manually.');
     }
     
     return { success: true, user: data.user };
   } catch (error) {
-    console.error('❌ Registration error:', error.message);
+    console.error('Registration error:', error.message);
     throw error;
   }
 }
@@ -457,10 +456,10 @@ async function loginWithGoogle() {
       throw new Error(error.message || 'Eroare la connectare cu Google');
     }
 
-    console.log('✅ Google OAuth initiated');
+    console.log('Google OAuth initiated');
     return { success: true };
   } catch (error) {
-    console.error('❌ Google OAuth error:', error.message);
+    console.error('Google OAuth error:', error.message);
     throw error;
   }
 }
@@ -485,13 +484,13 @@ async function logoutUser() {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('role');
     
-    console.log('✅ Logout successful');
+    console.log('Logout successful');
     
     // Redirect to login
     window.location.href = 'login.html';
     return { success: true };
   } catch (error) {
-    console.error('❌ Logout error:', error.message);
+    console.error('Logout error:', error.message);
     
     // Force clear localStorage and redirect anyway
     localStorage.removeItem('supabase.auth.token');
@@ -509,7 +508,7 @@ async function checkAuthStatus() {
     const client = await initSupabaseClient();
     
     if (!client) {
-      console.warn('⚠️ Supabase client not initialized');
+      console.warn('Supabase client not initialized');
       return { authenticated: false, user: null };
     }
 
@@ -522,7 +521,7 @@ async function checkAuthStatus() {
       localStorage.setItem('currentUser', JSON.stringify(data.session.user));
       await resolveAndCacheUserRole(data.session.user);
       
-      console.log('✅ User authenticated (fresh session):', data.session.user.email);
+      console.log('User authenticated (fresh session):', data.session.user.email);
       return { authenticated: true, user: data.session.user };
     }
 
@@ -534,17 +533,17 @@ async function checkAuthStatus() {
       try {
         const userData = JSON.parse(cachedUser);
         await resolveAndCacheUserRole(userData);
-        console.log('✅ User authenticated (cached):', userData.email);
+        console.log('User authenticated (cached):', userData.email);
         return { authenticated: true, user: userData };
       } catch (e) {
-        console.warn('⚠️ Could not verify cached data:', e.message);
+        console.warn('Could not verify cached data:', e.message);
       }
     }
 
     console.log('ℹ️ No active session');
     return { authenticated: false, user: null };
   } catch (error) {
-    console.error('❌ Auth check error:', error.message);
+    console.error('Auth check error:', error.message);
     return { authenticated: false, user: null };
   }
 }
@@ -558,14 +557,14 @@ async function initializeSession() {
     const { authenticated, user } = await checkAuthStatus();
     
     if (authenticated && user) {
-      console.log(`✅ Session initialized for ${user.email}`);
+      console.log(`Session initialized for ${user.email}`);
       return { authenticated: true, user };
     }
     
     console.log('ℹ️ No session on page load');
     return { authenticated: false, user: null };
   } catch (error) {
-    console.error('❌ Session initialization failed:', error.message);
+    console.error('Session initialization failed:', error.message);
     return { authenticated: false, user: null };
   }
 }
@@ -586,7 +585,7 @@ async function syncSessionCache(session) {
   try {
     await resolveAndCacheUserRole(session.user);
   } catch (error) {
-    console.warn('⚠️ Could not refresh role cache from auth state:', error.message);
+    console.warn('Could not refresh role cache from auth state:', error.message);
   }
 }
 
@@ -601,7 +600,7 @@ async function initializeAuthStateListener() {
 
     // Keep header in sync with the latest session state without forcing a reload.
     updateHeaderWithUserInfo().catch((error) => {
-      console.warn('⚠️ Could not refresh header after auth state change:', error.message);
+      console.warn('Could not refresh header after auth state change:', error.message);
     });
   });
 
@@ -627,6 +626,11 @@ function getCurrentUser() {
   }
 }
 
+function isValidUuid(value) {
+  if (!value || typeof value !== 'string') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 /**
  * Resolve the currently authenticated user from Supabase session first.
  * Optionally falls back to cached localStorage data.
@@ -650,7 +654,7 @@ async function getAuthenticatedUser(allowCachedFallback = true) {
     }
     return cachedUser;
   } catch (error) {
-    console.warn('⚠️ Could not resolve authenticated user from session:', error.message);
+    console.warn('Could not resolve authenticated user from session:', error.message);
     const cachedUser = allowCachedFallback ? getCurrentUser() : null;
     if (cachedUser) {
       await resolveAndCacheUserRole(cachedUser);
@@ -719,7 +723,7 @@ async function getCurrentUserProfileData() {
           .maybeSingle();
 
     if (error) {
-      console.warn('⚠️ Could not fetch utilizatori profile:', error.message);
+      console.warn('Could not fetch utilizatori profile:', error.message);
       return {
         success: true,
         data: {
@@ -745,7 +749,7 @@ async function getCurrentUserProfileData() {
       }
     };
   } catch (error) {
-    console.error('❌ Error fetching user profile data:', error.message);
+    console.error('Error fetching user profile data:', error.message);
     return { success: false, data: null };
   }
 }
@@ -764,6 +768,30 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
 
     const accountType = await resolveAndCacheUserRole(user);
     const normalizedEmail = user.email.trim().toLowerCase();
+    const userId = isValidUuid(user?.id) ? user.id : null;
+
+    const attemptUpdate = async (table, payload, criteria = []) => {
+      const cleanPayload = Object.fromEntries(
+        Object.entries(payload).filter(([, value]) => value !== undefined)
+      );
+
+      for (const criterion of criteria) {
+        const { column, value } = criterion;
+        if (value === undefined || value === null || value === '') continue;
+        const { data, error } = await client
+          .from(table)
+          .update(cleanPayload)
+          .eq(column, value)
+          .select('id');
+        if (!error && Array.isArray(data) && data.length > 0) {
+          return { success: true, data };
+        }
+        if (error) {
+          return { success: false, error };
+        }
+      }
+      return { success: false, error: null };
+    };
 
     if (accountType === 'profesor') {
       const updatePayload = {
@@ -779,27 +807,35 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
         ani_predare: profileUpdates.teaching_years
       };
 
-      const cleanPayload = Object.fromEntries(
-        Object.entries(updatePayload).filter(([, value]) => value !== undefined)
-      );
+      const primaryUpdate = await attemptUpdate(TABLES.PROFESSORS, updatePayload, [
+        { column: 'user_id', value: userId },
+        { column: 'email', value: normalizedEmail }
+      ]);
 
-      const dbUpdate = await client
-        .from(TABLES.PROFESSORS)
-        .update(cleanPayload)
-        .eq('email', normalizedEmail);
-
-      if (dbUpdate.error) {
-        const legacyUpdate = await client
-          .from(TABLES.PROFESSORS_LEGACY)
-          .update({
-            full_name: profileUpdates.full_name,
-            specialization: profileUpdates.specialization,
-            department: profileUpdates.faculty
-          })
-          .eq('institutional_email', normalizedEmail);
+      if (!primaryUpdate.success) {
+        const legacyUpdate = await attemptUpdate(TABLES.PROFESSORS_LEGACY, {
+          full_name: profileUpdates.full_name,
+          specialization: profileUpdates.specialization,
+          department: profileUpdates.faculty,
+          taught_subject: profileUpdates.taught_subject,
+          teaching_years: profileUpdates.teaching_years
+        }, [
+          { column: 'institutional_email', value: normalizedEmail },
+          { column: 'email', value: normalizedEmail }
+        ]);
 
         if (legacyUpdate.error) throw new Error(legacyUpdate.error.message);
       }
+
+      await attemptUpdate(TABLES.USERS, {
+        nume_complet: profileUpdates.full_name,
+        an_studiu: null,
+        specializare: profileUpdates.specialization,
+        role: 'profesor'
+      }, [
+        { column: 'user_id', value: userId },
+        { column: 'email', value: normalizedEmail }
+      ]);
 
       const { error: authError } = await client.auth.updateUser({
         data: {
@@ -826,23 +862,19 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
       specialization: profileUpdates.specialization
     };
 
-    const cleanStudentPayload = Object.fromEntries(
-      Object.entries(studentPayload).filter(([, value]) => value !== undefined)
-    );
+    const studentUpdate = await attemptUpdate(TABLES.STUDENTS, studentPayload, [
+      { column: 'user_id', value: userId },
+      { column: 'email', value: normalizedEmail }
+    ]);
 
-    const studentUpdate = await client
-      .from(TABLES.STUDENTS)
-      .update(cleanStudentPayload)
-      .eq('email', normalizedEmail);
-
-    const userUpdate = await client
-      .from(TABLES.USERS)
-      .update({
-        nume_complet: profileUpdates.full_name,
-        an_studiu: profileUpdates.year ? parseInt(profileUpdates.year, 10) : null,
-        specializare: profileUpdates.specialization
-      })
-      .eq('email', normalizedEmail);
+    const userUpdate = await attemptUpdate(TABLES.USERS, {
+      nume_complet: profileUpdates.full_name,
+      an_studiu: profileUpdates.year ? parseInt(profileUpdates.year, 10) : null,
+      specializare: profileUpdates.specialization
+    }, [
+      { column: 'user_id', value: userId },
+      { column: 'email', value: normalizedEmail }
+    ]);
 
     if (studentUpdate.error && userUpdate.error) {
       throw new Error(userUpdate.error.message || studentUpdate.error.message);
@@ -861,7 +893,7 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
 
     return { success: true };
   } catch (error) {
-    console.error('❌ Error updating user profile data:', error.message);
+    console.error('Error updating user profile data:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -894,10 +926,10 @@ async function saveQuestion(title, description) {
 
     if (error) throw new Error(error.message);
     
-    console.log('✅ Question saved to database:', data);
+    console.log('Question saved to database:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error saving question:', error.message);
+    console.error('Error saving question:', error.message);
     throw error;
   }
 }
@@ -908,9 +940,15 @@ async function saveQuestion(title, description) {
 async function savePost(title, content) {
   try {
     const client = await initSupabaseClient();
-    const user = getCurrentUser();
+    const user = await getAuthenticatedUser(false);
+    const userId = isValidUuid(user?.id) ? user.id : null;
+    const pollStatus = {
+      attempted: false,
+      saved: false,
+      warning: ''
+    };
     
-    if (!user) {
+    if (!userId) {
       throw new Error('User not authenticated');
     }
 
@@ -918,7 +956,7 @@ async function savePost(title, content) {
     const primaryInsert = await client
       .from(TABLES.POSTS_LEGACY)
       .insert([{
-        user_id: user.id,
+        user_id: userId,
         title,
         content,
         votes: 0
@@ -926,6 +964,7 @@ async function savePost(title, content) {
       .select();
 
     let data = primaryInsert.data;
+        pollStatus.attempted = true;
     let error = primaryInsert.error;
 
     // Fallback pentru schema noua
@@ -933,7 +972,7 @@ async function savePost(title, content) {
       const fallbackInsert = await client
         .from(TABLES.FORUM_POSTS)
         .insert([{
-          user_id: user.id,
+          user_id: userId,
           title,
           content,
           votes: 0
@@ -944,11 +983,87 @@ async function savePost(title, content) {
     }
 
     if (error) throw new Error(error.message);
+
+    const pollMatch = String(content || '').match(/\[SONDAJ\]([\s\S]*?)\[\/SONDAJ\]/i);
+    if (pollMatch && data?.[0]?.id) {
+      const pollLines = pollMatch[1]
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      let questionText = String(title || '').trim();
+      let allowMultipleAnswers = false;
+      const options = [];
+
+      pollLines.forEach((line, index) => {
+        const lower = line.toLowerCase();
+        const value = line.includes(':') ? line.split(':').slice(1).join(':').trim() : line.trim();
+
+        if ((lower.startsWith('întrebare:') || lower.startsWith('intrebare:')) && value) {
+          questionText = value;
+          return;
+        }
+
+        if (lower.startsWith('mod:') || lower.startsWith('tip:')) {
+          allowMultipleAnswers = /multi/i.test(value);
+          return;
+        }
+
+        if (line.startsWith('-')) {
+          options.push(line.replace(/^-\s*/, '').trim());
+          return;
+        }
+
+        if (index === 0 && !questionText) {
+          questionText = line;
+        }
+      });
+
+      if (options.length >= 2) {
+        const pollInsert = await client
+          .from('polls')
+          .insert([{
+            post_id: data[0].id,
+            author_id: userId,
+            question: questionText || title,
+            allow_multiple_answers: allowMultipleAnswers
+          }])
+          .select()
+          .single();
+
+        if (!pollInsert.error && pollInsert.data?.id) {
+          const pollId = pollInsert.data.id;
+          const pollOptions = options.map((option, index) => ({
+            poll_id: pollId,
+            option_text: option,
+            position: index
+          }));
+
+          const pollOptionsInsert = await client.from('poll_options').insert(pollOptions);
+          if (pollOptionsInsert.error) {
+            console.warn('Poll options could not be saved:', pollOptionsInsert.error.message);
+            pollStatus.warning = 'Postarea s-a salvat, dar sondajul nu a putut fi sincronizat complet.';
+            try {
+              await client.from('polls').delete().eq('id', pollId);
+            } catch (rollbackError) {
+              console.warn('Poll rollback failed:', rollbackError?.message || rollbackError);
+            }
+          } else {
+            pollStatus.saved = true;
+          }
+        } else if (pollInsert.error) {
+          console.warn('Poll could not be saved:', pollInsert.error.message);
+          pollStatus.warning = 'Postarea s-a salvat, dar sondajul nu a putut fi creat în baza de date.';
+        }
+      } else {
+        pollStatus.warning = 'Postarea s-a salvat, dar sondajul are nevoie de minimum 2 opțiuni valide.';
+      }
+    }
     
-    console.log('✅ Post saved to database:', data);
-    return { success: true, data };
+    console.log('Post saved to database:', data);
+    return { success: true, data, poll: pollStatus };
   } catch (error) {
-    console.error('❌ Error saving post:', error.message);
+    console.error('Error saving post:', error.message);
     throw error;
   }
 }
@@ -959,7 +1074,8 @@ async function savePost(title, content) {
 async function saveComment(postId, name, email, content) {
   try {
     const client = await initSupabaseClient();
-    const user = getCurrentUser();
+    const user = await getAuthenticatedUser(false);
+    const userId = isValidUuid(user?.id) ? user.id : null;
 
     const numericPostId = Number(postId);
     const postIdCandidates = [
@@ -973,7 +1089,7 @@ async function saveComment(postId, name, email, content) {
         table: TABLES.COMMENTS,
         payload: {
           post_id: candidate,
-          user_id: user?.id || null,
+          user_id: userId,
           name,
           email,
           content
@@ -983,7 +1099,7 @@ async function saveComment(postId, name, email, content) {
         table: TABLES.COMMENTS,
         payload: {
           id_post: candidate,
-          user_id: user?.id || null,
+          user_id: userId,
           nume: name,
           email,
           comentariu: content,
@@ -994,7 +1110,7 @@ async function saveComment(postId, name, email, content) {
         table: TABLES.COMMENTS_LEGACY,
         payload: {
           post_id: candidate,
-          user_id: user?.id || null,
+          user_id: userId,
           name,
           email,
           content
@@ -1004,7 +1120,7 @@ async function saveComment(postId, name, email, content) {
         table: TABLES.COMMENTS_LEGACY,
         payload: {
           id_post: candidate,
-          user_id: user?.id || null,
+          user_id: userId,
           nume: name,
           email,
           comentariu: content,
@@ -1031,10 +1147,10 @@ async function saveComment(postId, name, email, content) {
 
     if (lastError) throw new Error(lastError.message);
     
-    console.log('✅ Comment saved to database:', data);
+    console.log('Comment saved to database:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error saving comment:', error.message);
+    console.error('Error saving comment:', error.message);
     throw error;
   }
 }
@@ -1161,7 +1277,7 @@ async function saveSupportContactMessage(payload = {}) {
 
     throw new Error(lastError?.message || 'Nu s-a putut salva mesajul de contact.');
   } catch (error) {
-    console.error('❌ Error saving contact message:', error.message);
+    console.error('Error saving contact message:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -1304,7 +1420,7 @@ async function saveBugReport(payload = {}) {
 
     throw new Error(lastError?.message || 'Nu s-a putut salva raportul.');
   } catch (error) {
-    console.error('❌ Error saving bug report:', error.message);
+    console.error('Error saving bug report:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -1334,7 +1450,7 @@ async function saveUserSettings(settings = {}) {
     if (error) throw new Error(error.message);
     return { success: true, data: data?.user?.user_metadata?.app_settings || mergedSettings };
   } catch (error) {
-    console.error('❌ Error saving user settings:', error.message);
+    console.error('Error saving user settings:', error.message);
     return { success: false, data: {}, error: error.message };
   }
 }
@@ -1351,7 +1467,7 @@ async function loadUserSettings() {
       data: user.user_metadata?.app_settings || {}
     };
   } catch (error) {
-    console.error('❌ Error loading user settings:', error.message);
+    console.error('Error loading user settings:', error.message);
     return { success: false, data: {}, error: error.message };
   }
 }
@@ -1369,10 +1485,10 @@ async function getQuestions() {
 
     if (error) throw new Error(error.message);
     
-    console.log('✅ Questions fetched from database:', data);
+    console.log('Questions fetched from database:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error fetching questions:', error.message);
+    console.error('Error fetching questions:', error.message);
     return { success: false, data: [] };
   }
 }
@@ -1386,7 +1502,8 @@ async function getPosts() {
     const primarySelect = await client
       .from(TABLES.POSTS_LEGACY)
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(60);
 
     let data = primarySelect.data;
     let error = primarySelect.error;
@@ -1395,17 +1512,18 @@ async function getPosts() {
       const fallbackSelect = await client
         .from(TABLES.FORUM_POSTS)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(60);
       data = fallbackSelect.data;
       error = fallbackSelect.error;
     }
 
     if (error) throw new Error(error.message);
     
-    console.log('✅ Posts fetched from database:', data);
+    console.log('Posts fetched from database:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error fetching posts:', error.message);
+    console.error('Error fetching posts:', error.message);
     return { success: false, data: [] };
   }
 }
@@ -1442,7 +1560,7 @@ async function getPostById(postId) {
 
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error fetching single post:', error.message);
+    console.error('Error fetching single post:', error.message);
     return { success: false, data: null };
   }
 }
@@ -1495,7 +1613,7 @@ async function getComments(postId) {
     
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error fetching comments:', error.message);
+    console.error('Error fetching comments:', error.message);
     return { success: false, data: [] };
   }
 }
@@ -1529,9 +1647,9 @@ async function getAllComments() {
       lastError = result.error;
     }
 
-    throw new Error(lastError?.message || 'Nu s-au putut incarca comentariile.');
+    throw new Error(lastError?.message || 'Nu s-au putut încărca comentariile.');
   } catch (error) {
-    console.error('❌ Error fetching all comments:', error.message);
+    console.error('Error fetching all comments:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -1552,12 +1670,29 @@ async function getProfessors() {
     let error = primarySelect.error;
 
     if (error) {
+      const simplePrimarySelect = await client
+        .from(TABLES.PROFESSORS)
+        .select('*')
+        .order('nume_complet', { ascending: true });
+
+      if (!simplePrimarySelect.error) {
+        rawRows = simplePrimarySelect.data;
+        error = null;
+      }
+    }
+
+    if (error || !rawRows?.length) {
       const fallbackSelect = await client
         .from(TABLES.PROFESSORS_LEGACY)
         .select('*')
         .order('full_name', { ascending: true });
-      rawRows = fallbackSelect.data;
-      error = fallbackSelect.error;
+      if (!fallbackSelect.error && fallbackSelect.data?.length) {
+        rawRows = fallbackSelect.data;
+        error = null;
+      } else if (error) {
+        rawRows = fallbackSelect.data;
+        error = fallbackSelect.error;
+      }
     }
 
     if (error) throw new Error(error.message);
@@ -1574,7 +1709,7 @@ async function getProfessors() {
 
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error fetching professors:', error.message);
+    console.error('Error fetching professors:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -1601,8 +1736,8 @@ async function upsertProfessors(professors) {
       institutional_email: row.institutional_email || row.email,
       specializare: row.specialization,
       specialization: row.specialization,
-      departament: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
-      department: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
+      departament: row.department || 'Departamentul de Calculatoare și Inginerie Electrică',
+      department: row.department || 'Departamentul de Calculatoare și Inginerie Electrică',
       rating: row.rating || 4.6,
       reviews_count: row.reviews_count || 0,
       courses_count: row.courses_count || 0
@@ -1639,7 +1774,7 @@ async function upsertProfessors(professors) {
     if (error) throw new Error(error.message);
     return { success: true, data };
   } catch (error) {
-    console.error('❌ Error upserting professors:', error.message);
+    console.error('Error upserting professors:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -1782,7 +1917,7 @@ async function updatePostVotes(postId, voteDirection) {
     
     return { success: true, data: result.data, newVotes: result.newVotes, userVote: result.userVote ?? null };
   } catch (error) {
-    console.error('❌ Error updating post votes:', error.message);
+    console.error('Error updating post votes:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -1823,7 +1958,7 @@ async function getCurrentUserPostVotes(postIds = []) {
 
     return { success: true, data: map };
   } catch (error) {
-    console.warn('⚠️ Could not load user post votes:', error.message);
+    console.warn('Could not load user post votes:', error.message);
     return { success: false, data: {}, error: error.message };
   }
 }
@@ -1864,7 +1999,7 @@ async function getCurrentUserQuestionVotes(questionIds = []) {
 
     return { success: true, data: map };
   } catch (error) {
-    console.warn('⚠️ Could not load user question votes:', error.message);
+    console.warn('Could not load user question votes:', error.message);
     return { success: false, data: {}, error: error.message };
   }
 }
@@ -1959,7 +2094,7 @@ async function updateQuestionVotes(questionId, voteDirection) {
     
     return { success: true, data: data?.[0], newVotes, userVote: nextUserVote };
   } catch (error) {
-    console.error('❌ Error updating question votes:', error.message);
+    console.error('Error updating question votes:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -1987,7 +2122,7 @@ async function getDocuments() {
 
     throw new Error(lastError?.message || 'Nu s-au putut încărca documentele.');
   } catch (error) {
-    console.error('❌ Error fetching documente:', error.message);
+    console.error('Error fetching documente:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2075,7 +2210,7 @@ async function getProfessorDocuments(professorId, professorEmail = '') {
 
     throw new Error(lastError?.message || 'Nu s-au putut încărca documentele profesorului.');
   } catch (error) {
-    console.error('❌ Error fetching professor documents:', error.message);
+    console.error('Error fetching professor documents:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2089,7 +2224,7 @@ function buildProfessorDocumentPayloadVariants(baseData = {}) {
   const professorName = String(baseData.professor_name || baseData.nume_profesor || '').trim();
   const professorEmail = String(baseData.professor_email || baseData.email || '').trim().toLowerCase();
   const professorId = String(baseData.professor_id || baseData.user_id || '').trim();
-  const department = String(baseData.department || baseData.departament || '').trim() || 'Departamentul de Calculatoare si Inginerie Electrica';
+  const department = String(baseData.department || baseData.departament || '').trim() || 'Departamentul de Calculatoare și Inginerie Electrică';
   const year = String(baseData.year || baseData.an_studiu || '').trim();
   const resolvedFilePath = String(
     baseData.fisier_path
@@ -2239,7 +2374,7 @@ async function saveProfessorDocument(documentData = {}) {
     }
 
     if (!subjectOptions.length) {
-      throw new Error('Nu exista o materie atribuita pentru acest profesor.');
+      throw new Error('Nu există o materie atribuită pentru acest profesor.');
     }
 
     if (!subjectOptions.some((item) => item.toLowerCase() === selectedSubject.toLowerCase())) {
@@ -2267,7 +2402,7 @@ async function saveProfessorDocument(documentData = {}) {
 
     throw new Error(mutationResult.error || 'Nu s-a putut salva documentul profesorului.');
   } catch (error) {
-    console.error('❌ Error saving professor document:', error.message);
+    console.error('Error saving professor document:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2306,7 +2441,7 @@ async function updateProfessorDocument(documentId, documentData = {}) {
 
     throw new Error(mutationResult.error || 'Nu s-a putut actualiza documentul.');
   } catch (error) {
-    console.error('❌ Error updating professor document:', error.message);
+    console.error('Error updating professor document:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2325,7 +2460,7 @@ async function deleteProfessorDocument(documentId) {
 
     return { success: true };
   } catch (error) {
-    console.error('❌ Error deleting professor document:', error.message);
+    console.error('Error deleting professor document:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -2389,7 +2524,7 @@ async function getProfessorReviews(professorId) {
     if (lastError) throw new Error(lastError.message);
     return { success: true, data: bestData };
   } catch (error) {
-    console.error('❌ Error fetching recenzii_profesori:', error.message);
+    console.error('Error fetching recenzii_profesori:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2486,7 +2621,7 @@ async function saveProfessorReview(professorId, rating, reviewText, reviewContex
 
     throw new Error(lastError?.message || 'Nu s-a putut salva recenzia.');
   } catch (error) {
-    console.error('❌ Error saving recenzie_profesor:', error.message);
+    console.error('Error saving recenzie_profesor:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2509,7 +2644,7 @@ async function getProfessorReviewHelpfulCount(reviewId) {
 
     return { success: true, count: count || 0 };
   } catch (error) {
-    console.warn('⚠️ Could not load review helpful count:', error.message);
+    console.warn('Could not load review helpful count:', error.message);
     return { success: false, count: 0, error: error.message };
   }
 }
@@ -2557,7 +2692,7 @@ async function toggleProfessorReviewHelpful(reviewId) {
       added: !existingVote?.data?.id
     };
   } catch (error) {
-    console.warn('⚠️ Could not toggle review helpful vote:', error.message);
+    console.warn('Could not toggle review helpful vote:', error.message);
     return { success: false, count: 0, error: error.message };
   }
 }
@@ -2581,7 +2716,8 @@ async function protectPage() {
     'subreddit.html',
     'comments.html',
     'discutie.html',
-    'profesori.html'
+    'profesori.html',
+    'professor-profile.html'
   ];
   
   // Protected pages - require authentication
@@ -2589,8 +2725,7 @@ async function protectPage() {
     'profile.html',
     'settings.html',
     'admin.html',
-    'professor-panel.html',
-    'professor-profile.html'
+    'professor-panel.html'
   ];
   
   if (publicPages.includes(currentPage)) {
@@ -2601,7 +2736,7 @@ async function protectPage() {
     const { authenticated, user } = await checkAuthStatus();
     
     if (!authenticated) {
-      console.log('🔒 Page protected. Redirecting to login...');
+      console.log('Page protected. Redirecting to login...');
       localStorage.removeItem('currentUser');
       localStorage.removeItem('supabase.auth.token');
       localStorage.removeItem('role');
@@ -2612,8 +2747,7 @@ async function protectPage() {
     // Server-validated role checks for sensitive pages.
     const restrictedPagesByRole = {
       'admin.html': ['admin'],
-      'professor-panel.html': ['profesor', 'admin'],
-      'professor-profile.html': ['profesor', 'admin']
+      'professor-panel.html': ['profesor', 'admin']
     };
 
     const allowedRoles = restrictedPagesByRole[currentPage];
@@ -2764,14 +2898,14 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   
   userMenu.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <i class="fas fa-user-circle" style="font-size: ${isMobileScreen ? '1.05rem' : '1.28rem'}; color: var(--accent);"></i>
+      <i class="fa-solid fa-user-circle" style="font-size: ${isMobileScreen ? '1.05rem' : '1.28rem'}; color: var(--accent);"></i>
       <div style="color: var(--text); display: flex; flex-direction: column;">
         <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.74rem' : '0.82rem'};">${escapeHtml(userName)}</div>
         <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsAdmin ? 'rgba(212, 175, 55, 1)' : (accountIsProfessor ? '#ffd166' : roleColor)}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
         ${showEmail ? `<div style="font-size: 0.66rem; opacity: 0.82;">${escapeHtml(userEmail)}</div>` : ''}
       </div>
     </div>
-    <i class="fas fa-chevron-down" style="color: var(--text); font-size: 0.66rem;"></i>
+    <i class="fa-solid fa-chevron-down" style="color: var(--text); font-size: 0.66rem;"></i>
   `;
   
   // Create dropdown menu
@@ -2802,7 +2936,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const adminMenuItem = accountIsAdmin
     ? `
     <a href="admin.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fas fa-user-shield"></i> Admin Panel
+      <i class="fa-solid fa-user-shield"></i> Admin Panel
     </a>
     `
     : '';
@@ -2810,23 +2944,23 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const professorMenuItem = accountIsProfessor
     ? `
     <a href="professor-panel.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fas fa-chalkboard-teacher"></i> Panou profesor
+      <i class="fa-solid fa-chalkboard-user"></i> Panou profesor
     </a>
     `
     : '';
 
   dropdownMenu.innerHTML = `
     <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fas fa-user"></i> Profilul Meu
+      <i class="fa-solid fa-user"></i> Profilul Meu
     </a>
     <a href="settings.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fas fa-cog"></i> Setări
+      <i class="fa-solid fa-gear"></i> Setări
     </a>
     ${professorMenuItem}
     ${adminMenuItem}
     <hr style="margin: 0; border: none; border-top: 1px solid var(--border-color);">
     <button id="logoutBtn" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; background: transparent; border: none; color: #e63946; font-weight: 600; cursor: pointer; transition: background 0.2s;" class="dropdown-item">
-      <i class="fas fa-sign-out-alt"></i> Deconectare
+      <i class="fa-solid fa-right-from-bracket"></i> Deconectare
     </button>
   `;
   
@@ -2869,7 +3003,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
  * Call this function on every page that needs authentication
  */
 async function initAuthOnPageLoad(protectPage = true) {
-  console.log('🔐 Initializing authentication...');
+  console.log('Initializing authentication...');
   
   // Initialize Supabase client
   await initSupabaseClient();
@@ -3045,19 +3179,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Render quickly from cached data first to avoid visible delays in account UI.
   const headerRenderPromise = updateHeaderWithUserInfo().catch((error) => {
-    console.warn('⚠️ Initial header render failed:', error.message);
+    console.warn('Initial header render failed:', error.message);
   });
 
   // Initialize auth stack in background so page interactivity is never blocked.
   initializeAuthStateListener().catch((error) => {
-    console.warn('⚠️ Auth state listener init failed:', error.message);
+    console.warn('Auth state listener init failed:', error.message);
   });
 
   initSupabaseClient()
     .then(() => {
       if (!isAuthPage) {
         return protectPage().catch((error) => {
-          console.warn('⚠️ Page protection check failed:', error.message);
+          console.warn('Page protection check failed:', error.message);
         });
       }
       return null;
@@ -3065,7 +3199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .finally(() => {
       headerRenderPromise.finally(() => {
         updateHeaderWithUserInfo().catch((error) => {
-          console.warn('⚠️ Header refresh failed:', error.message);
+          console.warn('Header refresh failed:', error.message);
         });
       });
     });

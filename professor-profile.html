@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Profil profesor - ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
 
     <title>Profil Profesor - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="styles-professors.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,70 +27,73 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link active">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link">Discutii</a></li>
+          <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
-          <i class="fas fa-moon"></i>
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Inregistrare</button>
+        <button class="btn-signup">Înregistrare</button>
       </div>
     </header>
 
-    <main class="container" style="max-width: 1000px; margin: 2rem auto 3rem; padding: 0 1.5rem;">
-      <a href="profesori.html" class="join-btn" style="display: inline-block; margin-bottom: 1rem; text-decoration: none;">Inapoi la profesori</a>
+    <main class="container prof-profile-shell">
+      <a href="profesori.html" class="join-btn prof-back-link">Înapoi la profesori</a>
 
-      <section style="background: var(--surface); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.2rem;">
-        <h1 id="profName" style="margin-bottom: 0.4rem;">Profesor</h1>
-        <p id="profSpecialization" style="color: var(--text-secondary); margin-bottom: 1rem;">Specializare: -</p>
+      <section class="prof-overview-panel">
+        <h1 id="profName" class="prof-page-title">Profesor</h1>
+        <p id="profSpecialization" class="prof-page-subtitle">Specializare: -</p>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem;">
-          <div style="background: var(--light-gray); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem;">
+        <div class="prof-info-grid">
+          <div class="prof-info-card">
             <strong>Email</strong>
-            <p id="profEmail" style="margin-top: 0.35rem;">-</p>
+            <div class="prof-inline-row">
+              <p id="profEmail" class="prof-inline-value">-</p>
+              <button id="copyEmailBtn" type="button" aria-label="Copiază email" title="Copiază email" class="prof-copy-btn">Copiază</button>
+            </div>
           </div>
-          <div style="background: var(--light-gray); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem;">
+          <div class="prof-info-card">
             <strong>Materii predate</strong>
-            <p id="profSubjects" style="margin-top: 0.35rem;">-</p>
+            <p id="profSubjects" class="prof-inline-value">-</p>
           </div>
-          <div style="background: var(--light-gray); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem;">
+          <div class="prof-info-card">
             <strong>Rating real</strong>
-            <p id="profRating" style="margin-top: 0.35rem;">0/5 (0 recenzii)</p>
+            <p id="profRating" class="prof-inline-value">0/5 (0 recenzii)</p>
           </div>
         </div>
       </section>
 
-      <section style="background: linear-gradient(135deg, var(--surface) 0%, var(--light-gray) 100%); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem; box-shadow: var(--shadow-sm);">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+      <section class="prof-review-panel">
+        <div class="prof-review-header">
           <div>
-            <h3 style="margin: 0 0 0.35rem 0;">Adauga recenzie</h3>
-            <p style="margin: 0; color: var(--text-secondary);">Scrie o opinie scurta despre profesor, materie si utilitatea cursului.</p>
+            <h3>Adaugă recenzie</h3>
+            <p>Scrie o opinie scurtă despre profesor și curs.</p>
           </div>
-          <button id="openReviewModalBtn" type="button" class="btn-action btn-primary" style="min-width: 180px; justify-content:center;">
+          <button id="openReviewModalBtn" type="button" class="btn-action btn-primary prof-review-btn">
             Scrie o recenzie
           </button>
         </div>
       </section>
 
-      <section style="background: var(--surface); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem;">
-        <h3 style="margin-top: 0;">Recenzii</h3>
-        <div id="reviewsList" style="display: grid; gap: 0.8rem;"></div>
-        <p id="reviewsEmptyState" style="color: var(--text-secondary);">Nu exista inca recenzii pentru acest profesor.</p>
+      <section class="prof-reviews-panel">
+        <h3>Recenzii</h3>
+        <div id="reviewsList" class="prof-reviews-grid"></div>
+        <p id="reviewsEmptyState" class="prof-empty-state">Nu există încă recenzii pentru acest profesor.</p>
       </section>
     </main>
 
     <div id="reviewModal" class="review-modal" aria-hidden="true">
       <div class="review-modal-content" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
-        <button type="button" class="review-modal-close" id="closeReviewModalBtn" aria-label="Inchide">&times;</button>
+        <button type="button" class="review-modal-close" id="closeReviewModalBtn" aria-label="Închide">&times;</button>
         <div class="review-modal-header">
           <p class="review-modal-kicker">Recenzie profesor</p>
           <h3 id="reviewModalTitle">Scrie o recenzie</h3>
-          <p id="reviewModalSubtitle">Spune ce ai apreciat, cat de util a fost cursul si ce sfat ai pentru alti studenti.</p>
+          <p id="reviewModalSubtitle">Spune ce ai apreciat, cât de util a fost cursul și ce sfat ai pentru alți studenți.</p>
         </div>
 
         <form id="reviewForm" class="review-modal-form">
@@ -108,8 +115,8 @@
           </label>
 
           <div class="review-modal-actions">
-            <button type="button" class="btn-action btn-secondary" id="cancelReviewModalBtn">Renunta</button>
-            <button type="submit" class="btn-action btn-primary">Salveaza recenzia</button>
+            <button type="button" class="btn-action btn-secondary" id="cancelReviewModalBtn">Renunță</button>
+            <button type="submit" class="btn-action btn-primary">Salvează recenzia</button>
           </div>
         </form>
       </div>
@@ -119,7 +126,7 @@
       <div class="footer-content">
         <div class="footer-section">
           <h4>ULBStudent</h4>
-          <p>Platforma de suport pentru comunitatea studentilor ULBS.</p>
+          <p>Platforma de suport pentru comunitatea studenților ULBS.</p>
         </div>
       </div>
     </footer>

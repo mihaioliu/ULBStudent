@@ -1,0 +1,14 @@
+ULBStudent - Project Kit
+
+Acesta este un fisier de descarcare pregatit pentru site.
+Inlocuieste acest fisier cu CV-ul, documentatia, arhiva ZIP sau prezentarea finala pe care vrei sa o oferi vizitatorilor.
+
+Link folosit in site:
+downloads/ULBStudent-Project-Pack.zip
+
+Recomandare:
+- pastreaza acelasi nume daca vrei sa nu modifici HTML-ul;
+- sau schimba href-ul din index.html si interactive.js catre fisierul tau final.
+
+Proiect: ULBStudent
+Scop: platforma premium pentru comunitatea studentilor ULBS.

@@ -1,5 +1,69 @@
 {
+  "name": "ulbstudent",
+  "version": "2.0.0",
+  "description": "ULBStudent - Comunitatea studenților ULBS. Platformă de suport și colaborare.",
+  "main": "supabase-client.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "python -m http.server 5500",
+    "dev:node": "npx http-server -p 5500",
+    "lint": "eslint . --ext .js --ignore-path .eslintignore",
+    "lint:fix": "eslint . --ext .js --fix --ignore-path .eslintignore",
+    "format": "prettier --write \"**/*.{js,json,md,html,css}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,json,md,html,css}\" --ignore-path .prettierignore",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "build": "echo \"Static project: upload HTML/CSS/JS/assets directly\"",
+    "analyze": "npm audit && npm run lint",
+    "pre-commit": "npm run format && npm run lint",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.84.10",
+    "dompurify": "^3.0.6",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
-    "supabase": "^2.84.10"
-  }
+    "@testing-library/dom": "^9.3.4",
+    "@testing-library/jest-dom": "^6.1.5",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@playwright/test": "^1.40.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "terser": "^5.26.0",
+    "cssnano": "^6.0.2"
+  },
+  "lint-staged": {
+    "**/*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md,css,html}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "ulbs",
+    "student",
+    "community",
+    "professors",
+    "documents",
+    "forum",
+    "collaboration"
+  ],
+  "author": "ULBStudent Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ulbstudent"
+  },
+  "homepage": "https://ulbstudent.ro"
 }

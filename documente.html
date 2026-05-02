@@ -7,9 +7,13 @@
     <meta name="keywords" content="documente ULBS, cursuri, seminare, materiale studiu, pdf" />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
     <title>Documente - ULBStudent | Resurse Studiu Gratuite</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="styles-documents.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -26,8 +30,8 @@
       </div>
       <nav>
         <ul>
-          <!-- Navigare catre sectiuni -->
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <!-- Navigare către secțiuni -->
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link active">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
@@ -35,7 +39,7 @@
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
         <button class="btn-signup">Înregistrare</button>
@@ -46,8 +50,8 @@
       <!-- Secțiune Documente și Materiale -->
       <section class="documents-section">
         <div class="section-header">
-          <h2>📚 Documente & Materiale de Studiu</h2>
-          <p>Caută cursuri, seminare, proiecte și alte materiale. Filtrează după facultate, disciplină și tip.</p>
+          <h2>Documente</h2>
+          <p>Materiale utile pentru semestru.</p>
         </div>
 
         <div class="documents-layout">
@@ -81,11 +85,11 @@
               </div>
             </div>
 
-            <!-- Tip Document -->
+            <!-- Tip Material -->
             <div class="filter-group">
-              <label for="docTypeFilter" class="filter-title">Tip Document</label>
+              <label for="docTypeFilter" class="filter-title">Tip material</label>
               <select id="docTypeFilter" class="filter-select">
-                <option value="">Toate Tipurile</option>
+                <option value="">Toate tipurile</option>
                 <option value="curs">Curs</option>
                 <option value="seminar">Seminar</option>
                 <option value="laborator">Laborator</option>
@@ -110,7 +114,7 @@
             <div class="filter-group">
               <label for="yearFilter" class="filter-title">Anul</label>
               <select id="yearFilter" class="filter-select">
-                <option value="">Toate Anii</option>
+                <option value="">Toți anii</option>
                 <option value="1">Anul I</option>
                 <option value="2">Anul II</option>
                 <option value="3">Anul III</option>
@@ -122,76 +126,10 @@
           <!-- Zona principală cu documente -->
           <div class="docs-main">
             <div class="docs-grid" id="docsGrid">
-              <div class="doc-card">
-                <div class="doc-header">
-                  <i class="fas fa-file-pdf"></i>
-                  <h3>Arhitectura Calculatoarelor - Curs Complet</h3>
-                </div>
-                <p class="doc-meta">💻 Calculatoare | Anul I | Curs</p>
-                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
-                <p class="doc-description">Materialul complet al cursului de arhitectură cu exemple practice și exerciții rezolvate.</p>
-                <div class="doc-stats">
-                  <span class="doc-stat">📥 423 descărcări</span>
-                  <span class="doc-stat">⭐ 4.7/5</span>
-                </div>
-                <div class="doc-actions">
-                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
-                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
-                </div>
-              </div>
-
-              <div class="doc-card">
-                <div class="doc-header">
-                  <i class="fas fa-file-pdf"></i>
-                  <h3>Programare C++ - Seminar</h3>
-                </div>
-                <p class="doc-meta">🌐 Tehnologia Informației | Anul I | Seminar</p>
-                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
-                <p class="doc-description">Exerciții și probleme de programare în C++ cu soluții complete și explicații detaliate.</p>
-                <div class="doc-stats">
-                  <span class="doc-stat">📥 512 descărcări</span>
-                  <span class="doc-stat">⭐ 4.9/5</span>
-                </div>
-                <div class="doc-actions">
-                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
-                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
-                </div>
-              </div>
-
-              <div class="doc-card">
-                <div class="doc-header">
-                  <i class="fas fa-file-pdf"></i>
-                  <h3>Rețele de Date - Schițe Examene</h3>
-                </div>
-                <p class="doc-meta">🌐 Tehnologia Informației | Anul I | Examen</p>
-                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
-                <p class="doc-description">Colecție de schițe din examenele precedente cu soluții și explicații pentru fiecare subiect.</p>
-                <div class="doc-stats">
-                  <span class="doc-stat">📥 678 descărcări</span>
-                  <span class="doc-stat">⭐ 4.6/5</span>
-                </div>
-                <div class="doc-actions">
-                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
-                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
-                </div>
-              </div>
-
-              <div class="doc-card">
-                <div class="doc-header">
-                  <i class="fas fa-file-pdf"></i>
-                  <h3>Procesare Multimedia - Laborator</h3>
-                </div>
-                <p class="doc-meta">🎬 Ingineria Sistemelor Multimedia | Anul II | Laborator</p>
-                <p class="doc-faculty">Departamentul de Calculatoare și Inginerie Electrică</p>
-                <p class="doc-description">Laboratoare cu aplicații multimedia, procesare audio-video și tehnici moderne de randare.</p>
-                <div class="doc-stats">
-                  <span class="doc-stat">📥 345 descărcări</span>
-                  <span class="doc-stat">⭐ 4.8/5</span>
-                </div>
-                <div class="doc-actions">
-                  <button class="btn-download"><i class="fas fa-download"></i> Descarcă</button>
-                  <button class="btn-preview"><i class="fas fa-eye"></i> Previzualizare</button>
-                </div>
+              <div class="empty-state-card">
+                <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+                <h3>Se pregătește biblioteca</h3>
+                <p>Documentele se vor încărca automat din baza de date imediat ce sunt disponibile.</p>
               </div>
             </div>
           </div>
@@ -203,30 +141,30 @@
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
         </div>
         
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="documente.html">Bibliotecă Documente</a></li>
             <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>❓ Ajutor</h4>
+          <h4>Ajutor</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>📞 Contact</h4>
+          <h4>Contact</h4>
           <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>

@@ -1,108 +1,104 @@
-﻿# ULBStudent - Platform Status
+# ULBStudent
 
-Actualizat: 15.04.2026
+ULBStudent este o platformă web premium pentru studenții ULBS: profesori, documente, discuții, sondaje, recenzii, profil, setări, suport și resurse academice. Proiectul rămâne ușor de urcat pe hosting static, iar funcțiile dinamice sunt conectate prin Supabase.
 
-## Ce merge acum
+## Structură
 
-- Autentificare si sesiune: login/register, persistenta sesiunii Supabase, listener de auth si redirect dupa autentificare.
-- Roluri student/profesor/admin: detectie din baza de date pentru afisarea corecta a UI-ului si a paginilor protejate.
-- Catalog profesori: listare, filtrare, profil profesor, recenzii si helpful votes.
-- Recenzii profesori: adaugare recenzie din [profesori.html](profesori.html) si [professor-profile.html](professor-profile.html), inclusiv fallback pe schema mixta.
-- Discutii si comentarii: salvare postari, citire/salvare comentarii si voturi pe postari/intrebari.
-- Homepage data-driven: statistici, leaderboard, activitate recenta, testimoniale si anunturi renderizate din datele din DB.
-- Cautare globala: filtreaza documente, postari, profesori, anunturi si recenzii din UI.
-- Setari simplificate pentru ULBS: regiune/zone orara eliminate, tema si animatii persistate.
-- Panel profesor: validare upload fisier (extensie, MIME, limita 25MB).
-- UI si accesibilitate: toast-uri, loading states, meniu mobil responsive, lazy-loading media si imbunatatiri ARIA.
+- `index.html` - landing page premium cu hero, beneficii, funcționalități, impact și testimonials.
+- `profesori.html`, `professor-profile.html`, `professor-panel.html` - catalog, profil și panel profesor.
+- `documente.html` - bibliotecă de documente, filtre și descărcare reală.
+- `comments.html`, `discutie.html`, `subreddit.html` - comunitate, postări, comentarii și sondaje.
+- `login.html`, `register.html`, `profile.html`, `settings.html`, `admin.html` - cont, profil, preferințe și administrare.
+- `contact.html`, `raporteaza-problema.html` - suport și raportări.
+- `404.html`, `offline.html`, `public/sw.js`, `public/manifest.webmanifest` - fallback, PWA și metadata.
+- `styles-global.css`, `app-polish.css`, `styles-documents.css`, `styles-professors.css`, `styles-subreddit.css`, `toast-notifications.css` - sistem vizual.
+- `interactive.js`, `auth.js`, `supabase-client.js`, `professors-filtering.js`, `professor-profile.js` - funcționalitate frontend și Supabase.
 
-## Ce trebuie inca facut
+## Rulare Locală
 
-- RLS final in Supabase pentru tabelele folosite de forum, comentarii, recenzii, documente si roluri.
-- Curatarea completa a fallback-urilor locale pentru roluri; accesul final trebuie sa depinda de sesiunea si politicile din backend.
-- Cautare server-side pentru continut mare sau dinamic; filtrarea actuala din browser este utila, dar nu suficienta ca solutie finala.
-- Flux complet pentru documente in productie: upload real in Supabase Storage, URL-uri valide si gestionare a fisierelor lipsa.
-- Real-time notifications (badge + subscribe Realtime).
-- Moderare comunitate (report queue, flagging).
-- Mesagerie privata.
-- Audit logs, bulk operations, soft delete.
-- Teste automate si CI (Jest/Cypress/Playwright/GitHub Actions).
+```bash
+python -m http.server 5500
+```
 
-## Ce nu este implementat
+Deschide `http://localhost:5500/index.html`.
 
-- Chat in timp real.
-- Notificari live pentru voturi/comentarii/mesaje.
-- Moderare avansata cu panou de review pentru raportari.
-- Sistem complet de mesaje private.
-- Analytics sau audit trail pentru actiunile importante.
-- Acoperire automata de testare end-to-end.
+Dacă ai Node instalat:
 
-## Setup rapid
+```bash
+npm install
+npm run dev
+npm run build
+```
 
-1. Ruleaza [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql) in Supabase SQL Editor.
-2. Ruleaza [supabase_professors_seed.sql](supabase_professors_seed.sql) pentru seed profesori legacy.
-3. Configureaza [supabase-client.js](supabase-client.js) cu URL + anon key.
-4. Serveste proiectul local (ex: python -m http.server 5500).
+`npm run build` nu generează bundle; confirmă doar că proiectul este static și pregătit de upload.
 
-## Modificari importante din ultimul update
+## Configurare Supabase
 
-1. Consolidare auth si sesiune:
-	- [auth.js](auth.js): listener de auth, redirectionare dupa login si afisare corecta a rolului in UI.
-	- [auth.js](auth.js): rolul afisat nu mai depinde de cache-ul local ca sursa principala.
-2. Hardened homepage si cautare:
-	- [index.html](index.html): anunturile pornesc cu un singur placeholder, fara seed-uri statice duplicat.
-	- [interactive.js](interactive.js): rezultate de cautare escapate inainte de randare.
-	- [index.html](index.html): adaugat H1 semantic ascuns pentru SEO si accesibilitate.
-3. Functionalitati deja stabilizate:
-	- [auth.js](auth.js): voturi pe postari si intrebari, plus citire voturi per user.
-	- [interactive.js](interactive.js): notificari toast, meniu mobil responsive si incarcarea media pe lazy-load.
-4. Stabilitate pe recenzii si setari:
-	- [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql): schema pentru recenzii si politici RLS extinse.
-	- [settings.html](settings.html): setari simplificate pentru UX mai clar.
+1. Copiază `.env.example` și păstrează valorile reale în mediul tău privat.
+2. Pentru hosting static fără build, modifică `supabase-client.js` sau creează `config/env.js` pornind de la `config/env.example.js`.
+3. Rulează în Supabase SQL Editor:
 
-## Teste
+```text
+SUPABASE_PRODUCTION_SETUP.sql
+SUPABASE_POLLS_MIGRATION.sql
+supabase_professors_seed.sql
+```
 
-### Teste statice executate
+Nu folosi niciodată `service_role` în frontend. Cheia permisă în browser este anon/public key, cu RLS activ.
 
-- Verificare erori VS Code Problems pentru fisierele modificate:
-  - [auth.js](auth.js)
-  - [professor-profile.js](professor-profile.js)
-  - [professors-filtering.js](professors-filtering.js)
-  - [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql)
-  - [settings.html](settings.html)
-- Rezultat: fara erori.
+Pentru asistentul AI `Ajutor AI`, deployează funcția Supabase Edge:
 
-### Teste functionale recomandate (manual, dupa SQL update)
+```bash
+supabase functions deploy chat-facultate
+supabase secrets set GEMINI_API_KEY=cheia_ta_gemini
+```
 
-1. Recenzie din lista profesori:
-	- Deschide [profesori.html](profesori.html)
-	- Click Adauga recenzie pe un profesor
-	- Completeaza rating + comentariu
-	- Verifica mesajul de succes si rating-ul actualizat.
+Secretul `GEMINI_API_KEY` este server-side și nu se pune în HTML, JS public sau `config/env.js`.
 
-2. Recenzie din profil profesor:
-	- Deschide [professor-profile.html](professor-profile.html?id=...)
-	- Trimite recenzie noua
-	- Verifica aparitia recenziei in lista si recalculul mediei.
+## Tabele Folosite Real
 
-3. Verificare DB Supabase:
-	- Confirma insert in tabelul recenzii_profesori.
-	- Confirma read din recenzii_profesori pe id_profesor/profesor_id/professor_id.
+Codul folosește activ: `utilizatori`, `studenti`, `profesori`, `professors`, `cursuri`, `courses`, `documente`, `posts`, `postari_forum`, `comments`, `comentarii`, `questions`, `voturi`, `recenzii_profesori`, `recenzii_utile`, `raportari`, `notificari`, `polls`, `poll_options`, `poll_votes`.
 
-4. Regression check discutii:
-	- Creeaza postare in [comments.html](comments.html)
-	- Adauga comentariu in [discutie.html](discutie.html?post=...)
-	- Verifica persistenta dupa refresh.
+Canon recomandat pentru producție: `posts`, `comments`, `profesori`, `studenti`, `cursuri`, `documente`, `polls`, `poll_options`, `poll_votes`. Variantele `postari_forum`, `comentarii`, `professors`, `courses` sunt păstrate ca fallback pentru schema existentă.
 
-5. Verificare homepage si cautare:
-	- Deschide [index.html](index.html)
-	- Confirma ca anunturile, statisticile si activity feed se incarca o singura data.
-	- Ruleaza o cautare globala cu un text existent si unul inexistent.
+## Storage Buckets
 
-6. Verificare roluri si sesiune:
-	- Logheaza-te cu un cont student si unul profesor.
-	- Verifica afisarea meniului corect si accesul la pagini protejate.
-	- Da refresh si confirma ca sesiunea ramane activa.
+Configurează prin SQL sau Dashboard:
 
-## Observatie
+- `documente` - public, pentru fișiere încărcate de profesori.
+- `post-attachments` - public, pentru atașamente forum.
+- `avatars` - opțional, public sau privat după politica de profil dacă adaugi upload avatar.
 
-Daca proiectul Supabase nu are inca structura actualizata, recenziile pot pica pana rulezi [SUPABASE_PRODUCTION_SETUP.sql](SUPABASE_PRODUCTION_SETUP.sql) (versiunea noua din repo).
+## Edge Functions
+
+- `supabase/functions/chat-facultate` - endpoint real pentru butonul `Ajutor AI`; folosește `GEMINI_API_KEY` din Supabase Secrets și răspunde prin `/functions/v1/chat-facultate`.
+
+## Sondaje
+
+Pagina `comments.html` are editor real de sondaj: întrebare, minimum 2 opțiuni, adăugare/ștergere opțiuni, single choice și multiple choice. Voturile persistă în `poll_votes` după rularea `SUPABASE_POLLS_MIGRATION.sql`; migrația validează în DB opțiunile, previne votul duplicat per utilizator și blochează voturile multiple pe sondaje single choice.
+
+## Pachet Local
+
+Folderul `downloads/` conține un pachet local opțional pentru materiale auxiliare sau livrabile manuale.
+UI-ul public nu mai expune un buton de download, iar arhiva poate fi păstrată doar dacă vrei să o distribui manual sau să o publici separat.
+
+## Upload Pe Server
+
+1. Urcă fișierele `.html`, `.css`, `.js` și folderele `assets/`, `public/`, `config/`.
+2. Setează `index.html` ca pagină principală.
+3. Configurează fallback către `404.html`.
+4. Actualizează `sitemap.xml`, `robots.txt`, `SITE_URL` și URL-urile OAuth după domeniul final.
+5. Verifică în Supabase Dashboard RLS, Auth providers, Storage buckets și URL-urile permise.
+
+## Ce Modifici Rapid
+
+- Texte landing: `index.html`.
+- Design global: `app-polish.css` și `styles-global.css`.
+- Documente: `styles-documents.css`, `documente.html`, `auth.js`.
+- Profesori/recenzii: `styles-professors.css`, `profesori.html`, `professor-profile.js`.
+- Forum/sondaje: `comments.html`, `interactive.js`, `styles-subreddit.css`.
+- Supabase: `supabase-client.js`, `SUPABASE_PRODUCTION_SETUP.sql`, `SUPABASE_POLLS_MIGRATION.sql`.
+
+## Servicii Externe
+
+Funcțiile reale depind de Supabase Auth, Database și Storage. Google OAuth se configurează în Supabase Auth Providers. LinkedIn este opțional și necesită `LINKEDIN_CLIENT_ID` plus un endpoint serverless de token exchange; fără configurare, butonul afișează un mesaj clar și nu pornește un flux fals.

@@ -6,9 +6,13 @@
     <meta name="description" content="Contact - ULBStudent. Pune-ți întrebările și contactează-ne." />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
     <title>Contact - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -18,38 +22,40 @@
     <!-- Header: logo + meniu -->
     <header>
       <div class="header-content">
-        <h1>ULBStudent</h1>
+        <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+          <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+        </a>
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
         <button class="btn-signup">Înregistrare</button>
       </div>
     </header>
 
-    <main class="container" style="max-width: 1000px; margin: 3rem auto; padding: 2rem;">
-      <div style="text-align: center; margin-bottom: 3rem;">
-        <h1>📞 Contact</h1>
-        <p>Avem nevoie de feedback! Contactează-ne cu orice întrebări, sugestii sau probleme.</p>
+    <main class="container contact-page-shell">
+      <div class="contact-hero">
+        <h1>Contact</h1>
+        <p>Trimite-ne întrebări, sugestii sau semnale despre platformă. Răspundem cât mai rapid.</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+      <div class="contact-grid">
         <!-- Contact Info -->
         <div>
-          <h2 style="color: var(--accent); margin-bottom: 1.5rem;">ℹ️ Informații Contact</h2>
+          <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Informații contact</h2>
           
           <div class="contact-item" style="margin-bottom: 2rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
-              <i class="fas fa-envelope" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
+              <i class="fa-solid fa-envelope" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
               <div>
                 <h4 style="margin: 0 0 0.5rem 0;">Email</h4>
                 <p style="margin: 0; color: var(--text-secondary);">
@@ -64,11 +70,11 @@
 
           <div class="contact-item" style="margin-bottom: 2rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
-              <i class="fas fa-phone" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
+              <i class="fa-solid fa-phone" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
               <div>
-                <h4 style="margin: 0 0 0.5rem 0;">Telefon</h4>
+                <h4 style="margin: 0 0 0.5rem 0;">Suport</h4>
                 <p style="margin: 0; color: var(--text-secondary);">
-                  +40 (0)269 XXXXXX
+                  Formular online și email
                 </p>
                 <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">
                   Luni-Vineri: 09:00 - 17:00
@@ -79,11 +85,11 @@
 
           <div class="contact-item" style="margin-bottom: 2rem;">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
-              <i class="fas fa-map-marker-alt" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
+              <i class="fa-solid fa-location-dot" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
               <div>
                 <h4 style="margin: 0 0 0.5rem 0;">Adresă</h4>
                 <p style="margin: 0; color: var(--text-secondary);">
-                  Str. Електроніке 1<br>
+                  Str. Electronice 1<br>
                   Sibiu 550024<br>
                   România
                 </p>
@@ -93,9 +99,9 @@
 
           <div class="contact-item">
             <div style="display: flex; align-items: flex-start; gap: 1rem;">
-              <i class="fas fa-bug" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
+              <i class="fa-solid fa-bug" style="color: var(--accent); font-size: 1.5rem; margin-top: 0.5rem;"></i>
               <div>
-                <h4 style="margin: 0 0 0.5rem 0;">Raportează Probleme</h4>
+                <h4 style="margin: 0 0 0.5rem 0;">Raportează probleme</h4>
                 <p style="margin: 0; color: var(--text-secondary);">
                   <a href="raporteaza-problema.html" style="color: var(--accent); text-decoration: none;">Raportează un bug</a>
                 </p>
@@ -106,7 +112,7 @@
 
         <!-- Contact Form -->
         <div>
-          <h2 style="color: var(--accent); margin-bottom: 1.5rem;">✉️ Trimite-ne un Mesaj</h2>
+          <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Trimite-ne un mesaj</h2>
           <form id="contactForm" style="display: flex; flex-direction: column; gap: 1rem;">
             <div>
               <label for="contactName" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nume *</label>
@@ -128,7 +134,7 @@
                 name="email" 
                 required
                 style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
-                placeholder="email@exemple.ro"
+                placeholder="email@exemplu.ro"
               >
             </div>
 
@@ -141,10 +147,10 @@
                 style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
               >
                 <option value="">Alege un subiect</option>
-                <option value="saports">Suport Tehnic</option>
-                <option value="suggestie">Sugestie</option>
+                <option value="suport">Suport tehnic</option>
+                <option value="sugestie">Sugestie</option>
                 <option value="reclamatie">Reclamație</option>
-                <option value="pareneriat">Parteneriat</option>
+                <option value="parteneriat">Parteneriat</option>
                 <option value="altele">Altele</option>
               </select>
             </div>
@@ -167,7 +173,7 @@
               onmouseover="this.style.background='var(--accent-hover)'"
               onmouseout="this.style.background='var(--accent)'"
             >
-              Trimite Mesaj
+              Trimite mesaj
             </button>
           </form>
         </div>
@@ -177,7 +183,7 @@
         <h3>Timp de Răspuns</h3>
         <p>
           Răspundem la toate mesajele în termen de <strong>24-48 ore</strong>. 
-          Pentru urgențe, folosește direct telefonul.
+          Pentru probleme urgente, trimite un raport detaliat și îl prioritizăm.
         </p>
       </div>
     </main>
@@ -186,31 +192,31 @@
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="index.html">Acasă</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>❓ Ajutor</h4>
+          <h4>Ajutor</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>📞 Contact</h4>
+          <h4>Contact</h4>
           <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>

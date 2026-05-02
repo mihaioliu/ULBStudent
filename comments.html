@@ -3,12 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Discutii si comentarii - ULBStudent. Participa la conversatii si schimburi de idei." />
+    <meta name="description" content="Discuții și comentarii - ULBStudent. Participă la conversații și schimburi de idei." />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
-    <title>Discutii - ULBStudent | Comunitate Studenti</title>
+    <title>Discuții - ULBStudent | Comunitate studenți</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="styles-subreddit.css" />
     <link rel="stylesheet" href="toast-notifications.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -26,18 +30,18 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link active">Discutii</a></li>
+          <li><a href="comments.html" class="nav-link active">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
-          <i class="fas fa-moon"></i>
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Inregistrare</button>
+        <button class="btn-signup">Înregistrare</button>
       </div>
     </header>
 
@@ -46,8 +50,8 @@
         <div class="sub-info">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="Logo ULBStudent" class="sub-logo-horizontal">
           <div>
-            <h2>Discutii</h2>
-            <p>Combina postarile comunitatii cu comentariile intr-un singur loc.</p>
+            <h2>Discuții</h2>
+            <p>Postări și comentarii într-un singur loc.</p>
           </div>
         </div>
       </section>
@@ -61,46 +65,54 @@
 
             <form id="postCreateForm" class="quick-post-form">
               <input id="postTitleInput" type="text" placeholder="Titlu postare" class="post-input input-compact" required>
-              <textarea id="postContentInput" type="text" placeholder="Creeaza o postare noua..." class="post-input" required></textarea>
+              <textarea id="postContentInput" type="text" placeholder="Creează o postare nouă..." class="post-input" required></textarea>
               <div class="post-meta-grid">
                 <select id="postCategoryInput" class="post-input input-compact select-compact">
                   <option value="general">General</option>
-                  <option value="intrebare">Intrebare</option>
+                  <option value="intrebare">Întrebare</option>
                   <option value="resursa">Resursa</option>
-                  <option value="anunt">Anunt</option>
+                  <option value="anunt">Anunț</option>
                 </select>
                 <input id="postTagsInput" type="text" placeholder="Tag-uri (ex: sesiune, c++)" class="post-input input-compact">
               </div>
 
+              <input
+                id="postAttachmentInput"
+                type="file"
+                accept="image/*,application/pdf"
+                class="hidden-file-input"
+              >
+              <div id="postAttachmentList" class="post-attachment-list"></div>
+
               <div class="form-actions">
                 <div class="media-uploads">
-                  <button type="button" class="action-btn" title="Adauga Imagine">
+                  <button type="button" class="action-btn" data-action="image" title="Adaugă imagine">
                     <i class="fa-solid fa-image"></i>
                   </button>
-                  <button type="button" class="action-btn" title="Adauga Link">
+                  <button type="button" class="action-btn" data-action="link" title="Adaugă link">
                     <i class="fa-solid fa-link"></i>
                   </button>
-                  <button type="button" class="action-btn" title="Adauga Sondaj">
-                    <i class="fa-solid fa-poll-h"></i>
+                  <button type="button" class="action-btn" data-action="poll" title="Adaugă sondaj">
+                    <i class="fa-solid fa-square-poll-horizontal"></i>
                   </button>
                 </div>
 
                 <div class="post-submit-wrap">
-                  <button type="submit" class="post-submit-btn">Posteaza</button>
+                  <button type="submit" class="post-submit-btn">Postează</button>
                 </div>
               </div>
             </form>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 0.75rem; background: rgba(255,255,255,0.6); border-radius: 10px; flex-wrap: wrap;">
-            <select id="postSortSelect" class="sort-select" style="flex: 1; min-width: 200px; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500;">
-              <option value="recent">📅 Cel mai recent</option>
-              <option value="popular">🔥 Cel mai popular</option>
-              <option value="trending">📈 Trending acum</option>
-              <option value="oldest">⏱️ Cel mai vechi</option>
+          <div class="comments-toolbar">
+            <select id="postSortSelect" class="sort-select comments-sort-select">
+              <option value="recent">Cel mai recent</option>
+              <option value="popular">Cel mai popular</option>
+              <option value="trending">Trending acum</option>
+              <option value="oldest">Cel mai vechi</option>
             </select>
-            <button id="refreshPostsBtn" class="action-btn" style="padding: 0.6rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(230,57,70,0.1); cursor: pointer; font-weight: 500;" title="Reîncarcă postări">
-              <i class="fas fa-sync-alt"></i>
+            <button id="refreshPostsBtn" class="action-btn comments-refresh-btn" title="Reîncarcă postări">
+              <i class="fa-solid fa-rotate"></i>
             </button>
           </div>
 
@@ -108,22 +120,14 @@
           <div id="postsEmptyState" class="post-card hidden-initial">
             <div class="post-body">
               <span class="post-meta">Comunitate</span>
-              <h4>Inca nu exista postari.</h4>
-              <p>Fii primul student care publica o postare in comunitate.</p>
+              <h4>Încă nu există postări.</h4>
+              <p>Fii primul student care publică o postare în comunitate.</p>
             </div>
           </div>
 
-          <div id="commentsPostContainer" class="comment-post-preview comment-post-preview-spacing">
-            <h2 class="comment-post-title">Inca nu exista detalii pentru aceasta postare</h2>
-            <p class="comment-post-description">
-              Selecteaza o postare din comunitate pentru a vedea comentariile ei.
-            </p>
-          </div>
-
           <div class="comments-stack">
-            <h3 id="commentsTitle" class="comments-title">0 Comentarii</h3>
             <div id="commentsList"></div>
-            <p id="commentsEmptyState" class="comments-empty">Inca nu exista comentarii pentru aceasta postare.</p>
+            <p id="commentsEmptyState" class="comments-empty">Încă nu există comentarii pentru această postare.</p>
           </div>
         </div>
 
@@ -135,6 +139,52 @@
           </div>
         </aside>
       </div>
+
+      <div id="pollComposerModal" class="poll-modal" aria-hidden="true">
+        <div class="poll-modal-backdrop" data-poll-close></div>
+        <section class="poll-modal-panel" role="dialog" aria-modal="true" aria-labelledby="pollComposerTitle">
+          <div class="poll-modal-header">
+            <div>
+              <span class="section-eyebrow">Sondaj real</span>
+              <h3 id="pollComposerTitle">Configurează sondajul</h3>
+            </div>
+            <button type="button" class="poll-modal-close" data-poll-close aria-label="Închide editorul de sondaj">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="poll-modal-body">
+            <label class="poll-field">
+              <span>Întrebare</span>
+              <input id="pollQuestionInput" type="text" class="post-input" placeholder="Ce variantă alegem?" maxlength="180" />
+            </label>
+
+            <div class="poll-mode-switch" role="radiogroup" aria-label="Tip răspuns">
+              <button type="button" class="poll-mode-pill is-active" data-poll-mode="single" aria-pressed="true">Un singur răspuns</button>
+              <button type="button" class="poll-mode-pill" data-poll-mode="multiple" aria-pressed="false">Răspunsuri multiple</button>
+            </div>
+
+            <div class="poll-options-header">
+              <div>
+                <strong>Opțiuni</strong>
+                <p>Minimum 2 opțiuni. Poți adăuga sau șterge opțiuni înainte de publicare.</p>
+              </div>
+              <button type="button" class="poll-add-option-btn" id="pollAddOptionBtn">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Adaugă opțiune
+              </button>
+            </div>
+
+            <div id="pollOptionsList" class="poll-options-list"></div>
+            <p id="pollComposerError" class="poll-composer-error" aria-live="polite"></p>
+          </div>
+
+          <div class="poll-modal-actions">
+            <button type="button" class="hero-cta secondary" data-poll-close>Renunță</button>
+            <button type="button" class="hero-cta primary" id="pollSaveBtn">Adaugă sondajul</button>
+          </div>
+        </section>
+      </div>
     </main>
 
     <!-- Footer -->
@@ -143,25 +193,24 @@
         <div class="footer-section">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" class="footer-logo">
           <h4>ULBStudent</h4>
-          <p>Platforma de suport pentru comunitatea studentilor ULBS.</p>
+          <p>Platforma de suport pentru comunitatea studenților ULBS.</p>
         </div>
         
         <div class="footer-section">
-          <h4>Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul class="footer-list-reset">
-            <li><a href="index.html">Pagina Principala</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="documente.html">Documente</a></li>
-            <li><a href="comments.html">Discutii</a></li>
+            <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
           <h4>Ajutor</h4>
           <ul class="footer-list-reset">
-            <li><a href="politica-confidentialitate.html">Politica Confidentialitatii</a></li>
-            <li><a href="termeni-conditii.html">Termeni si Conditii</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
+            <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="comments.html">Discutii</a></li>
           </ul>
         </div>
         

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="ro">
   <head>
     <meta charset="UTF-8" />
@@ -6,8 +6,12 @@
     <meta name="description" content="Admin Panel - ULBStudent" />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     <title>Admin Panel - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -154,14 +158,14 @@
   <body>
     <header>
       <div class="header-content">
-        <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+        <a href="index.html" class="header-logo-link">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
         </a>
         <p class="tagline">Comunitatea ta de studiu</p>
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
@@ -169,14 +173,14 @@
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
       </div>
     </header>
 
-    <main class="container admin-page">
+    <main class="container admin-page admin-page-shell">
       <section class="admin-header">
-        <h1><i class="fas fa-user-shield"></i> Admin Panel</h1>
+        <h1><i class="fa-solid fa-user-shield"></i> Admin Panel</h1>
         <p>Zona de administrare pentru raportări, notificări și roluri utilizatori.</p>
       </section>
 
@@ -267,7 +271,7 @@
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Panou administrativ pentru managementul platformei.</p>
         </div>
       </div>
@@ -513,7 +517,7 @@
         if (reportsRes.error || notificationsRes.error || usersRes.error) {
           const message = reportsRes.error?.message || notificationsRes.error?.message || usersRes.error?.message || 'Eroare la încărcarea datelor.';
           if (typeof showNotification === 'function') {
-            showNotification('⚠️ ' + message);
+            showNotification('' + message);
           }
         }
 
@@ -533,13 +537,13 @@
 
         if (result.error) {
           if (typeof showNotification === 'function') {
-            showNotification('❌ ' + result.error.message);
+            showNotification(result.error.message, 'error');
           }
           return;
         }
 
         if (typeof showNotification === 'function') {
-          showNotification('✅ Status raportare actualizat.');
+          showNotification('Status raportare actualizat.', 'success');
         }
         await loadAdminData();
       }
@@ -554,13 +558,13 @@
 
         if (result.error) {
           if (typeof showNotification === 'function') {
-            showNotification('❌ ' + result.error.message);
+            showNotification(result.error.message, 'error');
           }
           return;
         }
 
         if (typeof showNotification === 'function') {
-          showNotification('✅ Status notificare actualizat.');
+          showNotification('Status notificare actualizat.', 'success');
         }
         await loadAdminData();
       }
@@ -578,13 +582,13 @@
 
         if (result.error) {
           if (typeof showNotification === 'function') {
-            showNotification('❌ ' + result.error.message);
+            showNotification(result.error.message, 'error');
           }
           return;
         }
 
         if (typeof showNotification === 'function') {
-          showNotification('✅ Rol utilizator actualizat.');
+          showNotification('Rol utilizator actualizat.', 'success');
         }
         await loadAdminData();
       }

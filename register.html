@@ -6,9 +6,13 @@
     <meta name="description" content="Înregistrare - ULBStudent. Creează un cont nou." />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
     <title>Înregistrare - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -18,32 +22,32 @@
     <!-- Header: logo + meniu -->
     <header>
       <div class="header-content">
-        <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+        <a href="index.html" class="header-logo-link">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
         </a>
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
       </div>
     </header>
 
-    <main class="container" style="max-width: 550px; margin: 3rem auto; padding: 2rem;">
-      <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="color: var(--accent);">✨ Creează Cont</h1>
-        <p style="color: #888;">Alătură-te comunității ULBStudent și conectează-te cu alți studenți!</p>
+    <main class="container auth-page-shell auth-register-shell">
+      <div class="auth-hero auth-hero-compact">
+        <h1>Creează cont</h1>
+        <p>Alătură-te comunității ULBStudent și construiește-ți spațiul academic digital.</p>
       </div>
 
       <!-- Registration Form -->
-      <form id="registerForm" style="display: flex; flex-direction: column; gap: 1.2rem;">
+      <form id="registerForm" class="auth-form auth-form-compact">
         <div>
           <label style="display: block; margin-bottom: 0.75rem; font-weight: 700; color: var(--text);">
             Tip cont
@@ -63,7 +67,7 @@
         <div id="studentFields" style="display: flex; flex-direction: column; gap: 1.2rem;">
           <div>
             <label for="fullName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              👤 Nume Complet
+              Nume complet
             </label>
             <input 
               type="text" 
@@ -79,7 +83,7 @@
 
           <div>
             <label for="year" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              📖 An de Studiu
+              An de studiu
             </label>
             <select 
               id="year"
@@ -98,7 +102,7 @@
 
           <div>
             <label for="studentSpecialization" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              🏫 Specializare
+              Specializare
             </label>
             <select 
               id="studentSpecialization"
@@ -117,7 +121,7 @@
         <div id="professorFields" style="display: none; flex-direction: column; gap: 1.2rem;">
           <div>
             <label for="professorFaculty" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              🏛️ Facultate
+              Facultate
             </label>
             <input 
               type="text" 
@@ -132,7 +136,7 @@
 
           <div>
             <label for="professorSpecialization" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              🧠 Specializare
+              Specializare
             </label>
             <input 
               type="text" 
@@ -147,7 +151,7 @@
 
           <div>
             <label for="taughtSubject" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              📘 Materie predată
+              Materie predată
             </label>
             <input 
               type="text" 
@@ -162,7 +166,7 @@
 
           <div>
             <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-              🗓️ Anii de predare
+              Anii de predare
             </label>
             <div id="teachingYearsContainer" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem;">
               <label style="display: flex; align-items: center; gap: 0.4rem;"><input type="checkbox" name="teachingYears" value="1"> 1</label>
@@ -176,7 +180,7 @@
 
         <div>
           <label for="registerEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            📧 Email
+            Email
           </label>
           <input 
             type="email" 
@@ -188,13 +192,13 @@
             onfocus="this.style.borderColor='var(--accent)'"
             onblur="this.style.borderColor='var(--border-color)'"
           >
-          <small style="color: #888; margin-top: 0.25rem; display: block;">Folosește email-ul instituțional dacă îl ai disponibil</small>
+          <small style="color: var(--text-secondary); margin-top: 0.25rem; display: block;">Folosește email-ul instituțional dacă îl ai disponibil</small>
         </div>
 
         <!-- Password -->
         <div>
           <label for="registerPassword" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            🔑 Parolă
+            Parolă
           </label>
           <input 
             type="password" 
@@ -207,13 +211,13 @@
             onfocus="this.style.borderColor='var(--accent)'"
             onblur="this.style.borderColor='var(--border-color)'"
           >
-          <small style="color: #888; margin-top: 0.25rem; display: block;">Parola trebuie să conțină litere și numere</small>
+          <small style="color: var(--text-secondary); margin-top: 0.25rem; display: block;">Parola trebuie să conțină litere și numere</small>
         </div>
 
         <!-- Confirm Password -->
         <div>
           <label for="confirmPassword" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text);">
-            🔑 Confirmă Parolă
+            Confirmă parola
           </label>
           <input 
             type="password" 
@@ -237,7 +241,7 @@
             required
             style="width: 18px; height: 18px; cursor: pointer; margin-top: 2px;"
           >
-          <label for="agreeTerms" style="color: #888; cursor: pointer; margin: 0; font-size: 0.9rem;">
+          <label for="agreeTerms" style="color: var(--text-secondary); cursor: pointer; margin: 0; font-size: 0.9rem;">
             Sunt de acord cu <a href="termeni-conditii.html" style="color: var(--accent); text-decoration: none;">Termenii și Condițiile</a> și <a href="politica-confidentialitate.html" style="color: var(--accent); text-decoration: none;">Politica de Confidențialitate</a>
           </label>
         </div>
@@ -249,7 +253,7 @@
           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(230,57,70,0.3)'"
           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
         >
-          <i class="fas fa-user-plus"></i> Creează Cont
+          <i class="fa-solid fa-user-plus"></i> Creează cont
         </button>
       </form>
 
@@ -259,15 +263,15 @@
 
       <!-- Loading -->
       <div id="registerLoading" style="margin-top: 1.5rem; text-align: center; display: none;">
-        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent);"></i>
-        <p style="color: #888; margin-top: 1rem;">Se creează contul...</p>
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent);"></i>
+        <p style="color: var(--text-secondary); margin-top: 1rem;">Se creează contul...</p>
       </div>
 
       <!-- Login Link -->
       <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color); text-align: center;">
-        <p style="color: #888; margin: 0;">Ai deja cont?</p>
+        <p style="color: var(--text-secondary); margin: 0;">Ai deja cont?</p>
         <a href="login.html" style="color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 0.5rem; display: inline-block;">
-          Conectează-te <i class="fas fa-arrow-right"></i>
+          Conectează-te <i class="fa-solid fa-arrow-right"></i>
         </a>
       </div>
     </main>
@@ -277,29 +281,29 @@
       <div class="footer-content">
         <div class="footer-section">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" style="height: 60px; width: auto; margin-bottom: 1rem;">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="documente.html">Documente</a></li>
             <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>❓ Ajutor</h4>
+          <h4>Ajutor</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>📞 Contact</h4>
+          <h4>Contact</h4>
           <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>
@@ -377,28 +381,28 @@
         errorDiv.style.display = 'none';
 
         if (!agreeTerms) {
-          errorDiv.textContent = '❌ Trebuie să accepți Termenii și Condițiile';
+          errorDiv.textContent = 'Trebuie să accepți Termenii și Condițiile';
           errorDiv.style.display = 'block';
           notify('Trebuie să accepți Termenii și Condițiile.', 'warning');
           return;
         }
 
         if (password !== confirmPassword) {
-          errorDiv.textContent = '❌ Parolele nu se potrivesc';
+          errorDiv.textContent = 'Parolele nu se potrivesc';
           errorDiv.style.display = 'block';
           notify('Parolele nu se potrivesc.', 'warning');
           return;
         }
 
         if (password.length < 8) {
-          errorDiv.textContent = '❌ Parola trebuie să conțină minim 8 caractere';
+          errorDiv.textContent = 'Parola trebuie să conțină minim 8 caractere';
           errorDiv.style.display = 'block';
           notify('Parola trebuie să conțină minim 8 caractere.', 'warning');
           return;
         }
 
         if (isProfessor && teachingYears.length === 0) {
-          errorDiv.textContent = '❌ Selectează cel puțin un an de predare';
+          errorDiv.textContent = 'Selectează cel puțin un an de predare';
           errorDiv.style.display = 'block';
           notify('Selectează cel puțin un an de predare.', 'warning');
           return;
@@ -432,7 +436,7 @@
           notify('Cont creat cu succes! Te-ai logat automat.', 'success');
           window.location.href = 'index.html';
         } catch (error) {
-          errorDiv.textContent = '❌ ' + error.message;
+          errorDiv.textContent = error.message;
           errorDiv.style.display = 'block';
           notify(error.message || 'Nu s-a putut crea contul.', 'error');
           console.error('Register error:', error);

@@ -8,6 +8,34 @@
   box-shadow: 0 8px 24px rgba(26, 39, 68, 0.2);
 }
 
+/* Discussions banner - white with navy text */
+.discussions-banner {
+  background: #f8fafc;
+  color: #0b1b33;
+  border: 1px solid rgba(11, 27, 51, 0.15);
+  box-shadow: 0 10px 30px rgba(11, 27, 51, 0.1);
+}
+
+.discussions-banner .sub-info h2,
+.discussions-banner .sub-info p {
+  color: #0b1b33;
+}
+
+.discussions-banner .sub-logo-horizontal {
+  box-shadow: none;
+}
+
+.discussion-detail-banner {
+  background: #f8fafc;
+  color: #0b1b33;
+  border: 1px solid rgba(11, 27, 51, 0.15);
+}
+
+.discussion-detail-banner .sub-info h2,
+.discussion-detail-banner .sub-info p {
+  color: #0b1b33;
+}
+
 .sub-info {
   display: flex;
   align-items: center;
@@ -190,6 +218,338 @@
   gap: 0.4rem;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+/* Premium consistency pass */
+.subreddit-banner,
+.sidebar-box,
+.post-card,
+.create-post-box,
+.discussion-detail-container {
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.subreddit-banner {
+  background: linear-gradient(135deg, #16243f 0%, #0f1828 100%);
+}
+
+.post-body {
+  gap: 0.6rem;
+}
+
+.post-actions {
+  border-top-color: rgba(148, 163, 184, 0.22);
+}
+
+.post-actions .action-btn,
+.media-uploads .action-btn {
+  border-radius: 999px;
+  min-height: 38px;
+  font-weight: 700;
+}
+
+body.dark-mode .subreddit-banner,
+body.dark-mode .sidebar-box,
+body.dark-mode .post-card,
+body.dark-mode .create-post-box,
+body.dark-mode .discussion-detail-container {
+  border-color: rgba(71, 85, 105, 0.55);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.36);
+}
+
+.poll-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.poll-modal.is-open {
+  display: flex;
+}
+
+.poll-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.68);
+  backdrop-filter: blur(12px);
+}
+
+.poll-modal-panel {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(90vh, 860px);
+  overflow: auto;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.36);
+  padding: 1.5rem;
+}
+
+.poll-modal-header,
+.poll-options-header,
+.poll-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.poll-modal-header h3 {
+  margin: 0.35rem 0 0;
+  font-size: 1.5rem;
+}
+
+.poll-modal-close {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.poll-modal-body {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.poll-field span,
+.poll-options-header p {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.poll-field input {
+  width: 100%;
+}
+
+.poll-mode-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.poll-mode-pill {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.poll-mode-pill.is-active {
+  background: linear-gradient(135deg, var(--accent), #ff6b7d);
+  border-color: transparent;
+  color: white;
+}
+
+.poll-add-option-btn {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.poll-options-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.poll-option-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.poll-option-row input {
+  width: 100%;
+}
+
+.poll-option-remove {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.poll-composer-error {
+  margin: 0;
+  color: #ef4444;
+  min-height: 1.25rem;
+  font-weight: 600;
+}
+
+.poll-modal-actions {
+  margin-top: 1.25rem;
+  justify-content: flex-end;
+}
+
+.post-poll-card {
+  margin-top: 0.25rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.96));
+  display: grid;
+  gap: 0.85rem;
+}
+
+.post-poll-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.post-poll-question {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.post-poll-options {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.poll-result-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  margin-top: -0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.poll-result-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent), #ff8a5b);
+}
+
+.poll-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(230, 57, 70, 0.1);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.post-poll-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.poll-submit-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, var(--accent), #ff6b7d);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(230, 57, 70, 0.22);
+}
+
+.poll-submit-btn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.post-poll-option {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.post-poll-option input {
+  accent-color: var(--accent);
+}
+
+.post-poll-option span {
+  flex: 1;
+  font-weight: 600;
+}
+
+.post-poll-option .poll-option-meta {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+body.dark-mode .poll-modal-panel,
+body.dark-mode .post-poll-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.94));
+  border-color: rgba(71, 85, 105, 0.48);
+}
+
+body.dark-mode .poll-modal-close,
+body.dark-mode .poll-mode-pill,
+body.dark-mode .poll-add-option-btn,
+body.dark-mode .post-poll-option {
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text);
+  border-color: rgba(71, 85, 105, 0.52);
+}
+
+body.dark-mode .poll-result-track {
+  background: rgba(71, 85, 105, 0.48);
+}
+
+@media (max-width: 720px) {
+  .poll-modal-panel {
+    padding: 1.1rem;
+  }
+
+  .poll-option-row {
+    grid-template-columns: 1fr;
+  }
+
+  .poll-modal-actions,
+  .poll-options-header,
+  .poll-modal-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .post-actions span:hover {
@@ -732,5 +1092,154 @@ body.dark-mode .sidebar-box {
 
   .post-actions {
     flex-wrap: wrap;
+  }
+}
+
+/* =====================================================
+   RELEASE POLISH
+   ===================================================== */
+
+.discussions-container,
+.discussion-detail-container {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 2.5rem auto 3.5rem;
+}
+
+.subreddit-banner {
+  margin-top: 0;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.9));
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.sub-info {
+  max-width: none;
+}
+
+.sub-logo-horizontal {
+  max-width: 180px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #0f172a;
+}
+
+.discussions-banner .sub-info h2,
+.discussion-detail-banner .sub-info h2,
+.sub-info h2 {
+  color: #111827;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0;
+}
+
+.discussions-banner .sub-info p,
+.discussion-detail-banner .sub-info p,
+.sub-info p {
+  color: var(--text-secondary);
+}
+
+.subreddit-layout {
+  gap: 1rem;
+}
+
+.create-post-box,
+.sidebar-box,
+.post-card,
+.comments-toolbar,
+.comment-form-shell,
+.comment-post-preview {
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+}
+
+.post-votes {
+  border-right-width: 1px;
+}
+
+.post-input,
+.comment-input {
+  border-radius: 8px;
+}
+
+body.dark-mode .subreddit-banner,
+html.dark-mode .subreddit-banner,
+body.dark-mode .create-post-box,
+html.dark-mode .create-post-box,
+body.dark-mode .sidebar-box,
+html.dark-mode .sidebar-box,
+body.dark-mode .post-card,
+html.dark-mode .post-card,
+body.dark-mode .comments-toolbar,
+html.dark-mode .comments-toolbar,
+body.dark-mode .comment-form-shell,
+html.dark-mode .comment-form-shell,
+body.dark-mode .comment-post-preview,
+html.dark-mode .comment-post-preview {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(71, 85, 105, 0.52);
+}
+
+body.dark-mode .sub-info h2,
+html.dark-mode .sub-info h2 {
+  color: #f8fafc;
+}
+
+@media (max-width: 1100px) {
+  .subreddit-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .discussions-container,
+  .discussion-detail-container {
+    width: calc(100vw - 1rem) !important;
+    inline-size: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin: 0.5rem auto 1.5rem !important;
+  }
+
+  .subreddit-banner,
+  .subreddit-layout,
+  .posts-container,
+  .create-post-box,
+  .comments-toolbar,
+  .sub-sidebar,
+  .sidebar-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sub-info h2,
+  .sub-info p {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .sub-info h2 {
+    font-size: clamp(1.7rem, 8vw, 2rem) !important;
+    line-height: 1.12 !important;
+  }
+
+  .post-input,
+  #postContentInput,
+  #postTitleInput,
+  #postTagsInput,
+  #postCategoryInput,
+  .post-submit-btn {
+    max-inline-size: calc(100vw - 3rem) !important;
+  }
+
+  .post-meta-grid {
+    grid-template-columns: 1fr !important;
   }
 }

@@ -6,9 +6,13 @@
     <meta name="description" content="Discutie individuala pentru o postare - ULBStudent." />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
 
     <title>Discutie Postare - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="styles-subreddit.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,18 +28,18 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principala</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link active">Discutii</a></li>
+          <li><a href="comments.html" class="nav-link active">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
-        <button class="btn-theme-toggle" id="themeToggle" title="Schimba tema">
-          <i class="fas fa-moon"></i>
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
-        <button class="btn-signup">Inregistrare</button>
+        <button class="btn-signup">Înregistrare</button>
       </div>
     </header>
 
@@ -44,48 +48,48 @@
         <div class="sub-info">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="Logo ULBStudent" class="sub-logo-horizontal">
           <div>
-            <h2>Discutie postare</h2>
-            <p>Vezi postarea selectata si toate comentariile in pagina dedicata.</p>
+            <h2>Discuție postare</h2>
+            <p>Vezi postarea selectată și toate comentariile în pagina dedicată.</p>
           </div>
         </div>
       </section>
 
-      <a href="comments.html" class="join-btn join-inline-back">Inapoi la toate discutiile</a>
+      <a href="comments.html" class="join-btn join-inline-back">Înapoi la toate discuțiile</a>
 
       <div id="commentsPostContainer" class="comment-post-preview">
-        <h2 class="comment-post-title">Inca nu exista detalii pentru aceasta postare</h2>
+        <h2 class="comment-post-title">Încă nu există detalii pentru această postare</h2>
         <p class="comment-post-description">
-          Deschide aceasta pagina din butonul Comenteaza al unei postari.
+          Deschide această pagină din butonul Comentează al unei postări.
         </p>
       </div>
 
       <div class="comment-form-shell">
-        <h3 class="comment-form-title">Adauga un comentariu</h3>
+        <h3 class="comment-form-title">Adaugă un comentariu</h3>
         <form id="commentForm" class="comment-form-layout">
           <div>
-            <label for="commentName" class="comment-form-label">Nume (optional)</label>
+            <label for="commentName" class="comment-form-label">Nume (opțional)</label>
             <input
               type="text"
               id="commentName"
               name="name"
               class="comment-input"
-              placeholder="Cum doresti sa fii creditat?"
+              placeholder="Cum dorești să fii creditat?"
             >
           </div>
 
           <div>
-            <label for="commentText" class="comment-form-label">Comentariul tau *</label>
+            <label for="commentText" class="comment-form-label">Comentariul tău *</label>
             <textarea
               id="commentText"
               name="comment"
               required
               class="comment-input comment-textarea"
-              placeholder="Partajeaza-ti gandurile, raspunsurile sau intrebarile..."
+              placeholder="Partajează-ți gândurile, răspunsurile sau întrebările..."
             ></textarea>
           </div>
 
           <div>
-            <label for="commentEmail" class="comment-form-label">Email (pentru notificari)</label>
+            <label for="commentEmail" class="comment-form-label">Email (pentru notificări)</label>
             <input
               type="email"
               id="commentEmail"
@@ -100,22 +104,22 @@
               type="submit"
               class="comment-submit-btn"
             >
-              <i class="fas fa-paper-plane"></i> Posteaza comentariu
+              <i class="fa-solid fa-paper-plane"></i> Postează comentariu
             </button>
             <button
               type="reset"
               class="comment-reset-btn"
             >
-              Sterge
+              Șterge
             </button>
           </div>
         </form>
       </div>
 
       <div class="comments-stack">
-        <h3 id="commentsTitle" class="comments-title">0 Comentarii</h3>
+        <h3 id="commentsTitle" class="comments-title">0 comentarii</h3>
         <div id="commentsList"></div>
-        <p id="commentsEmptyState" class="comments-empty">Inca nu exista comentarii.</p>
+        <p id="commentsEmptyState" class="comments-empty">Încă nu există comentarii.</p>
       </div>
     </main>
 
@@ -124,25 +128,25 @@
         <div class="footer-section">
           <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" class="footer-logo">
           <h4>ULBStudent</h4>
-          <p>Platforma de suport pentru comunitatea studentilor ULBS.</p>
+          <p>Platforma de suport pentru comunitatea studenților ULBS.</p>
         </div>
 
         <div class="footer-section">
           <h4>Linkuri Rapide</h4>
           <ul class="footer-list-reset">
-            <li><a href="index.html">Pagina Principala</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="documente.html">Documente</a></li>
-            <li><a href="comments.html">Discutii</a></li>
+            <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
           <h4>Ajutor</h4>
           <ul class="footer-list-reset">
-            <li><a href="politica-confidentialitate.html">Politica Confidentialitatii</a></li>
-            <li><a href="termeni-conditii.html">Termeni si Conditii</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
+            <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="comments.html">Discutii</a></li>
+            <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
 

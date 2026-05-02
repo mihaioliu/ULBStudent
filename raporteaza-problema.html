@@ -6,9 +6,13 @@
     <meta name="description" content="Raportează o Problemă - ULBStudent. Ajută-ne să îmbunătățim platforma." />
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
     <title>Raportează Problemă - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
@@ -156,13 +160,57 @@
         background: #1f2937;
       }
 
+      body.dark-mode .report-hero,
+      html.dark-mode .report-hero,
+      body.dark-mode .report-help-card,
+      html.dark-mode .report-help-card,
+      body.dark-mode .report-faq,
+      html.dark-mode .report-faq {
+        background: #111827 !important;
+        background-image: none !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+      }
+
+      body.dark-mode .report-hero p,
+      html.dark-mode .report-hero p,
+      body.dark-mode .report-help-card p,
+      html.dark-mode .report-help-card p,
+      body.dark-mode .report-faq p,
+      html.dark-mode .report-faq p {
+        color: #cbd5e1 !important;
+      }
+
       @media (max-width: 768px) {
         .report-page {
-          padding: 1.2rem;
+          width: calc(100vw - 1rem) !important;
+          max-width: calc(100vw - 1rem) !important;
+          margin: 0.5rem auto 1.5rem !important;
+          padding: 1rem !important;
+          overflow: hidden !important;
         }
 
         .report-two-col {
           grid-template-columns: 1fr !important;
+        }
+
+        .report-hero,
+        .report-help-card,
+        .report-form,
+        .report-faq {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          overflow: hidden !important;
+        }
+
+        .report-hero p,
+        .report-help-card p,
+        .report-faq p {
+          max-width: 30ch !important;
+          white-space: normal !important;
+          overflow-wrap: anywhere !important;
+          word-break: normal !important;
         }
       }
     </style>
@@ -176,14 +224,14 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
         <button class="btn-signin">Conectare</button>
         <button class="btn-signup">Înregistrare</button>
@@ -191,164 +239,164 @@
     </header>
 
     <main class="container report-page">
-      <div style="text-align: center; margin-bottom: 3rem;">
-        <h1>🐛 Raportează o Problemă</h1>
-        <p>Ajută-ne să îmbunătățim ULBStudent raportând bug-uri și problemele pe care le întâmpini.</p>
+      <div class="report-hero">
+        <h1>Raportează o problemă</h1>
+        <p>Ajută-ne să îmbunătățim ULBStudent printr-un raport clar, util și ușor de investigat.</p>
       </div>
 
       <div class="report-help-card">
-        <h4>⚠️ Tip Util</h4>
+        <h4>Ce ne ajută cel mai mult</h4>
         <p>
-          Cât mai mulți detalii despre problemă, cu atât mai ușor cuvânt repara! 
+          Cu cât avem mai multe detalii despre problemă, cu atât o putem repara mai repede.
           Te rog descrie pașii ca să reproduci problema.
         </p>
       </div>
 
-      <form id="bugReportForm" class="report-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <form id="bugReportForm" class="report-form report-form-premium">
         <!-- Tip Bug -->
         <div>
-          <label for="bugType" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            🏷️ Tip Problemă *
+          <label for="bugType" class="report-label">
+            Tip problemă *
           </label>
           <select 
             id="bugType" 
             name="type" 
             required
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+            class="report-field"
           >
             <option value="">Alege tipul problemei</option>
-            <option value="bug">🐛 Bug / Eroare</option>
-            <option value="crash">💥 Aplicația se blochează</option>
-            <option value="performance">⚡ Problemă de performanță</option>
-            <option value="ui">🎨 Problemă de interfață</option>
-            <option value="feature">✨ Cerere de funcție</option>
-            <option value="security">🔒 Problemă de securitate</option>
-            <option value="other">➕ Altele</option>
+            <option value="bug">Bug / eroare</option>
+            <option value="crash">Aplicația se blochează</option>
+            <option value="performance">Problemă de performanță</option>
+            <option value="ui">Problemă de interfață</option>
+            <option value="feature">Cerere de funcție</option>
+            <option value="security">Problemă de securitate</option>
+            <option value="other">Altele</option>
           </select>
         </div>
 
         <!-- Pagina Afectată -->
         <div>
-          <label for="affectedPage" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            📄 Pagina / Secțiunea Afectată *
+          <label for="affectedPage" class="report-label">
+            Pagina / secțiunea afectată *
           </label>
           <input 
             type="text" 
             id="affectedPage" 
             name="page" 
             required
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+            class="report-field"
             placeholder="ex: Pagina Documente, Discuții, Profil etc."
           >
         </div>
 
         <!-- Severitate -->
         <div>
-          <label for="severity" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            🔴 Severitate *
+          <label for="severity" class="report-label">
+            Severitate *
           </label>
           <select 
             id="severity" 
             name="severity" 
             required
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+            class="report-field"
           >
             <option value="">Alege severitatea</option>
-            <option value="low">🟢 Joasă - Nu afectează utilizarea</option>
-            <option value="medium">🟡 Medie - Ușor de ocolit</option>
-            <option value="high">🔴 Înaltă - Afectează serios utilizarea</option>
-            <option value="critical">⚫ Critică - Aplicația nu funcționează</option>
+            <option value="low">Joasă - Nu afectează utilizarea</option>
+            <option value="medium">Medie - Ușor de ocolit</option>
+            <option value="high">Înaltă - Afectează serios utilizarea</option>
+            <option value="critical">Critică - Aplicația nu funcționează</option>
           </select>
         </div>
 
         <!-- Descriere Problemă -->
         <div>
-          <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            📝 Descriere Detaliată a Problemei *
+          <label for="description" class="report-label">
+            Descriere detaliată a problemei *
           </label>
           <textarea 
             id="description" 
             name="description" 
             rows="6" 
             required
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; resize: vertical;"
+            class="report-field report-textarea"
             placeholder="Ce se întâmplă? Ce nu funcționează? Cum ai descoperit că nu funcționează?"
           ></textarea>
         </div>
 
         <!-- Pași Pentru Reproducere -->
         <div>
-          <label for="steps" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            👣 Pași Pentru a Reproduce Problemă
+          <label for="steps" class="report-label">
+            Pași pentru reproducerea problemei
           </label>
           <textarea 
             id="steps" 
             name="steps" 
             rows="4"
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; resize: vertical;"
+            class="report-field report-textarea"
             placeholder="1. Click pe Documente
 2. Selectează filtrul...
 3. Problema apare când..."
           ></textarea>
-          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          <p class="report-note">
             Instrucțiuni pas-cu-pas ajută la reparare rapidă
           </p>
         </div>
 
         <!-- Comportament Așteptat vs Actual -->
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            🎯 Comportament Așteptat vs Actual
+          <label class="report-label">
+            Comportament așteptat vs actual
           </label>
-          <div class="report-two-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="report-two-col">
             <div>
-              <label for="expected" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                ✅ Ce ar fi trebuit să se întâmple?
+              <label for="expected" class="report-sub-label">
+                Ce ar fi trebuit să se întâmple?
               </label>
               <textarea 
                 id="expected" 
                 name="expected" 
                 rows="3"
-                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+                class="report-field report-textarea"
               ></textarea>
             </div>
             <div>
-              <label for="actual" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                ❌ Ce s-a întâmplat de fapt?
+              <label for="actual" class="report-sub-label">
+                Ce s-a întâmplat de fapt?
               </label>
               <textarea 
                 id="actual" 
                 name="actual" 
                 rows="3"
-                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+                class="report-field report-textarea"
               ></textarea>
             </div>
           </div>
         </div>
 
         <!-- Browser și Device -->
-        <div class="report-two-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="report-two-col">
           <div>
-            <label for="browser" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-              🌐 Browser (ex: Chrome, Firefox)
+            <label for="browser" class="report-label">
+              Browser (ex: Chrome, Firefox)
             </label>
             <input 
               type="text" 
               id="browser" 
               name="browser"
-              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              class="report-field"
               placeholder="ex: Google Chrome 120"
             >
           </div>
           <div>
-            <label for="device" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-              💻 Dispozitiv (ex: Windows, iPhone)
+            <label for="device" class="report-label">
+              Dispozitiv (ex: Windows, iPhone)
             </label>
             <input 
               type="text" 
               id="device" 
               name="device"
-              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
+              class="report-field"
               placeholder="ex: Windows 11, iPhone 14"
             >
           </div>
@@ -356,22 +404,22 @@
 
         <!-- Contact Info -->
         <div>
-          <label for="reporterEmail" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-            📧 Email de Contact (opțional)
+          <label for="reporterEmail" class="report-label">
+            Email de contact (opțional)
           </label>
           <input 
             type="email" 
             id="reporterEmail" 
             name="email"
-            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;"
-            placeholder="email@exemple.ro - Dacă vrei actualizări"
+            class="report-field"
+            placeholder="email@exemplu.ro - Dacă vrei actualizări"
           >
         </div>
 
         <!-- Butoane -->
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <div class="report-actions">
           <button type="submit" class="report-submit-btn">
-            🚀 Trimite Raport
+            Trimite raport
           </button>
           <button type="reset" class="report-reset-btn">
             Șterge
@@ -386,7 +434,7 @@
         <div class="report-faq-item">
           <h4>Ce se întâmplă după ce trimit raportul?</h4>
           <p>
-            Rapoartele sunt trimise direct echipei de dezvoltare. Te vom contacta dacă ai furnizat email-ul și avem nevoie de mai mulți detalii.
+            Rapoartele sunt trimise direct echipei de dezvoltare. Te vom contacta dacă ai furnizat email-ul și avem nevoie de mai multe detalii.
           </p>
         </div>
 
@@ -410,30 +458,30 @@
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="contact.html">Contact</a></li>
             <li><a href="raporteaza-problema.html">Raportează Problemă</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>❓ Ajutor</h4>
+          <h4>Ajutor</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica Confidențialității</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         
         <div class="footer-section">
-          <h4>📞 Contact</h4>
+          <h4>Contact</h4>
           <p>Email: <strong>support@ulbstudent.ro</strong></p>
           <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
         </div>
@@ -490,7 +538,7 @@
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('is-loading');
-            submitBtn.textContent = originalLabel || '🚀 Trimite Raport';
+            submitBtn.textContent = originalLabel || 'Trimite raport';
           }
         }
       });

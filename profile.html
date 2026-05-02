@@ -3,11 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     <meta name="description" content="Profilul meu - ULBStudent" />
     <meta name="keywords" content="profil, student, ULBS" />
     
     <title>Profilul Meu - ULBStudent</title>
     <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       .profile-page {
@@ -191,7 +195,7 @@
       </div>
       <nav>
         <ul>
-          <li><a href="index.html" class="nav-link">Pagina Principală</a></li>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link">Documente</a></li>
           <li><a href="comments.html" class="nav-link">Discuții</a></li>
@@ -199,28 +203,28 @@
       </nav>
       <div class="header-actions">
         <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
-          <i class="fas fa-moon"></i>
+          <i class="fa-solid fa-moon"></i>
         </button>
       </div>
     </header>
 
-    <main class="container">
+    <main class="container profile-page-shell">
       <div class="profile-page">
         <!-- Profile Header Banner -->
         <div class="profile-banner">
-          <div class="banner-bg" style="background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);"></div>
+          <div class="banner-bg profile-banner-bg"></div>
           <div class="profile-header-content">
-            <div class="profile-avatar-large" id="profileAvatarLarge">👤</div>
+            <div class="profile-avatar-large" id="profileAvatarLarge">UL</div>
             <div class="profile-header-info">
               <h1 id="profileFullName">Nume Student</h1>
-              <p id="profileEmail" style="color: var(--text-secondary); margin: 0;">email@ulbsibiu.ro</p>
-              <p id="profileRole" style="color: var(--accent); margin: 0.35rem 0 0; font-weight: 700; letter-spacing: 0.02em;">Cont conectat</p>
-              <div class="profile-badges" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                <span class="profile-badge" style="background: var(--accent); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">Activ</span>
+              <p id="profileEmail" class="profile-email">email@ulbsibiu.ro</p>
+              <p id="profileRole" class="profile-role">Cont conectat</p>
+              <div class="profile-badges">
+                <span class="profile-badge">Activ</span>
               </div>
             </div>
             <button id="editProfileBtn" class="btn-edit-profile">
-              <i class="fas fa-edit"></i> Editează Profil
+              <i class="fa-solid fa-edit"></i> Editează Profil
             </button>
           </div>
         </div>
@@ -297,7 +301,7 @@
             <section class="profile-section">
               <h2 class="section-title" id="recentSectionTitle">Activitate Recentă</h2>
               <div id="recentActivity" class="activity-list">
-                <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Nicio activitate recentă.</p>
+                <p class="profile-empty-state">Nicio activitate recentă.</p>
               </div>
             </section>
           </div>
@@ -306,18 +310,18 @@
           <div class="profile-sidebar">
             <!-- Account Security -->
             <div class="sidebar-card">
-              <h3><i class="fas fa-lock"></i> Securitate Cont</h3>
+              <h3><i class="fa-solid fa-lock"></i> Securitate Cont</h3>
               <button class="btn-secondary" id="changePasswordBtn">
-                <i class="fas fa-key"></i> Schimbă Parolă
+                <i class="fa-solid fa-key"></i> Schimbă Parolă
               </button>
               <button class="btn-secondary" id="twoFactorBtn">
-                <i class="fas fa-shield-alt"></i> Autentificare 2FA
+                <i class="fa-solid fa-shield-halved"></i> Autentificare 2FA
               </button>
             </div>
 
             <!-- Preferences -->
             <div class="sidebar-card">
-              <h3><i class="fas fa-sliders-h"></i> Preferințe</h3>
+              <h3><i class="fa-solid fa-sliders"></i> Preferințe</h3>
               <label class="preference-item">
                 <input type="checkbox" id="emailNotifications" checked>
                 <span>Notificări Email</span>
@@ -334,9 +338,9 @@
 
             <!-- Danger Zone -->
             <div class="sidebar-card danger">
-              <h3><i class="fas fa-exclamation-triangle"></i> Zona Periculoasă</h3>
+              <h3><i class="fa-solid fa-triangle-exclamation"></i> Zona Periculoasă</h3>
               <button class="btn-danger" id="deleteAccountBtn">
-                <i class="fas fa-trash"></i> Șterge Cont
+                <i class="fa-solid fa-trash"></i> Șterge Cont
               </button>
             </div>
           </div>
@@ -408,26 +412,26 @@
     <footer>
       <div class="footer-content">
         <div class="footer-section">
-          <h4>📚 ULBStudent</h4>
+          <h4>ULBStudent</h4>
           <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         <div class="footer-section">
-          <h4>🔗 Linkuri Rapide</h4>
+          <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Pagina Principală</a></li>
+            <li><a href="index.html">Acasă</a></li>
             <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
         <div class="footer-section">
-          <h4>❓ Ajutor</h4>
+          <h4>Ajutor</h4>
           <ul style="list-style: none; padding: 0;">
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="politica-confidentialitate.html">Politică Confidențialitate</a></li>
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
             <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
           </ul>
         </div>
       </div>
-      <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">
+      <div class="profile-footer-note">
         <p>&copy; 2026 ULBStudent. Toate drepturile rezervate.</p>
       </div>
     </footer>
@@ -482,7 +486,7 @@
             if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Administrativ';
             if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Platformă';
             if (recentSectionTitle) recentSectionTitle.textContent = 'Evenimente Recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-user-shield"></i> Editează Profil Admin';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-user-shield"></i> Editează Profil Admin';
           } else if (isProfessor) {
             if (studentPanel) studentPanel.classList.add('hidden');
             if (professorPanel) professorPanel.classList.remove('hidden');
@@ -490,7 +494,7 @@
             if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Academic';
             if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Comunitate';
             if (recentSectionTitle) recentSectionTitle.textContent = 'Interacțiuni Recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-chalkboard-teacher"></i> Editează Profil Profesor';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-chalkboard-user"></i> Editează Profil Profesor';
           } else {
             if (professorPanel) professorPanel.classList.add('hidden');
             if (studentPanel) studentPanel.classList.remove('hidden');
@@ -498,7 +502,7 @@
             if (personalSectionTitle) personalSectionTitle.textContent = 'Informații Personale';
             if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate';
             if (recentSectionTitle) recentSectionTitle.textContent = 'Activitate Recentă';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fas fa-edit"></i> Editează Profil';
+            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-edit"></i> Editează Profil';
           }
         
           // Update info section
@@ -607,26 +611,35 @@
           if (updateResult.success) {
             const freshUser = await getAuthenticatedUser(false);
             if (!freshUser) {
-              showNotification('❌ Nu s-a putut actualiza sesiunea utilizatorului.');
+              showNotification('Nu s-a putut actualiza sesiunea utilizatorului.', 'error');
               return;
             }
 
-            showNotification('✅ Profil actualizat!');
+            showNotification('Profil actualizat!', 'success');
             modal.style.display = 'none';
             setTimeout(() => window.location.reload(), 1000);
           } else {
-            showNotification('❌ ' + (updateResult.error || 'Nu s-au putut salva datele.'));
+            showNotification(updateResult.error || 'Nu s-au putut salva datele.', 'error');
           }
           });
         
           // Account actions
+          const twoFactorBtn = document.getElementById('twoFactorBtn');
+          if (twoFactorBtn) {
+            twoFactorBtn.disabled = true;
+            twoFactorBtn.title = '2FA este dezactivat în configurația curentă.';
+            twoFactorBtn.addEventListener('click', () => {
+              showNotification('2FA este dezactivat în prezent.');
+            });
+          }
+
           document.getElementById('changePasswordBtn').addEventListener('click', () => {
-            showNotification('🔐 Funcție în dezvoltare');
+            showNotification('Pentru schimbarea parolei, folosește fluxul de recuperare din pagina de conectare.', 'info');
           });
         
           document.getElementById('deleteAccountBtn').addEventListener('click', () => {
             if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
-              showNotification('❌ Funcție în dezvoltare');
+              showNotification('Pentru ștergerea contului, trimite o solicitare prin pagina de contact.', 'info');
             }
           });
         } catch (error) {
@@ -635,7 +648,7 @@
           if (infoEmail) {
             infoEmail.textContent = 'Sesiune invalidă sau conexiune Supabase indisponibilă';
           }
-          showNotification('❌ Nu am putut încărca profilul din baza de date. Reîncarcă pagina.');
+          showNotification('Nu am putut încărca profilul din baza de date. Reîncarcă pagina.', 'error');
         }
       }
       

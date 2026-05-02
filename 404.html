@@ -1,0 +1,59 @@
+﻿<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Pagina nu a fost găsită - ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    <title>Pagina nu a fost găsită - ULBStudent</title>
+    <link rel="stylesheet" href="styles-global.css" />
+    <link rel="stylesheet" href="app-polish.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <a href="index.html" class="header-logo-link" aria-label="ULBStudent acasă">
+          <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo" />
+        </a>
+      </div>
+      <nav aria-label="Navigare principală">
+        <ul>
+          <li><a href="index.html" class="nav-link">Acasă</a></li>
+          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="comments.html" class="nav-link">Discuții</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" type="button" aria-label="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="btn-signin" type="button">Conectare</button>
+        <button class="btn-signup" type="button">Înregistrare</button>
+      </div>
+    </header>
+
+    <main class="container auth-page-shell">
+      <section class="app-error-card" aria-labelledby="error-title">
+        <span class="section-eyebrow">Eroare 404</span>
+        <h1 id="error-title">Pagina nu există.</h1>
+        <p>Linkul poate fi vechi sau pagina a fost mutată. Poți reveni în platformă prin una dintre secțiunile principale.</p>
+        <div class="app-error-actions">
+          <a href="index.html" class="hero-cta primary"><i class="fa-solid fa-house" aria-hidden="true"></i> Acasă</a>
+          <a href="documente.html" class="hero-cta secondary"><i class="fa-solid fa-folder-open" aria-hidden="true"></i> Documente</a>
+          <a href="comments.html" class="hero-cta secondary"><i class="fa-solid fa-comments" aria-hidden="true"></i> Discuții</a>
+        </div>
+      </section>
+    </main>
+
+    <footer></footer>
+    <script src="auth.js" defer></script>
+    <script src="interactive.js" defer></script>
+  </body>
+</html>

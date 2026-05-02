@@ -86,7 +86,7 @@ async function loadProfessors() {
     container.innerHTML += `
       <div class="professor-card">
         <div class="prof-header">
-          <div class="prof-avatar"><i class="fas fa-user-circle"></i></div>
+          <div class="prof-avatar"><i class="fa-solid fa-user-circle"></i></div>
           <div class="prof-header-info">
             <h3>${title} ${fullName}</h3>
             <p class="prof-faculty">${department}</p>
@@ -98,13 +98,12 @@ async function loadProfessors() {
           ${subjectList.map((item) => `<span class="specialty-tag">${item}</span>`).join('') || `<span class="specialty-tag">${subject}</span>`}
         </div>
         <div class="prof-stats">
-          <span class="stat-item">⭐ ${media}/5 (${numarRecenzii} recenzii)</span>
-          <span class="stat-item">📚 ${Number(prof.courses_count || prof.courses || 0)} cursuri</span>
+          <span class="stat-item"><i class="fa-solid fa-star" aria-hidden="true"></i> ${media}/5 (${numarRecenzii} recenzii)</span>
+          <span class="stat-item"><i class="fa-solid fa-book-open" aria-hidden="true"></i> ${Number(prof.courses_count || prof.courses || 0)} cursuri</span>
         </div>
         <div class="prof-actions">
-          <button class="btn-action btn-primary" onclick="copyEmail('${email}')">Copiaza email</button>
           <button class="btn-action btn-secondary" onclick="showProfessorProfile('${encodeURIComponent(String(prof.id || ''))}', '${encodeURIComponent(fullName)}', '${encodeURIComponent(subject)}')">Detalii</button>
-          <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adauga recenzie</button>
+          <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adaugă recenzie</button>
         </div>
       </div>
     `;
@@ -122,7 +121,7 @@ function ensureProfessorReviewModal() {
   modal.setAttribute('aria-hidden', 'true');
   modal.innerHTML = `
     <div class="review-modal-content professor-review-modal" role="dialog" aria-modal="true" aria-labelledby="professorReviewModalTitle">
-      <button type="button" class="review-modal-close" id="closeProfessorReviewModal" aria-label="Inchide">&times;</button>
+      <button type="button" class="review-modal-close" id="closeProfessorReviewModal" aria-label="Închide">&times;</button>
       <div class="review-modal-header">
         <p class="review-modal-kicker">Recenzie profesor</p>
         <h3 id="professorReviewModalTitle">Adaugă o recenzie</h3>
@@ -191,7 +190,7 @@ function ensureProfessorReviewModal() {
 
     if (!rating || rating < 1 || rating > 5 || !comment) {
       if (typeof showNotification === 'function') {
-        showNotification('Completeaza corect rating-ul si comentariul.');
+        showNotification('Completează corect rating-ul și comentariul.');
       }
       return;
     }
@@ -214,7 +213,7 @@ function ensureProfessorReviewModal() {
     fillProfessorSelect();
     applyFilters();
     if (typeof showNotification === 'function') {
-      showNotification('Recenzie salvata cu succes!');
+      showNotification('Recenzie salvată cu succes!');
     }
   });
 
@@ -252,7 +251,7 @@ function toDbPayload(items) {
     full_name: p.full_name,
     institutional_email: p.institutional_email,
     specialization: normalizeSpecialization(p.specialization),
-    department: 'Departamentul de Calculatoare si Inginerie Electrica',
+    department: 'Departamentul de Calculatoare și Inginerie Electrică',
     rating: p.rating || 0,
     reviews_count: p.reviews_count || 0,
     courses_count: p.courses_count || 0
@@ -271,7 +270,7 @@ function mapDbProfessor(row) {
     name: row.full_name || 'Profesor',
     email: row.institutional_email || '-',
     specialization: normalizeSpecialization(row.specialization),
-    department: row.department || 'Departamentul de Calculatoare si Inginerie Electrica',
+    department: row.department || 'Departamentul de Calculatoare și Inginerie Electrică',
     rating: Number(avgRating.toFixed(1)),
     reviews: reviews.length,
     courses: Number(row.courses_count || 0),
@@ -298,7 +297,7 @@ async function loadProfessorsData() {
       name: p.full_name,
       email: p.institutional_email,
       specialization: normalizeSpecialization(p.specialization),
-      department: 'Departamentul de Calculatoare si Inginerie Electrica',
+      department: 'Departamentul de Calculatoare și Inginerie Electrică',
       rating: 0,
       reviews: 0,
       courses: 0,
@@ -313,7 +312,7 @@ async function loadProfessorsData() {
       name: p.full_name,
       email: p.institutional_email,
       specialization: normalizeSpecialization(p.specialization),
-      department: 'Departamentul de Calculatoare si Inginerie Electrica',
+      department: 'Departamentul de Calculatoare și Inginerie Electrică',
       rating: 0,
       reviews: 0,
       courses: 0,
@@ -329,7 +328,7 @@ function fillProfessorSelect() {
   const nameFilter = document.getElementById('profNameFilter');
   if (!nameFilter) return;
 
-  const options = ['<option value="">Toti profesorii</option>'];
+  const options = ['<option value="">Toți profesorii</option>'];
   professorsData
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -344,8 +343,6 @@ function initializeProfessorFilters() {
   const ids = [
     'profNameFilter',
     'searchProf',
-    'modulFilter',
-    'departmentFilter',
     'resetFiltersBtn'
   ];
 
@@ -370,8 +367,6 @@ function applyFilters() {
   const nameFilter = (document.getElementById('profNameFilter')?.value || '').toLowerCase();
   const searchText = (document.getElementById('searchProf')?.value || '').toLowerCase();
   const selectedSpecs = Array.from(document.querySelectorAll('.faculty-item input[type="checkbox"]:checked')).map((cb) => cb.value);
-  const modul = (document.getElementById('modulFilter')?.value || '').toLowerCase();
-  const department = (document.getElementById('departmentFilter')?.value || '').toLowerCase();
 
   filteredProfessors = professorsData.filter((prof) => {
     const specSlug = prof.specialization
@@ -394,8 +389,6 @@ function applyFilters() {
     }
 
     if (selectedSpecs.length > 0 && !selectedSpecs.includes(specSlug)) return false;
-    if (modul && modul !== specSlug) return false;
-    if (department && department !== specSlug) return false;
 
     return true;
   });
@@ -404,7 +397,7 @@ function applyFilters() {
 }
 
 function resetAllFilters() {
-  ['profNameFilter', 'searchProf', 'modulFilter', 'departmentFilter'].forEach((id) => {
+  ['profNameFilter', 'searchProf'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -423,8 +416,10 @@ function renderProfessors() {
 
   if (filteredProfessors.length === 0) {
     grid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 2rem 1rem;">
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">Nu s-au gasit profesori pentru filtrele selectate.</p>
+      <div class="empty-state-card">
+        <i class="fa-solid fa-user-tie" aria-hidden="true"></i>
+        <h3>Nu există rezultate pentru filtrele alese</h3>
+        <p>Schimba filtrul de cautare sau verifica daca lista profesorilor este populata in Supabase.</p>
       </div>
     `;
     return;
@@ -433,7 +428,7 @@ function renderProfessors() {
   grid.innerHTML = filteredProfessors.map((prof) => `
     <div class="professor-card">
       <div class="prof-header">
-        <div class="prof-avatar"><i class="fas fa-user-circle"></i></div>
+        <div class="prof-avatar"><i class="fa-solid fa-user-circle"></i></div>
         <div class="prof-header-info">
           <h3>${prof.title} ${prof.name}</h3>
           <p class="prof-faculty">${prof.department}</p>
@@ -445,13 +440,13 @@ function renderProfessors() {
         ${prof.specialties.map((spec) => `<span class="specialty-tag">${spec}</span>`).join('')}
       </div>
       <div class="prof-stats">
-        <span class="stat-item">⭐ ${prof.rating}/5 (${prof.reviews} recenzii)</span>
-        <span class="stat-item">📚 ${prof.courses} cursuri</span>
+        <span class="stat-item"><i class="fa-solid fa-star" aria-hidden="true"></i> ${prof.rating}/5 (${prof.reviews} recenzii)</span>
+        <span class="stat-item"><i class="fa-solid fa-book-open" aria-hidden="true"></i> ${prof.courses} cursuri</span>
       </div>
       <div class="prof-actions">
-        <button class="btn-action btn-primary" onclick="copyEmail('${prof.email}')">Copiaza email</button>
+
         <button class="btn-action btn-secondary" onclick="showProfessorProfile('${encodeURIComponent(String(prof.id || ''))}', '${encodeURIComponent(prof.name)}', '${encodeURIComponent(prof.specialization)}')">Detalii</button>
-        <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adauga recenzie</button>
+        <button class="btn-action btn-secondary" onclick="addProfessorReview('${encodeURIComponent(String(prof.id || ''))}')">Adaugă recenzie</button>
       </div>
     </div>
   `).join('');
@@ -460,7 +455,7 @@ function renderProfessors() {
 async function addProfessorReview(professorId) {
   if (typeof saveProfessorReview !== 'function') {
     if (typeof showNotification === 'function') {
-      showNotification('Functia de recenzii nu este disponibila.');
+      showNotification('Funcția de recenzii nu este disponibilă.');
     }
     return;
   }
@@ -497,13 +492,7 @@ async function addProfessorReview(professorId) {
   setTimeout(() => ratingInput?.focus(), 50);
 }
 
-function copyEmail(email) {
-  if (!email || email === '-') return;
-  navigator.clipboard?.writeText(email).catch(() => {});
-  if (typeof showNotification === 'function') {
-    showNotification('Email copiat: ' + email);
-  }
-}
+
 
 function showProfessorProfile(professorId, encodedName, encodedSpecialization) {
   const params = new URLSearchParams();
@@ -539,5 +528,37 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.warn('Professors DB fallback reason:', loadInfo.dbError);
       }
     }
+  }
+
+  // Initialize realtime subscriptions to keep list live
+  try {
+    const client = await initSupabaseClient();
+    const reviewsTable = 'recenzii_profesori';
+    const coursesTable = 'cursuri';
+
+    const refreshProfessors = async () => {
+      const info = await loadProfessorsData();
+      fillProfessorSelect();
+      applyFilters();
+    };
+
+    if (client.channel) {
+      const revChannel = client.channel('professors-reviews');
+      revChannel.on('postgres_changes', { event: '*', schema: 'public', table: reviewsTable }, async (payload) => {
+        await refreshProfessors();
+      });
+      await revChannel.subscribe();
+
+      const courseChannel = client.channel('professors-courses');
+      courseChannel.on('postgres_changes', { event: '*', schema: 'public', table: coursesTable }, async (payload) => {
+        await refreshProfessors();
+      });
+      await courseChannel.subscribe();
+    } else if (client.from) {
+      client.from(reviewsTable).on('*', async (payload) => { await refreshProfessors(); }).subscribe();
+      client.from(coursesTable).on('*', async (payload) => { await refreshProfessors(); }).subscribe();
+    }
+  } catch (e) {
+    console.warn('Realtime for professors list not enabled:', e.message || e);
   }
 });
