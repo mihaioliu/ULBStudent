@@ -3217,6 +3217,10 @@ function renderPostCard(post, currentUser) {
         }
 
         let persistedInDatabase = false;
+        const originalLabel = submitBtn.textContent || 'Trimite votul';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
+        submitBtn.textContent = 'Se trimite...';
 
         try {
           const client = await initSupabaseClient();
@@ -3278,6 +3282,12 @@ function renderPostCard(post, currentUser) {
           }
         } catch (error) {
           console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
+        } finally {
+          if (submitBtn.isConnected) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('is-loading');
+            submitBtn.textContent = originalLabel;
+          }
         }
 
         const nextState = loadPollState(post.id, poll.options.length);
@@ -3893,10 +3903,144 @@ async function initializeCommentsData() {
 
   const postResult = await getPostById(postId);
   if (postResult.success && postResult.data && postContainer) {
-    postContainer.innerHTML = `
-      <h2 style="color: var(--text); margin: 0 0 1rem 0;">${escapeHtml(postResult.data.title || 'Postare')}</h2>
-      <p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">${escapeHtml(postResult.data.content || '')}</p>
-    `;
+    const renderPostPreview = () => {
+      const parsed = parsePostDisplay(postResult.data.title || '', postResult.data.content || '');
+      const poll = parsePollDisplay(parsed.content || '');
+      const contentWithoutPoll = String(parsed.content || '')
+        .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
+        .trim();
+
+      const descriptionBlock = contentWithoutPoll
+        ? `<p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">${escapeHtml(contentWithoutPoll)}</p>`
+        : '';
+
+      postContainer.innerHTML = `
+        <h2 style="color: var(--text); margin: 0 0 1rem 0;">${escapeHtml(parsed.title || postResult.data.title || 'Postare')}</h2>
+        ${descriptionBlock}
+        ${poll ? buildPollMarkup(postResult.data, poll) : ''}
+      `;
+
+      if (poll) {
+        const pollCard = postContainer.querySelector('.post-poll-card');
+        if (pollCard) {
+          const submitBtn = pollCard.querySelector('[data-poll-submit]');
+          const pollInputs = Array.from(pollCard.querySelectorAll('.post-poll-option input'));
+
+          if (submitBtn) {
+            submitBtn.addEventListener('click', async () => {
+              const selectedIndexes = pollInputs
+                .filter((input) => input.checked)
+                .map((input) => Number(input.value))
+                .filter((value) => Number.isInteger(value));
+
+              if (selectedIndexes.length === 0) {
+                showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
+                return;
+              }
+
+              if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
+                showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                return;
+              }
+
+              let persistedInDatabase = false;
+              const originalLabel = submitBtn.textContent || 'Trimite votul';
+              submitBtn.disabled = true;
+              submitBtn.classList.add('is-loading');
+              submitBtn.textContent = 'Se trimite...';
+
+              try {
+                const client = await initSupabaseClient();
+                const user = await getAuthenticatedUser(false);
+
+                if (user?.id) {
+                  const { data: pollRow, error: pollError } = await client
+                    .from('polls')
+                    .select('id, allow_multiple_answers')
+                    .eq('post_id', postResult.data.id)
+                    .maybeSingle();
+
+                  if (pollError) throw pollError;
+
+                  if (pollRow?.id) {
+                    const { data: optionRows, error: optionError } = await client
+                      .from('poll_options')
+                      .select('id, position')
+                      .eq('poll_id', pollRow.id)
+                      .order('position', { ascending: true });
+
+                    if (optionError) throw optionError;
+
+                    const existingVote = await client
+                      .from('poll_votes')
+                      .select('id')
+                      .eq('poll_id', pollRow.id)
+                      .eq('voter_id', user.id)
+                      .maybeSingle();
+
+                    if (existingVote.data?.id) {
+                      showToast('Ai votat deja acest sondaj.', 'warning');
+                      return;
+                    }
+
+                    const selectedOptionIds = selectedIndexes
+                      .map((index) => optionRows?.[index]?.id)
+                      .filter(Boolean);
+
+                    if (!selectedOptionIds.length) {
+                      showToast('Nu s-au găsit opțiunile sondajului.', 'error');
+                      return;
+                    }
+
+                    if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
+                      showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                      return;
+                    }
+
+                    const { error: voteError } = await client.from('poll_votes').insert([{
+                      poll_id: pollRow.id,
+                      voter_id: user.id,
+                      selected_option_ids: selectedOptionIds
+                    }]);
+
+                    if (voteError) throw voteError;
+                    persistedInDatabase = true;
+                  }
+                }
+              } catch (error) {
+                console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
+              } finally {
+                if (submitBtn.isConnected) {
+                  submitBtn.disabled = false;
+                  submitBtn.classList.remove('is-loading');
+                  submitBtn.textContent = originalLabel;
+                }
+              }
+
+              const nextState = loadPollState(postResult.data.id, poll.options.length);
+              selectedIndexes.forEach((index) => {
+                nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
+              });
+              nextState.selected = selectedIndexes;
+              nextState.voted = true;
+              savePollState(postResult.data.id, nextState);
+
+              renderPostPreview();
+              showToast(
+                persistedInDatabase
+                  ? 'Votul a fost salvat în Supabase.'
+                  : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
+                persistedInDatabase ? 'success' : 'info'
+              );
+            });
+          }
+
+          hydratePollCard(pollCard, postResult.data);
+        }
+      }
+    };
+
+    renderPostPreview();
   }
 
   const loadAndRender = async () => {
