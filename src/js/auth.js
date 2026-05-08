@@ -18,6 +18,17 @@ const TABLES = {
 };
 
 /**
+ * Helper function to get the correct auth page URL based on current location
+ */
+function getAuthPageUrl(pageName) {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/src/pages/')) {
+    return pageName;
+  }
+  return 'src/pages/' + pageName;
+}
+
+/**
  * Wait for Supabase to load from CDN
  */
 async function waitForSupabase() {
@@ -487,7 +498,7 @@ async function logoutUser() {
     console.log('Logout successful');
     
     // Redirect to login
-    window.location.href = 'login.html';
+    window.location.href = getAuthPageUrl('login.html');
     return { success: true };
   } catch (error) {
     console.error('Logout error:', error.message);
@@ -496,7 +507,7 @@ async function logoutUser() {
     localStorage.removeItem('supabase.auth.token');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('role');
-    window.location.href = 'login.html';
+    window.location.href = getAuthPageUrl('login.html');
   }
 }
 
@@ -2740,7 +2751,7 @@ async function protectPage() {
       localStorage.removeItem('currentUser');
       localStorage.removeItem('supabase.auth.token');
       localStorage.removeItem('role');
-      window.location.href = 'login.html?redirect=' + encodeURIComponent(currentPage);
+      window.location.href = getAuthPageUrl('login.html') + '?redirect=' + encodeURIComponent(currentPage);
       return;
     }
 
@@ -2797,7 +2808,7 @@ async function updateHeaderWithUserInfo() {
           // Session expired, redirect
           localStorage.removeItem('currentUser');
           localStorage.removeItem('supabase.auth.token');
-          window.location.href = 'login.html';
+          window.location.href = getAuthPageUrl('login.html');
         }
       }).catch(err => {
         console.warn('Background auth check failed:', err);
@@ -2841,12 +2852,12 @@ function showLoginButtonsInHeader(headerActions) {
   const signIn = document.createElement('button');
   signIn.className = 'btn-signin';
   signIn.textContent = 'Conectare';
-  signIn.addEventListener('click', () => window.location.href = 'login.html');
+  signIn.addEventListener('click', () => window.location.href = getAuthPageUrl('login.html'));
   
   const signUp = document.createElement('button');
   signUp.className = 'btn-signup';
   signUp.textContent = 'Înregistrare';
-  signUp.addEventListener('click', () => window.location.href = 'register.html');
+  signUp.addEventListener('click', () => window.location.href = getAuthPageUrl('register.html'));
   
   headerActions.appendChild(signIn);
   headerActions.appendChild(signUp);

@@ -2407,6 +2407,7 @@ body.dark-mode .testimonial-card {
 
 .hero-highlight {
   background: linear-gradient(90deg, var(--accent), #ff7b00);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -7427,7 +7428,7 @@ header {
 }
 
 .studio-copy h2,
-.feature-showcase-section h2,
+.feature-showcase-section h2{
   margin: 0 0 0.9rem;
   color: #0f172a;
   font-size: clamp(2rem, 4vw, 3.35rem);

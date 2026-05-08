@@ -66,9 +66,10 @@ function initializeShellPolish() {
   const textBrand = headerContent?.querySelector('h1');
 
   if (headerContent && !existingLogo && textBrand?.textContent?.trim().toLowerCase() === 'ulbstudent') {
+    const homeHref = window.location.pathname.includes('/src/pages/') ? '../../index.html' : 'index.html';
     headerContent.innerHTML = `
-      <a href="index.html" class="header-logo-link" aria-label="ULBStudent acasă">
-        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+      <a href="${homeHref}" class="header-logo-link" aria-label="ULBStudent acasă">
+        <img src="${getAssetUrl('ulbstudent-logo-color.png')}" alt="ULBStudent Logo" class="header-logo">
       </a>
     `;
   }
@@ -138,11 +139,19 @@ function initializeUnifiedFooter() {
   }
 
   const year = new Date().getFullYear();
+  const footerPageUrl = (pageName) => {
+    const isInsidePagesFolder = window.location.pathname.includes('/src/pages/');
+    if (pageName.startsWith('index.html')) {
+      return isInsidePagesFolder ? '../../' + pageName : './' + pageName;
+    }
+
+    return isInsidePagesFolder ? pageName : 'src/pages/' + pageName;
+  };
 
   footer.innerHTML = `
     <div class="footer-content">
       <div class="footer-section">
-        <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent" class="footer-brand-logo">
+        <img src="${getAssetUrl('ulbstudent-logo-white.png')}" alt="ULBStudent" class="footer-brand-logo">
         <p>Comunitate digitală pentru studenții ULBS: profesori, documente, întrebări, progres academic și decizii mai clare.</p>
         <div class="footer-socials" aria-label="Social media ULBStudent">
           <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
@@ -153,27 +162,27 @@ function initializeUnifiedFooter() {
       <div class="footer-section">
         <h4>Pagini importante</h4>
         <ul>
-          <li><a href="index.html">Acasă</a></li>
-          <li><a href="index.html#platforma">Despre proiect</a></li>
-          <li><a href="index.html#functionalitati">Funcționalități</a></li>
-          <li><a href="subreddit.html">Forum</a></li>
-          <li><a href="documente.html">Documente</a></li>
-          <li><a href="profesori.html">Profesori</a></li>
+          <li><a href="${footerPageUrl('index.html')}">Acasă</a></li>
+          <li><a href="${footerPageUrl('index.html')}#platforma">Despre proiect</a></li>
+          <li><a href="${footerPageUrl('index.html')}#functionalitati">Funcționalități</a></li>
+          <li><a href="${footerPageUrl('subreddit.html')}">Forum</a></li>
+          <li><a href="${footerPageUrl('documente.html')}">Documente</a></li>
+          <li><a href="${footerPageUrl('profesori.html')}">Profesori</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h4>Cont și suport</h4>
         <ul>
           <!-- Download link removed per design: keep site navigation consistent -->
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="raporteaza-problema.html">Raportează problema</a></li>
+          <li><a href="${footerPageUrl('contact.html')}">Contact</a></li>
+          <li><a href="${footerPageUrl('raporteaza-problema.html')}">Raportează problema</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h4>Legal</h4>
         <ul>
-          <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
-          <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
+          <li><a href="${footerPageUrl('termeni-conditii.html')}">Termeni și condiții</a></li>
+          <li><a href="${footerPageUrl('politica-confidentialitate.html')}">Politica de confidențialitate</a></li>
         </ul>
       </div>
     </div>
@@ -226,8 +235,8 @@ function initializeThemeToggle() {
  */
 function applyTheme(theme) {
   const themeToggle = document.getElementById('themeToggle');
-  const logoColor = 'assets/Logos%20and%20icons/ulbstudent-logo-color.png';
-  const logoWhite = 'assets/Logos%20and%20icons/ulbstudent-logo-white.png';
+  const logoColor = getAssetUrl('ulbstudent-logo-color.png');
+  const logoWhite = getAssetUrl('ulbstudent-logo-white.png');
   
   if (theme === 'dark') {
     // Dark mode
@@ -257,6 +266,22 @@ function applyTheme(theme) {
 // ============================================
 // 0.5 AUTHENTICATION BUTTONS
 // ============================================
+function getAuthPageUrl(pageName) {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/src/pages/')) {
+    return pageName;
+  }
+  return 'src/pages/' + pageName;
+}
+
+function getAssetUrl(assetName) {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/src/pages/')) {
+    return '../../assets/Logos%20and%20icons/' + assetName;
+  }
+  return 'assets/Logos%20and%20icons/' + assetName;
+}
+
 function initializeAuthButtons() {
   const signInBtn = document.querySelector('.btn-signin');
   const signUpBtn = document.querySelector('.btn-signup');
@@ -271,11 +296,11 @@ function initializeAuthButtons() {
 }
 
 function showSignInModal() {
-  window.location.href = 'login.html';
+  window.location.href = getAuthPageUrl('login.html');
 }
 
 function showSignUpModal() {
-  window.location.href = 'register.html';
+  window.location.href = getAuthPageUrl('register.html');
 }
 
 function initializeSearchableDropdowns() {
@@ -3743,7 +3768,7 @@ function initializePostCreation() {
     const user = getCurrentUser();
     if (!user) {
       showToast('Trebuie să fii conectat pentru a posta', 'error');
-      setTimeout(() => window.location.href = 'login.html', 1500);
+      setTimeout(() => window.location.href = getAuthPageUrl('login.html'), 1500);
       return;
     }
     
