@@ -17,6 +17,517 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
+    <style>
+      header {
+        overflow: hidden !important;
+      }
+
+      .auth-page-shell.auth-login-shell {
+        width: min(1120px, calc(100% - 2rem)) !important;
+        margin: 2rem auto 3rem !important;
+      }
+
+      .login-shell {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.15rem;
+        align-items: start;
+        max-width: 620px;
+        margin: 0 auto;
+      }
+
+      .login-brand-panel,
+      .login-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--shadow-lg);
+      }
+
+      body.dark-mode .login-brand-panel,
+      body.dark-mode .login-card,
+      html.dark-mode .login-brand-panel,
+      html.dark-mode .login-card {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .login-brand-panel {
+        display: none;
+      }
+
+      .login-card {
+        padding: 2rem;
+      }
+
+      .login-brand-content {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .login-brand-badge,
+      .login-form-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        width: fit-content;
+        padding: 0.42rem 0.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--text-secondary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.dark-mode .login-brand-badge,
+      body.dark-mode .login-form-badge,
+      html.dark-mode .login-brand-badge,
+      html.dark-mode .login-form-badge {
+        background: rgba(15, 23, 42, 0.58);
+        color: #e2e8f0;
+      }
+
+      .login-brand-title {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+      }
+
+      .login-brand-subtitle {
+        margin: 0;
+        color: var(--text-secondary);
+        max-width: 44ch;
+        font-size: 1.02rem;
+      }
+
+      .login-proof-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .login-proof-card {
+        padding: 0.9rem;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      body.dark-mode .login-proof-card,
+      html.dark-mode .login-proof-card {
+        background: rgba(15, 23, 42, 0.58);
+      }
+
+      .login-proof-card strong {
+        display: block;
+        margin-top: 0.45rem;
+        font-size: 0.96rem;
+      }
+
+      .login-proof-card span {
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+      }
+
+      .login-feature-list {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .login-feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.8rem 0.9rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      body.dark-mode .login-feature-item,
+      html.dark-mode .login-feature-item {
+        background: rgba(15, 23, 42, 0.56);
+      }
+
+      .login-feature-item i {
+        width: 2.35rem;
+        height: 2.35rem;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(37, 99, 235, 0.1));
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .login-feature-copy strong {
+        display: block;
+        font-size: 0.95rem;
+      }
+
+      .login-feature-copy span {
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+      }
+
+      .login-card {
+        padding: 1.4rem;
+      }
+
+      .login-form-header {
+        display: grid;
+        gap: 0.65rem;
+        margin-bottom: 1.15rem;
+      }
+
+      .login-form-header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.6rem);
+        letter-spacing: -0.04em;
+      }
+
+      .login-form-header p {
+        margin: 0;
+        color: var(--text-secondary);
+        max-width: 40ch;
+      }
+
+      .auth-form {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .field-group {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .field-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .input-shell {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.92rem 1rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.78);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      body.dark-mode .input-shell,
+      html.dark-mode .input-shell {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .input-shell:focus-within {
+        border-color: rgba(230, 57, 70, 0.38);
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+      }
+
+      .input-shell i {
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+
+      .login-input {
+        width: 100%;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        color: var(--text) !important;
+        font-size: 1rem;
+        padding: 0;
+        margin: 0;
+        box-shadow: none !important;
+      }
+
+      .password-toggle {
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0.2rem 0.15rem;
+        border-radius: 10px;
+      }
+
+      .password-toggle:hover,
+      .password-toggle:focus-visible {
+        color: var(--text);
+        background: rgba(148, 163, 184, 0.12);
+        outline: none;
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: -0.2rem;
+      }
+
+      .checkbox-row input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .checkbox-chip {
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 0.45rem;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid rgba(148, 163, 184, 0.34);
+        background: rgba(255, 255, 255, 0.72);
+        color: transparent;
+        flex-shrink: 0;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      }
+
+      body.dark-mode .checkbox-chip,
+      html.dark-mode .checkbox-chip {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .checkbox-row input:checked + .checkbox-chip {
+        background: linear-gradient(135deg, #e63946, #d63447);
+        border-color: rgba(230, 57, 70, 0.45);
+        color: #fff;
+      }
+
+      .checkbox-text {
+        color: var(--text-secondary);
+      }
+
+      .primary-btn,
+      .social-btn,
+      .secondary-link {
+        border-radius: 18px;
+        min-height: 48px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      }
+
+      .primary-btn {
+        width: 100%;
+        border: 1px solid rgba(230, 57, 70, 0.42);
+        background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 800;
+        padding: 0.95rem 1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        box-shadow: 0 16px 30px rgba(230, 57, 70, 0.18);
+      }
+
+      .primary-btn:hover:not(:disabled),
+      .primary-btn:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 36px rgba(230, 57, 70, 0.22);
+        outline: none;
+      }
+
+      .primary-btn:disabled {
+        opacity: 0.72;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .primary-btn.is-loading {
+        opacity: 0.9;
+      }
+
+      .error-banner,
+      .loading-banner {
+        border-radius: 18px;
+        padding: 0.95rem 1rem;
+      }
+
+      .error-banner {
+        display: none;
+        margin-top: 0.25rem;
+        border: 1px solid rgba(239, 68, 68, 0.16);
+        background: rgba(239, 68, 68, 0.08);
+        color: #b91c1c;
+        font-weight: 700;
+      }
+
+      body.dark-mode .error-banner,
+      html.dark-mode .error-banner {
+        color: #fecaca;
+      }
+
+      .loading-banner {
+        display: none;
+        text-align: center;
+        border: 1px solid rgba(37, 99, 235, 0.16);
+        background: rgba(37, 99, 235, 0.06);
+        color: var(--text-secondary);
+      }
+
+      .loading-banner i {
+        color: var(--accent);
+        font-size: 1.4rem;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-secondary);
+        margin: 0.25rem 0;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(148, 163, 184, 0.22);
+      }
+
+      .secondary-cta-box {
+        margin-top: 1rem;
+        padding: 0.95rem 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.72);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      body.dark-mode .secondary-cta-box,
+      html.dark-mode .secondary-cta-box {
+        background: rgba(15, 23, 42, 0.56);
+      }
+
+      .secondary-cta-box p {
+        margin: 0;
+        color: var(--text-secondary);
+      }
+
+      .secondary-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      body.dark-mode .secondary-link,
+      html.dark-mode .secondary-link {
+        background: rgba(15, 23, 42, 0.62);
+        color: #fff;
+      }
+
+      .social-login {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .social-btn {
+        width: 100%;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.86);
+        color: var(--text);
+        padding: 0.9rem 1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        font-weight: 700;
+      }
+
+      body.dark-mode .social-btn,
+      html.dark-mode .social-btn {
+        background: rgba(15, 23, 42, 0.62);
+        color: #fff;
+      }
+
+      .social-btn.google:hover,
+      .social-btn.google:focus-visible {
+        border-color: rgba(148, 163, 184, 0.34);
+        background: rgba(248, 250, 252, 0.94);
+        outline: none;
+      }
+
+      .social-btn.linkedin {
+        background: linear-gradient(135deg, #0a66c2, #004182);
+        border-color: rgba(10, 102, 194, 0.4);
+        color: #fff;
+      }
+
+      .social-btn.linkedin:hover,
+      .social-btn.linkedin:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(10, 102, 194, 0.2);
+        outline: none;
+      }
+
+      .login-footer-note {
+        margin-top: 0.75rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 1200px) {
+        .login-shell {
+          grid-template-columns: 1fr;
+          justify-items: center;
+        }
+
+        .login-brand-panel {
+          display: none;
+        }
+
+        .login-card {
+          width: min(100%, 700px);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .auth-page-shell.auth-login-shell {
+          width: min(100% - 1rem, 1120px) !important;
+          margin-top: 1rem !important;
+        }
+
+        .login-card {
+          padding: 1rem;
+          border-radius: 24px;
+        }
+
+        .secondary-cta-box {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -42,113 +553,162 @@
     </header>
 
     <main class="container auth-page-shell auth-login-shell">
-      <div class="auth-hero">
-        <h1>Conectare</h1>
-        <p>Acces rapid la documente, discuții și profil.</p>
-      </div>
+      <div class="login-shell">
+        <section class="login-brand-panel" aria-hidden="true">
+          <div class="login-brand-content">
+            <span class="login-brand-badge"><i class="fa-solid fa-shield-heart"></i> Cont ULBStudent</span>
+            <div>
+              <h1 class="login-brand-title">Acces sigur la platforma ta academică.</h1>
+              <p class="login-brand-subtitle">Documente, discuții și profilul tău sunt la un click distanță, într-un flux modern și discret.</p>
+            </div>
 
-      <!-- Login Form -->
-      <form id="loginForm" class="auth-form">
-        <!-- Email -->
-        <div>
-          <label for="loginEmail" style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--text);">
-            Email
-          </label>
-          <input 
-            type="email" 
-            id="loginEmail"
-            name="email"
-            required
-            style="width: 100%; padding: 0.9rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
-            placeholder="email@exemplu.ro"
-            onfocus="this.style.borderColor='var(--accent)'"
-            onblur="this.style.borderColor='var(--border-color)'"
-          >
-        </div>
+            <div class="login-proof-grid">
+              <div class="login-proof-card">
+                <i class="fa-solid fa-lock"></i>
+                <strong>Sesiune protejată</strong>
+                <span>Autentificare prin Supabase.</span>
+              </div>
+              <div class="login-proof-card">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <strong>Experiență premium</strong>
+                <span>Interfață curată și rapidă.</span>
+              </div>
+            </div>
 
-        <!-- Password -->
-        <div>
-          <label for="loginPassword" style="display: block; margin-bottom: 0.75rem; font-weight: 600; color: var(--text);">
-            Parolă
-          </label>
-          <input 
-            type="password" 
-            id="loginPassword"
-            name="password"
-            required
-            style="width: 100%; padding: 0.9rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; color: var(--text); background: var(--surface); transition: all 0.3s ease;"
-            placeholder="Parola ta"
-            onfocus="this.style.borderColor='var(--accent)'"
-            onblur="this.style.borderColor='var(--border-color)'"
-          >
-        </div>
+            <div class="login-feature-list">
+              <div class="login-feature-item">
+                <i class="fa-solid fa-file-lines"></i>
+                <div class="login-feature-copy">
+                  <strong>Documente organizate</strong>
+                  <span>Intră direct în resursele relevante.</span>
+                </div>
+              </div>
+              <div class="login-feature-item">
+                <i class="fa-solid fa-comments"></i>
+                <div class="login-feature-copy">
+                  <strong>Discuții și răspunsuri</strong>
+                  <span>Continuă conversațiile comunității.</span>
+                </div>
+              </div>
+              <div class="login-feature-item">
+                <i class="fa-solid fa-user-gear"></i>
+                <div class="login-feature-copy">
+                  <strong>Profil personal</strong>
+                  <span>Acces la setări și cont în siguranță.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <!-- Remember Me -->
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <input 
-            type="checkbox" 
-            id="rememberMe"
-            name="remember"
-            style="width: 18px; height: 18px; cursor: pointer;"
-          >
-          <label for="rememberMe" style="color: var(--text-secondary); cursor: pointer; margin: 0;">
-            Ține-mă conectat
-          </label>
-        </div>
+        <section class="login-card" aria-labelledby="loginTitle">
+          <div class="login-form-header">
+            <span class="login-form-badge"><i class="fa-solid fa-circle-user"></i> Cont ULBStudent</span>
+            <div>
+              <h1 id="loginTitle">Conectare</h1>
+              <p>Accesează documente, discuții și profilul tău ULBStudent.</p>
+            </div>
+          </div>
 
-        <!-- Submit Button -->
-        <button 
-          type="submit"
-          style="padding: 1rem; background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%); color: white; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 0.5rem;"
-          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(230,57,70,0.3)'"
-          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
-        >
-          <i class="fa-solid fa-right-to-bracket"></i> Conectare în cont
-        </button>
-      </form>
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form">
+            <div class="field-group">
+              <label for="loginEmail" class="field-label"><i class="fa-solid fa-envelope"></i> Email</label>
+              <div class="input-shell">
+                <i class="fa-solid fa-at" aria-hidden="true"></i>
+                <input 
+                  type="email" 
+                  id="loginEmail"
+                  name="email"
+                  class="login-input"
+                  required
+                  autocomplete="email"
+                  placeholder="email@exemplu.ro"
+                >
+              </div>
+            </div>
 
-      <!-- Error Message -->
-      <div id="loginError" role="alert" aria-live="assertive" style="margin-top: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid var(--accent); border-radius: 8px; color: var(--accent); font-weight: 600; display: none;">
-      </div>
+            <div class="field-group">
+              <label for="loginPassword" class="field-label"><i class="fa-solid fa-key"></i> Parolă</label>
+              <div class="input-shell">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <input 
+                  type="password" 
+                  id="loginPassword"
+                  name="password"
+                  class="login-input"
+                  required
+                  autocomplete="current-password"
+                  placeholder="Parola ta"
+                >
+                <button type="button" class="password-toggle" id="togglePasswordBtn" aria-label="Arată parola" title="Arată parola">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
 
-      <!-- Loading -->
-      <div id="loginLoading" style="margin-top: 1.5rem; text-align: center; display: none;">
-        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent);"></i>
-        <p style="color: var(--text-secondary); margin-top: 1rem;">Se încarcă...</p>
-      </div>
+            <div class="checkbox-row">
+              <input 
+                type="checkbox" 
+                id="rememberMe"
+                name="remember"
+              >
+              <span class="checkbox-chip" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+              <label for="rememberMe" class="checkbox-text" style="cursor: pointer; margin: 0;">Ține-mă conectat</label>
+            </div>
 
-      <!-- Register Link -->
-      <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color); text-align: center;">
-        <p style="color: var(--text-secondary); margin: 0;">Nu ai cont?</p>
-        <a href="register.html" style="color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 0.5rem; display: inline-block;">
-          Creează cont nou <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
+            <button 
+              type="submit"
+              class="primary-btn"
+              id="loginSubmitBtn"
+            >
+              <i class="fa-solid fa-right-to-bracket"></i> Conectare în cont
+            </button>
+          </form>
 
-      <!-- Social Login Option -->
-      <div style="margin-top: 2rem;">
-        <div style="text-align: center; margin-bottom: 1rem; color: var(--text-secondary);">
-          Sau
-        </div>
-        <button 
-          type="button"
-          id="googleLoginBtn"
-          style="width: 100%; padding: 0.9rem; background: #f8f9fa; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; color: var(--text);"
-          onmouseover="this.style.background='#e8eef0'"
-          onmouseout="this.style.background='#f8f9fa'"
-        >
-          <i class="fab fa-google"></i> Conectare cu Google
-        </button>
-        <div style="height: 0.75rem"></div>
-        <button
-          type="button"
-          id="linkedinLoginBtn"
-          style="width: 100%; padding: 0.9rem; background: #0a66c2; color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
-          onmouseover="this.style.opacity='0.95'"
-          onmouseout="this.style.opacity='1'"
-        >
-          <i class="fab fa-linkedin"></i> Conectare cu LinkedIn
-        </button>
+          <!-- Error Message -->
+          <div id="loginError" class="error-banner" role="alert" aria-live="assertive"></div>
+
+          <!-- Loading -->
+          <div id="loginLoading" class="loading-banner">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p style="margin: 0.75rem 0 0;">Se conectează în siguranță...</p>
+          </div>
+
+          <div class="secondary-cta-box">
+            <div>
+              <p>Nu ai cont?</p>
+              <strong>Creează cont nou</strong>
+            </div>
+            <a href="register.html" class="secondary-link">
+              Creează cont nou <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <div class="divider">sau continuă cu</div>
+            <div class="social-login">
+              <button 
+                type="button"
+                id="googleLoginBtn"
+                class="social-btn google"
+              >
+                <i class="fa-brands fa-google"></i> Conectare cu Google
+              </button>
+              <button
+                type="button"
+                id="linkedinLoginBtn"
+                class="social-btn linkedin"
+              >
+                <i class="fa-brands fa-linkedin"></i> Conectare cu LinkedIn
+              </button>
+            </div>
+          </div>
+
+          <div class="login-footer-note">
+            Protecție pe autentificare, fără a expune datele tale în interfață.
+          </div>
+        </section>
       </div>
     </main>
 
@@ -188,16 +748,54 @@
 
     <script src="../js/auth.js"></script>
     <script>
+      function mapLoginError(error) {
+        const message = String(error?.message || error || '').toLowerCase();
+
+        if (!message) return 'Nu am putut conecta contul momentan.';
+        if (message.includes('invalid login credentials') || message.includes('invalid credentials') || message.includes('email or password') || message.includes('invalid email or password')) {
+          return 'Emailul sau parola nu sunt corecte.';
+        }
+        if (message.includes('required') || message.includes('obligator')) {
+          return 'Completează toate câmpurile.';
+        }
+        if (message.includes('network') || message.includes('failed to fetch') || message.includes('fetch')) {
+          return 'Nu am putut conecta contul momentan.';
+        }
+        return 'Nu am putut conecta contul momentan.';
+      }
+
+      function showLoginFeedback(message, type = 'error') {
+        if (typeof showToast === 'function') {
+          showToast(message, type);
+          return;
+        }
+        if (typeof showNotification === 'function') {
+          showNotification(message, type);
+        }
+      }
+
+      const passwordInput = document.getElementById('loginPassword');
+      const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+      if (passwordInput && togglePasswordBtn) {
+        togglePasswordBtn.addEventListener('click', () => {
+          const isHidden = passwordInput.type === 'password';
+          passwordInput.type = isHidden ? 'text' : 'password';
+          togglePasswordBtn.setAttribute('aria-label', isHidden ? 'Ascunde parola' : 'Arată parola');
+          togglePasswordBtn.title = isHidden ? 'Ascunde parola' : 'Arată parola';
+          const icon = togglePasswordBtn.querySelector('i');
+          if (icon) {
+            icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+          }
+        });
+      }
+
+      const loginForm = document.getElementById('loginForm');
+      const loginError = document.getElementById('loginError');
+      const loginLoading = document.getElementById('loginLoading');
+      const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
       document.getElementById('linkedinLoginBtn').addEventListener('click', function() {
-        const notify = (message, type = 'info') => {
-          if (typeof showToast === 'function') {
-            showToast(message, type);
-            return;
-          }
-          if (typeof showNotification === 'function') {
-            showNotification(message, type);
-          }
-        };
+        const notify = showLoginFeedback;
         const linkedinConfig = window.LINKEDIN_CONFIG || {};
         const clientId = linkedinConfig.clientId || '';
 
@@ -216,44 +814,57 @@
       });
     </script>
     <script>
-      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      loginForm?.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const rememberMe = document.getElementById('rememberMe').checked;
-        
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const errorDiv = document.getElementById('loginError');
-        const loadingDiv = document.getElementById('loginLoading');
+
+        const submitBtn = loginSubmitBtn || e.target.querySelector('button[type="submit"]');
         
         // Clear previous errors
-        errorDiv.style.display = 'none';
+        if (loginError) {
+          loginError.style.display = 'none';
+          loginError.textContent = '';
+        }
         
         // Validation
         if (!email || !password) {
-          errorDiv.textContent = 'Email și parolă sunt obligatorii';
-          errorDiv.style.display = 'block';
+          const friendlyMessage = 'Completează toate câmpurile.';
+          if (loginError) {
+            loginError.textContent = friendlyMessage;
+            loginError.style.display = 'block';
+          }
+          showLoginFeedback(friendlyMessage, 'warning');
           return;
         }
         
         if (!/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-          errorDiv.textContent = 'Email invalid';
-          errorDiv.style.display = 'block';
+          const friendlyMessage = 'Emailul sau parola nu sunt corecte.';
+          if (loginError) {
+            loginError.textContent = friendlyMessage;
+            loginError.style.display = 'block';
+          }
+          showLoginFeedback(friendlyMessage, 'warning');
           return;
         }
         
         if (password.length < 6) {
-          errorDiv.textContent = 'Parola trebuie să aibă minim 6 caractere';
-          errorDiv.style.display = 'block';
+          const friendlyMessage = 'Emailul sau parola nu sunt corecte.';
+          if (loginError) {
+            loginError.textContent = friendlyMessage;
+            loginError.style.display = 'block';
+          }
+          showLoginFeedback(friendlyMessage, 'warning');
           return;
         }
         
-        loadingDiv.style.display = 'block';
+        if (loginLoading) loginLoading.style.display = 'block';
         submitBtn.disabled = true;
         submitBtn.classList.add('is-loading');
-        const originalSubmitText = submitBtn.textContent;
-        submitBtn.textContent = 'Se conectează...';
+        const originalSubmitText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Se conectează...';
         
         try {
           await loginWithEmail(email, password);
@@ -265,40 +876,36 @@
           // Ensure session is persisted before redirect
           const { authenticated, user } = await checkAuthStatus();
           if (authenticated && user) {
-            // Redirect based on role
-            await routeByUserRole({
-              professorDashboard: 'profile.html',
-              studentDashboard: 'index.html'
-            });
+            // Get cached role or determine from user metadata
+            const cachedRole = localStorage.getItem('role') || 'student';
+            const destination = cachedRole === 'profesor' 
+              ? 'profile.html'
+              : '../../index.html';
+            window.location.href = destination;
           } else {
             throw new Error('Sesiunea nu s-a putut inițializa. Încearcă din nou.');
           }
         } catch (error) {
-          errorDiv.textContent = error.message || 'Eroare la conectare';
-          errorDiv.style.display = 'block';
-          loadingDiv.style.display = 'none';
+          const friendlyMessage = mapLoginError(error);
+          if (loginError) {
+            loginError.textContent = friendlyMessage;
+            loginError.style.display = 'block';
+          }
+          showLoginFeedback(friendlyMessage, 'error');
+          if (loginLoading) loginLoading.style.display = 'none';
           submitBtn.disabled = false;
           submitBtn.classList.remove('is-loading');
-          submitBtn.textContent = originalSubmitText;
-          console.error('Login error:', error);
+          submitBtn.innerHTML = originalSubmitText;
         }
       });
 
       document.getElementById('googleLoginBtn').addEventListener('click', async function() {
-        const notify = (message, type = 'info') => {
-          if (typeof showToast === 'function') {
-            showToast(message, type);
-            return;
-          }
-          if (typeof showNotification === 'function') {
-            showNotification(message, type);
-          }
-        };
+        const notify = showLoginFeedback;
 
         try {
           await loginWithGoogle();
         } catch (error) {
-          notify('Eroare la conectare cu Google: ' + (error.message || 'necunoscută'), 'error');
+          notify('Nu am putut conecta contul momentan.', 'error');
         }
       });
     </script>

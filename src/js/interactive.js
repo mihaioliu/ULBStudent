@@ -3888,20 +3888,32 @@ function initializePostCreation() {
 }
 
 function renderCommentCard(comment) {
-  const item = document.createElement('div');
-  item.style.cssText = 'background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);';
-  const authorName = comment.name || comment.nume || 'Anonim';
-  const commentText = comment.content || comment.comentariu || '';
+  const item = document.createElement('article');
+  item.className = 'comment-card';
+
+  const authorName = String(comment.name || comment.nume || comment.author || comment.created_by_name || 'Anonim').trim() || 'Anonim';
+  const commentText = String(comment.content || comment.comentariu || comment.comment || '').trim();
+  const initials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'AN';
+  const email = String(comment.email || comment.notification_email || '').trim();
+  const replyCount = Number(comment.reply_count || comment.replies || 0);
+
   item.innerHTML = `
-    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-      <div style="font-size: 1.4rem; color: var(--accent);"><i class="fa-solid fa-comment" aria-hidden="true"></i></div>
-      <div>
-        <h4 style="margin: 0; color: var(--text);">${escapeHtml(authorName)}</h4>
-        <p style="margin: 0; color: #888; font-size: 0.85rem;">${formatTimeAgo(comment.created_at)}</p>
+    <div class="comment-card-head">
+      <div class="comment-author">
+        <div class="comment-avatar" aria-hidden="true">${escapeHtml(initials)}</div>
+        <div>
+          <h4>${escapeHtml(authorName)}</h4>
+          <div class="comment-time">${formatTimeAgo(comment.created_at)}</div>
+        </div>
       </div>
     </div>
-    <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(commentText)}</p>
+    <p class="comment-body">${commentText ? escapeHtml(commentText) : '<span style="color: var(--text-secondary); font-style: italic;">Recenzie fără comentariu</span>'}</p>
+    <div class="comment-meta">
+      ${email ? `<span class="comment-meta-pill"><i class="fa-regular fa-envelope"></i> ${escapeHtml(email)}</span>` : ''}
+      <span class="comment-meta-pill"><i class="fa-solid fa-reply"></i> ${replyCount} răspunsuri</span>
+    </div>
   `;
+
   return item;
 }
 
@@ -3916,6 +3928,74 @@ async function initializeCommentsData() {
   const params = new URLSearchParams(window.location.search);
   const postId = String(params.get('post') || '').trim();
 
+  const setLoadingState = () => {
+    if (postContainer) {
+      postContainer.classList.add('is-loading');
+      postContainer.innerHTML = `
+        <div class="thread-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+          <span class="skeleton-chip" style="width:92px;"></span>
+          <span class="skeleton-line" style="width:78%; height:18px;"></span>
+          <span class="skeleton-line" style="width:58%;"></span>
+          <span class="skeleton-line" style="width:92%; height:14px;"></span>
+          <span class="skeleton-line" style="width:88%; height:14px;"></span>
+        </div>`;
+    }
+
+    if (commentsList) {
+      commentsList.parentElement?.classList.add('is-loading');
+      commentsList.innerHTML = `
+        <div class="comment-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <span class="skeleton-block" style="width:44px; height:44px; border-radius:14px;"></span>
+            <div style="flex:1; display:grid; gap:0.45rem;">
+              <span class="skeleton-line" style="width:38%; height:14px;"></span>
+              <span class="skeleton-line" style="width:24%; height:12px;"></span>
+            </div>
+          </div>
+          <span class="skeleton-line" style="width:92%; height:14px;"></span>
+          <span class="skeleton-line" style="width:84%; height:14px;"></span>
+        </div>
+      `;
+    }
+
+    if (commentsTitle) commentsTitle.textContent = 'Se încarcă comentariile...';
+    if (emptyState) emptyState.style.display = 'none';
+  };
+
+  const setErrorState = (message) => {
+    if (postContainer) {
+      postContainer.classList.remove('is-loading');
+      postContainer.innerHTML = `
+        <div class="thread-error-state">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <strong>Postarea nu a putut fi încărcată</strong>
+          <span>${escapeHtml(message || 'Reîncearcă sau revino la lista de discuții.')}</span>
+          <a href="comments.html" class="discussion-back-link" style="margin-top:0.25rem;"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
+        </div>
+      `;
+    }
+
+    if (commentsList) commentsList.innerHTML = '';
+    if (commentsTitle) commentsTitle.textContent = '0 comentarii';
+    if (emptyState) emptyState.style.display = 'none';
+    if (form) {
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+    }
+  };
+
+  const splitTags = (content = '') => {
+    const match = String(content || '').match(/#taguri:\s*([\s\S]*)$/i);
+    if (!match) return [];
+    return match[1]
+      .split(/,|\n|;/)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  };
+
+  setLoadingState();
+
   if (!postId) {
     if (emptyState) emptyState.style.display = 'block';
     if (commentsTitle) commentsTitle.textContent = '0 comentarii';
@@ -3923,167 +4003,189 @@ async function initializeCommentsData() {
       const submitButton = form.querySelector('button[type="submit"]');
       if (submitButton) submitButton.disabled = true;
     }
+    setErrorState('Lipsește identificatorul postării în adresă.');
     return;
   }
 
   const postResult = await getPostById(postId);
-  if (postResult.success && postResult.data && postContainer) {
-    const renderPostPreview = () => {
-      const parsed = parsePostDisplay(postResult.data.title || '', postResult.data.content || '');
-      const poll = parsePollDisplay(parsed.content || '');
-      const contentWithoutPoll = String(parsed.content || '')
-        .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
-        .trim();
-
-      const descriptionBlock = contentWithoutPoll
-        ? `<p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">${escapeHtml(contentWithoutPoll)}</p>`
-        : '';
-
-      postContainer.innerHTML = `
-        <h2 style="color: var(--text); margin: 0 0 1rem 0;">${escapeHtml(parsed.title || postResult.data.title || 'Postare')}</h2>
-        ${descriptionBlock}
-        ${poll ? buildPollMarkup(postResult.data, poll) : ''}
-      `;
-
-      if (poll) {
-        const pollCard = postContainer.querySelector('.post-poll-card');
-        if (pollCard) {
-          const submitBtn = pollCard.querySelector('[data-poll-submit]');
-          const pollInputs = Array.from(pollCard.querySelectorAll('.post-poll-option input'));
-
-          if (submitBtn) {
-            submitBtn.addEventListener('click', async () => {
-              const selectedIndexes = pollInputs
-                .filter((input) => input.checked)
-                .map((input) => Number(input.value))
-                .filter((value) => Number.isInteger(value));
-
-              if (selectedIndexes.length === 0) {
-                showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
-                return;
-              }
-
-              if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
-                showToast('Acest sondaj permite un singur răspuns.', 'warning');
-                return;
-              }
-
-              let persistedInDatabase = false;
-              const originalLabel = submitBtn.textContent || 'Trimite votul';
-              submitBtn.disabled = true;
-              submitBtn.classList.add('is-loading');
-              submitBtn.textContent = 'Se trimite...';
-
-              try {
-                const client = await initSupabaseClient();
-                const user = await getAuthenticatedUser(false);
-
-                if (user?.id) {
-                  const { data: pollRow, error: pollError } = await client
-                    .from('polls')
-                    .select('id, allow_multiple_answers')
-                    .eq('post_id', postResult.data.id)
-                    .maybeSingle();
-
-                  if (pollError) throw pollError;
-
-                  if (pollRow?.id) {
-                    const { data: optionRows, error: optionError } = await client
-                      .from('poll_options')
-                      .select('id, position')
-                      .eq('poll_id', pollRow.id)
-                      .order('position', { ascending: true });
-
-                    if (optionError) throw optionError;
-
-                    const existingVote = await client
-                      .from('poll_votes')
-                      .select('id')
-                      .eq('poll_id', pollRow.id)
-                      .eq('voter_id', user.id)
-                      .maybeSingle();
-
-                    if (existingVote.data?.id) {
-                      showToast('Ai votat deja acest sondaj.', 'warning');
-                      return;
-                    }
-
-                    const selectedOptionIds = selectedIndexes
-                      .map((index) => optionRows?.[index]?.id)
-                      .filter(Boolean);
-
-                    if (!selectedOptionIds.length) {
-                      showToast('Nu s-au găsit opțiunile sondajului.', 'error');
-                      return;
-                    }
-
-                    if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
-                      showToast('Acest sondaj permite un singur răspuns.', 'warning');
-                      return;
-                    }
-
-                    const { error: voteError } = await client.from('poll_votes').insert([{
-                      poll_id: pollRow.id,
-                      voter_id: user.id,
-                      selected_option_ids: selectedOptionIds
-                    }]);
-
-                    if (voteError) throw voteError;
-                    persistedInDatabase = true;
-                  }
-                }
-              } catch (error) {
-                console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
-              } finally {
-                if (submitBtn.isConnected) {
-                  submitBtn.disabled = false;
-                  submitBtn.classList.remove('is-loading');
-                  submitBtn.textContent = originalLabel;
-                }
-              }
-
-              const nextState = loadPollState(postResult.data.id, poll.options.length);
-              selectedIndexes.forEach((index) => {
-                nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
-              });
-              nextState.selected = selectedIndexes;
-              nextState.voted = true;
-              savePollState(postResult.data.id, nextState);
-
-              renderPostPreview();
-              showToast(
-                persistedInDatabase
-                  ? 'Votul a fost salvat în Supabase.'
-                  : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
-                persistedInDatabase ? 'success' : 'info'
-              );
-            });
-          }
-
-          hydratePollCard(pollCard, postResult.data);
-        }
-      }
-    };
-
-    renderPostPreview();
+  if (!postResult.success || !postResult.data) {
+    setErrorState('Nu există o postare validă pentru această conversație.');
+    return;
   }
 
-  const loadAndRender = async () => {
-    const loaded = await getComments(postId);
-    commentsList.innerHTML = '';
-    const rows = loaded.success ? loaded.data : [];
-    if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
+  const loaded = await getComments(postId);
+  const rows = loaded.success ? loaded.data : [];
+  const parsed = parsePostDisplay(postResult.data.title || '', postResult.data.content || '');
+  const poll = parsePollDisplay(parsed.content || '');
+  const contentWithoutPoll = String(parsed.content || '')
+    .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
+    .trim();
+  const tags = splitTags(postResult.data.content || '');
+  const authorName = String(postResult.data.author_name || postResult.data.nume || postResult.data.user_name || postResult.data.created_by_name || 'Autor anonim').trim();
+  const authorInitials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'UA';
+  const statusLabel = rows.length > 0 ? 'Conversație activă' : 'Așteaptă răspunsuri';
+  const postCommentsCount = rows.length;
+  const postVotes = Number(postResult.data.votes || postResult.data.vote_count || 0);
 
-    if (rows.length === 0) {
-      if (emptyState) emptyState.style.display = 'block';
-      return;
+  if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
+  if (postContainer) {
+    postContainer.classList.remove('is-loading');
+    const displayTitle = parsed.title || postResult.data.title || 'Postare';
+    const sanitizedContent = contentWithoutPoll || '';
+    postContainer.innerHTML = `
+      <div class="discussion-thread-head">
+        <div class="thread-title-row">
+          <div class="discussion-hero-meta" style="margin-top:0;">
+            <span class="discussion-status-pill"><i class="fa-solid fa-signal"></i> ${escapeHtml(statusLabel)}</span>
+            <span class="discussion-pill"><i class="fa-solid fa-tag"></i> ${escapeHtml(parsed.categoryLabel || 'General')}</span>
+          </div>
+          <h2 class="thread-title">${escapeHtml(displayTitle)}</h2>
+          <div class="thread-meta-row">
+            <span><i class="fa-solid fa-user"></i> ${escapeHtml(authorName)}</span>
+            <span><i class="fa-regular fa-clock"></i> ${escapeHtml(formatTimeAgo(postResult.data.created_at))}</span>
+          </div>
+        </div>
+      </div>
+      ${tags.length ? `<div class="thread-tags">${tags.map((tag) => `<span class="thread-tag">#${escapeHtml(tag.replace(/^#/, ''))}</span>`).join('')}</div>` : ''}
+      ${sanitizedContent ? `<div class="thread-content">${escapeHtml(sanitizedContent).replace(/\n/g, '<br>')}</div>` : '<div class="thread-content" style="color: var(--text-secondary); font-style: italic;">Postare fără conținut suplimentar.</div>'}
+      ${poll ? buildPollMarkup(postResult.data, poll) : ''}
+      <div class="thread-stats">
+        <span class="thread-stat"><i class="fa-solid fa-arrow-up"></i> ${postVotes} voturi</span>
+        <span class="thread-stat"><i class="fa-solid fa-message"></i> ${postCommentsCount} comentarii</span>
+        <span class="thread-stat"><i class="fa-solid fa-circle-info"></i> ID ${escapeHtml(String(postResult.data.id || postId))}</span>
+      </div>
+    `;
+
+    if (poll) {
+      const pollCard = postContainer.querySelector('.post-poll-card');
+      if (pollCard) {
+        const submitBtn = pollCard.querySelector('[data-poll-submit]');
+        const pollInputs = Array.from(pollCard.querySelectorAll('.post-poll-option input'));
+
+        if (submitBtn) {
+          submitBtn.addEventListener('click', async () => {
+            const selectedIndexes = pollInputs
+              .filter((input) => input.checked)
+              .map((input) => Number(input.value))
+              .filter((value) => Number.isInteger(value));
+
+            if (selectedIndexes.length === 0) {
+              showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
+              return;
+            }
+
+            if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
+              showToast('Acest sondaj permite un singur răspuns.', 'warning');
+              return;
+            }
+
+            let persistedInDatabase = false;
+            const originalLabel = submitBtn.textContent || 'Trimite votul';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('is-loading');
+            submitBtn.textContent = 'Se trimite...';
+
+            try {
+              const client = await initSupabaseClient();
+              const user = await getAuthenticatedUser(false);
+
+              if (user?.id) {
+                const { data: pollRow, error: pollError } = await client
+                  .from('polls')
+                  .select('id, allow_multiple_answers')
+                  .eq('post_id', postResult.data.id)
+                  .maybeSingle();
+
+                if (pollError) throw pollError;
+
+                if (pollRow?.id) {
+                  const { data: optionRows, error: optionError } = await client
+                    .from('poll_options')
+                    .select('id, position')
+                    .eq('poll_id', pollRow.id)
+                    .order('position', { ascending: true });
+
+                  if (optionError) throw optionError;
+
+                  const existingVote = await client
+                    .from('poll_votes')
+                    .select('id')
+                    .eq('poll_id', pollRow.id)
+                    .eq('voter_id', user.id)
+                    .maybeSingle();
+
+                  if (existingVote.data?.id) {
+                    showToast('Ai votat deja acest sondaj.', 'warning');
+                    return;
+                  }
+
+                  const selectedOptionIds = selectedIndexes
+                    .map((index) => optionRows?.[index]?.id)
+                    .filter(Boolean);
+
+                  if (!selectedOptionIds.length) {
+                    showToast('Nu s-au găsit opțiunile sondajului.', 'error');
+                    return;
+                  }
+
+                  if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
+                    showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                    return;
+                  }
+
+                  const { error: voteError } = await client.from('poll_votes').insert([{ 
+                    poll_id: pollRow.id,
+                    voter_id: user.id,
+                    selected_option_ids: selectedOptionIds
+                  }]);
+
+                  if (voteError) throw voteError;
+                  persistedInDatabase = true;
+                }
+              }
+            } catch (error) {
+              console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
+            } finally {
+              if (submitBtn.isConnected) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('is-loading');
+                submitBtn.textContent = originalLabel;
+              }
+            }
+
+            const nextState = loadPollState(postResult.data.id, poll.options.length);
+            selectedIndexes.forEach((index) => {
+              nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
+            });
+            nextState.selected = selectedIndexes;
+            nextState.voted = true;
+            savePollState(postResult.data.id, nextState);
+
+            showToast(
+              persistedInDatabase
+                ? 'Votul a fost salvat în Supabase.'
+                : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
+              persistedInDatabase ? 'success' : 'info'
+            );
+
+            const refreshedLoaded = await getComments(postId);
+            const refreshedRows = refreshedLoaded.success ? refreshedLoaded.data : rows;
+            commentsTitle.textContent = `${refreshedRows.length} comentarii`;
+          });
+        }
+
+        hydratePollCard(pollCard, postResult.data);
+      }
     }
+  }
 
+  commentsList.innerHTML = '';
+  if (!rows.length) {
+    if (emptyState) emptyState.style.display = 'grid';
+  } else {
     if (emptyState) emptyState.style.display = 'none';
-    rows.forEach(row => commentsList.appendChild(renderCommentCard(row)));
-  };
-
-  await loadAndRender();
+    rows.forEach((row) => commentsList.appendChild(renderCommentCard(row)));
+  }
 
   await setupRealtimeComments(postId, commentsList, commentsTitle, emptyState);
 
@@ -4126,7 +4228,16 @@ async function initializeCommentsData() {
 
       await saveComment(postId, name, email, comment.trim());
       form.reset();
-      await loadAndRender();
+      const refreshed = await getComments(postId);
+      const refreshedRows = refreshed.success ? refreshed.data : [];
+      commentsList.innerHTML = '';
+      if (commentsTitle) commentsTitle.textContent = `${refreshedRows.length} comentarii`;
+      if (!refreshedRows.length) {
+        if (emptyState) emptyState.style.display = 'grid';
+      } else {
+        if (emptyState) emptyState.style.display = 'none';
+        refreshedRows.forEach((row) => commentsList.appendChild(renderCommentCard(row)));
+      }
       showToast('Comentariul a fost salvat.', 'success');
     } catch (error) {
       showToast(error.message || 'Eroare la salvarea comentariului.', 'error');

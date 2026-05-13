@@ -8,29 +8,560 @@
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
-    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    <link rel="icon" type="image/png" href="../../assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="../../assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     
-    <title>Documente - ULBStudent | Resurse Studiu Gratuite</title>
+    <title>Documente - ULBStudent | Bibliotecă Academică</title>
     <link rel="stylesheet" href="../css/styles-global.css" />
     <link rel="stylesheet" href="../css/app-polish.css" />
     <link rel="stylesheet" href="../css/styles-documents.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
+    <style>
+      /* ==========================================================
+         PREMIUM DOCUMENTS PAGE - Apple/Stripe/Linear Design
+         ========================================================== */
+
+      .documents-hero {
+        margin: 3rem auto 2rem;
+        max-width: 1180px;
+        padding: 0 2rem;
+        text-align: left;
+      }
+
+      .documents-hero-content {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+      }
+
+      .documents-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: fit-content;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.dark-mode .documents-hero-badge,
+      html.dark-mode .documents-hero-badge {
+        background: rgba(15, 23, 42, 0.58);
+        color: #e2e8f0;
+      }
+
+      .documents-hero h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 5vw, 3.8rem);
+        line-height: 1.1;
+        letter-spacing: -0.04em;
+      }
+
+      .documents-hero p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        max-width: 60ch;
+      }
+
+      .documents-hero-stats {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+      }
+
+      .hero-doc-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .hero-doc-stat strong {
+        font-size: 1.8rem;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-doc-stat span {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+
+      .documents-container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem;
+      }
+
+      .documents-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2.5rem;
+      }
+
+      @media (max-width: 1024px) {
+        .documents-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .docs-filters-sidebar {
+          grid-column: 1;
+          grid-row: 1;
+        }
+      }
+
+      /* ========== SIDEBAR ========== */
+      .docs-filters-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .filter-group {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .filter-title {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.95rem;
+        display: block;
+      }
+
+      .filter-input,
+      .filter-select {
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .filter-input,
+      body.dark-mode .filter-select,
+      html.dark-mode .filter-input,
+      html.dark-mode .filter-select {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .filter-input:focus,
+      .filter-select:focus {
+        outline: none;
+        border-color: rgba(230, 57, 70, 0.38);
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+      }
+
+      .faculties-list {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .faculty-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .faculty-item input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .faculty-item input + label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+        font-size: 0.95rem;
+        color: var(--text);
+      }
+
+      .faculty-item input + label::before {
+        content: '';
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 6px;
+        border: 1px solid rgba(148, 163, 184, 0.34);
+        background: rgba(255, 255, 255, 0.72);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .faculty-item input + label::before,
+      html.dark-mode .faculty-item input + label::before {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .faculty-item input:checked + label::before {
+        background: linear-gradient(135deg, #e63946, #d63447);
+        border-color: rgba(230, 57, 70, 0.4);
+        content: '✓';
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.8rem;
+      }
+
+      .reset-filters-btn {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+      }
+
+      body.dark-mode .reset-filters-btn,
+      html.dark-mode .reset-filters-btn {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .reset-filters-btn:hover {
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.24);
+      }
+
+      /* ========== MAIN DOCS ========== */
+      .docs-main {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .docs-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ========== DOCUMENT CARD ========== */
+      .doc-card {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body.dark-mode .doc-card,
+      html.dark-mode .doc-card {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .doc-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-4px);
+      }
+
+      .doc-card-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .doc-card-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.15), rgba(37, 99, 235, 0.15));
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .doc-card-header-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .doc-card-type {
+        display: inline-flex;
+        width: fit-content;
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .doc-card-title {
+        margin: 0;
+        font-size: 1.1rem;
+        line-height: 1.3;
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .doc-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .doc-card-meta i {
+        font-size: 0.75rem;
+      }
+
+      .doc-card-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0.75rem 0;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .doc-card-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin: 0.75rem 0;
+      }
+
+      .doc-card-tag {
+        display: inline-flex;
+        padding: 0.35rem 0.7rem;
+        border-radius: 6px;
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .doc-card-stats {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        margin: 0.75rem 0;
+        font-size: 0.9rem;
+      }
+
+      .doc-card-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-secondary);
+      }
+
+      .doc-card-stat i {
+        font-size: 0.8rem;
+      }
+
+      .doc-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+      }
+
+      .doc-card-stars {
+        display: flex;
+        gap: 0.2rem;
+      }
+
+      .doc-card-star {
+        color: #fbbf24;
+        font-size: 0.85rem;
+      }
+
+      .doc-card-star.empty {
+        color: rgba(148, 163, 184, 0.3);
+      }
+
+      .doc-card-rating-text {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .doc-card-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+        padding-top: 1rem;
+      }
+
+      .doc-card-btn {
+        flex: 1;
+        padding: 0.7rem 1rem;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .doc-card-btn-primary {
+        background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(230, 57, 70, 0.15);
+      }
+
+      .doc-card-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(230, 57, 70, 0.2);
+      }
+
+      .doc-card-btn-secondary {
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.24);
+      }
+
+      body.dark-mode .doc-card-btn-secondary,
+      html.dark-mode .doc-card-btn-secondary {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .doc-card-btn-secondary:hover {
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.24);
+      }
+
+      /* ========== EMPTY STATE ========== */
+      .empty-state-card {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+      }
+
+      body.dark-mode .empty-state-card,
+      html.dark-mode .empty-state-card {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .empty-state-card i {
+        font-size: 3.5rem;
+        color: var(--accent);
+        opacity: 0.3;
+        margin-bottom: 1rem;
+      }
+
+      .empty-state-card h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+      }
+
+      .empty-state-card p {
+        margin: 0;
+        color: var(--text-secondary);
+        max-width: 50ch;
+        margin: 0 auto;
+      }
+
+      /* ========== LOADING SKELETON ========== */
+      .doc-card.skeleton {
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      /* ========== RESPONSIVE ========== */
+      @media (max-width: 768px) {
+        .documents-hero {
+          padding: 0 1rem;
+          margin-top: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .documents-hero h1 {
+          font-size: clamp(1.8rem, 4vw, 2.5rem);
+        }
+
+        .documents-container {
+          padding: 0 1rem 3rem;
+        }
+
+        .documents-layout {
+          gap: 1.5rem;
+        }
+
+        .docs-grid {
+          gap: 1rem;
+        }
+
+        .doc-card {
+          padding: 1rem;
+        }
+
+        .doc-card-actions {
+          flex-direction: column;
+        }
+
+        .doc-card-btn {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <!-- Header: logo + meniu -->
     <header>
       <div class="header-content">
-        <a href="../../index.html" style="display: flex; align-items: center; text-decoration: none;">
+        <a href="../../index.html" class="header-logo-link">
           <img src="../../assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo" />
         </a>
       </div>
       <nav>
         <ul>
-          <!-- Navigare către secțiuni -->
           <li><a href="../../index.html" class="nav-link">Acasă</a></li>
           <li><a href="profesori.html" class="nav-link">Profesori</a></li>
           <li><a href="documente.html" class="nav-link active">Documente</a></li>
@@ -46,110 +577,126 @@
       </div>
     </header>
 
-    <main class="container documents-page-container">
-      <!-- Secțiune Documente și Materiale -->
-      <section class="documents-section">
-        <div class="section-header">
-          <h2>Documente</h2>
-          <p>Materiale utile pentru semestru.</p>
+    <!-- DOCUMENTS HERO -->
+    <section class="documents-hero">
+      <div class="documents-hero-content">
+        <span class="documents-hero-badge"><i class="fa-solid fa-book"></i> Bibliotecă ULBS</span>
+        <div>
+          <h1>Documente</h1>
+          <p>Găsește cursuri, laboratoare, seminare și materiale utile pentru semestru complet.</p>
         </div>
+        <div class="documents-hero-stats">
+          <div class="hero-doc-stat">
+            <strong id="heroDocCount">0</strong>
+            <span>documente</span>
+          </div>
+          <div class="hero-doc-stat">
+            <strong id="heroDownloadCount">0</strong>
+            <span>descărcări</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <div class="documents-layout">
-          <!-- Sidebar cu filtre -->
-          <aside class="docs-filters-sidebar">
-            <!-- Căutare Documente -->
-            <div class="filter-group">
-              <label for="docSearch" class="filter-title">Căutare</label>
-              <input type="text" id="docSearch" class="filter-input" placeholder="Caută documente...">
-            </div>
+    <main class="documents-container">
+      <div class="documents-layout">
+        <!-- SIDEBAR FILTRE -->
+        <aside class="docs-filters-sidebar">
+          <!-- SEARCH -->
+          <div class="filter-group">
+            <label for="docSearch" class="filter-title">Căutare</label>
+            <input type="text" id="docSearch" class="filter-input" placeholder="Caută documente...">
+          </div>
 
-            <!-- Buton reset -->
-            <button id="resetDocsFiltersBtn" class="reset-filters-btn">RESETARE FILTRU</button>
+          <!-- RESET BUTTON -->
+          <button id="resetDocsFiltersBtn" class="reset-filters-btn">
+            <i class="fa-solid fa-rotate-left"></i> Resetare filtru
+          </button>
 
-            <!-- Specializare -->
-            <div class="filter-group">
-              <label class="filter-title">Specializarea</label>
-              <div class="faculties-list">
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-spec-calc" value="calculatoare">
-                  <label for="doc-spec-calc">Calculatoare</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-spec-ti" value="tehnologia-informatiei">
-                  <label for="doc-spec-ti">Tehnologia Informației</label>
-                </div>
-                <div class="faculty-item">
-                  <input type="checkbox" id="doc-spec-ism" value="ingineria-sistemelor-multimedia">
-                  <label for="doc-spec-ism">Ingineria Sistemelor Multimedia</label>
-                </div>
+          <!-- SPECIALIZARE -->
+          <div class="filter-group">
+            <label class="filter-title"><i class="fa-solid fa-graduation-cap"></i> Specializarea</label>
+            <div class="faculties-list">
+              <div class="faculty-item">
+                <input type="checkbox" id="doc-spec-calc" value="calculatoare">
+                <label for="doc-spec-calc">Calculatoare</label>
               </div>
-            </div>
-
-            <!-- Tip Material -->
-            <div class="filter-group">
-              <label for="docTypeFilter" class="filter-title">Tip material</label>
-              <select id="docTypeFilter" class="filter-select">
-                <option value="">Toate tipurile</option>
-                <option value="curs">Curs</option>
-                <option value="seminar">Seminar</option>
-                <option value="laborator">Laborator</option>
-                <option value="proiect">Proiect</option>
-                <option value="examen">Examen</option>
-                <option value="referat">Referat</option>
-              </select>
-            </div>
-
-            <!-- Disciplina -->
-            <div class="filter-group">
-              <label for="discipleFilter" class="filter-title">Disciplina</label>
-              <select id="discipleFilter" class="filter-select">
-                <option value="">Toate Disciplinele</option>
-                <option value="calculatoare">Calculatoare</option>
-                <option value="tehnologia-informatiei">Tehnologia Informației</option>
-                <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
-              </select>
-            </div>
-
-            <!-- Año Program -->
-            <div class="filter-group">
-              <label for="yearFilter" class="filter-title">Anul</label>
-              <select id="yearFilter" class="filter-select">
-                <option value="">Toți anii</option>
-                <option value="1">Anul I</option>
-                <option value="2">Anul II</option>
-                <option value="3">Anul III</option>
-                <option value="4">Anul IV</option>
-              </select>
-            </div>
-          </aside>
-
-          <!-- Zona principală cu documente -->
-          <div class="docs-main">
-            <div class="docs-grid" id="docsGrid">
-              <div class="empty-state-card">
-                <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-                <h3>Se pregătește biblioteca</h3>
-                <p>Documentele se vor încărca automat din baza de date imediat ce sunt disponibile.</p>
+              <div class="faculty-item">
+                <input type="checkbox" id="doc-spec-ti" value="tehnologia-informatiei">
+                <label for="doc-spec-ti">Tehnologia Informației</label>
+              </div>
+              <div class="faculty-item">
+                <input type="checkbox" id="doc-spec-ism" value="ingineria-sistemelor-multimedia">
+                <label for="doc-spec-ism">Ingineria Sistemelor Multimedia</label>
               </div>
             </div>
           </div>
+
+          <!-- TIP MATERIAL -->
+          <div class="filter-group">
+            <label for="docTypeFilter" class="filter-title"><i class="fa-solid fa-folder"></i> Tip material</label>
+            <select id="docTypeFilter" class="filter-select">
+              <option value="">Toate tipurile</option>
+              <option value="curs">Curs</option>
+              <option value="seminar">Seminar</option>
+              <option value="laborator">Laborator</option>
+              <option value="proiect">Proiect</option>
+              <option value="examen">Examen</option>
+              <option value="referat">Referat</option>
+            </select>
+          </div>
+
+          <!-- DISCIPLINA -->
+          <div class="filter-group">
+            <label for="discipleFilter" class="filter-title"><i class="fa-solid fa-book-bookmark"></i> Disciplina</label>
+            <select id="discipleFilter" class="filter-select">
+              <option value="">Toate disciplinele</option>
+              <option value="calculatoare">Calculatoare</option>
+              <option value="tehnologia-informatiei">Tehnologia Informației</option>
+              <option value="ingineria-sistemelor-multimedia">Ingineria Sistemelor Multimedia</option>
+            </select>
+          </div>
+
+          <!-- ANUL -->
+          <div class="filter-group">
+            <label for="yearFilter" class="filter-title"><i class="fa-solid fa-calendar"></i> Anul</label>
+            <select id="yearFilter" class="filter-select">
+              <option value="">Toți anii</option>
+              <option value="1">Anul I</option>
+              <option value="2">Anul II</option>
+              <option value="3">Anul III</option>
+              <option value="4">Anul IV</option>
+            </select>
+          </div>
+        </aside>
+
+        <!-- MAIN DOCUMENTS AREA -->
+        <div class="docs-main">
+          <div class="docs-grid" id="docsGrid">
+            <div class="empty-state-card">
+              <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+              <h3>Se pregătește biblioteca</h3>
+              <p>Documentele se vor încărca automat din baza de date imediat ce sunt disponibile.</p>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
     </main>
 
-    <!-- Footer cu Info & Links -->
+    <!-- Footer -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
+          <img src="../../assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" class="footer-logo">
           <h4>ULBStudent</h4>
-          <p>Platformă de suport pentru comunitatea studenților ULBS. Găsește resurse, conectează cu colegi și colaborează la proiecte.</p>
+          <p>Platformă de suport pentru comunitatea studenților ULBS.</p>
         </div>
         
         <div class="footer-section">
           <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
             <li><a href="../../index.html">Acasă</a></li>
-            <li><a href="documente.html">Bibliotecă Documente</a></li>
+            <li><a href="documente.html">Documente</a></li>
             <li><a href="comments.html">Discuții</a></li>
           </ul>
         </div>
@@ -176,7 +723,6 @@
     <script src="../js/professors-filtering.js"></script>
   </body>
 </html>
-
 
 
 

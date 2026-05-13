@@ -7,16 +7,568 @@
     <meta name="author" content="ULBStudent" />
     <meta name="theme-color" content="#e63946" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
-    <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    <link rel="icon" type="image/png" href="../../assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="../../assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
 
-    <title>Discutie Postare - ULBStudent</title>
+    <title>Discuție - ULBStudent</title>
     <link rel="stylesheet" href="../css/styles-global.css" />
     <link rel="stylesheet" href="../css/app-polish.css" />
     <link rel="stylesheet" href="../css/styles-subreddit.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
+    <style>
+      .discussion-detail-container {
+        width: min(1240px, calc(100% - 2rem));
+        margin: 1.75rem auto 3.5rem;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .discussion-hero {
+        overflow: hidden;
+        padding: 1.5rem;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.95)),
+          radial-gradient(circle at top right, rgba(230, 57, 70, 0.12), transparent 36%);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      body.dark-mode .discussion-hero,
+      html.dark-mode .discussion-hero {
+        background:
+          linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9)),
+          radial-gradient(circle at top right, rgba(230, 57, 70, 0.16), transparent 36%);
+        border-color: rgba(71, 85, 105, 0.46);
+      }
+
+      .discussion-hero-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .discussion-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(230, 57, 70, 0.08);
+        color: var(--accent);
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .discussion-hero h1 {
+        margin: 0.85rem 0 0.35rem;
+        font-size: clamp(2rem, 4vw, 3.3rem);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+
+      .discussion-hero p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1rem;
+        line-height: 1.65;
+        max-width: 66ch;
+      }
+
+      .discussion-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 1rem;
+      }
+
+      .discussion-pill,
+      .discussion-status-pill,
+      .discussion-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        width: fit-content;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      body.dark-mode .discussion-pill,
+      body.dark-mode .discussion-status-pill,
+      body.dark-mode .discussion-kicker,
+      html.dark-mode .discussion-pill,
+      html.dark-mode .discussion-status-pill,
+      html.dark-mode .discussion-kicker {
+        background: rgba(15, 23, 42, 0.62);
+        border-color: rgba(71, 85, 105, 0.4);
+      }
+
+      .discussion-status-pill {
+        background: rgba(230, 57, 70, 0.08);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.18);
+      }
+
+      .discussion-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
+        gap: 1rem;
+      }
+
+      .discussion-main,
+      .discussion-sidebar {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .discussion-panel,
+      .comment-form-shell,
+      .comments-stack,
+      .sidebar-thread-card {
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+      }
+
+      body.dark-mode .discussion-panel,
+      body.dark-mode .comment-form-shell,
+      body.dark-mode .comments-stack,
+      body.dark-mode .sidebar-thread-card,
+      html.dark-mode .discussion-panel,
+      html.dark-mode .comment-form-shell,
+      html.dark-mode .comments-stack,
+      html.dark-mode .sidebar-thread-card {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(71, 85, 105, 0.5);
+      }
+
+      .discussion-panel {
+        padding: 1.25rem;
+      }
+
+      .discussion-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        width: fit-content;
+        padding: 0.72rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussion-back-link,
+      html.dark-mode .discussion-back-link {
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .discussion-back-link:hover {
+        transform: translateY(-1px);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.2);
+      }
+
+      .discussion-thread-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .discussion-thread-card.is-loading .thread-skeleton,
+      .comments-stack.is-loading .comment-skeleton {
+        display: grid;
+      }
+
+      .discussion-thread-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .thread-title-row {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .thread-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+      }
+
+      .thread-meta-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+      }
+
+      .thread-content {
+        color: var(--text);
+        line-height: 1.75;
+        font-size: 1.02rem;
+      }
+
+      .thread-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.85rem;
+      }
+
+      .thread-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.38rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(230, 57, 70, 0.08);
+        border: 1px solid rgba(230, 57, 70, 0.12);
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .thread-stats {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.16);
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+      }
+
+      .thread-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .thread-skeleton,
+      .comment-skeleton {
+        display: none;
+        gap: 0.7rem;
+      }
+
+      .skeleton-line,
+      .skeleton-chip,
+      .skeleton-block {
+        position: relative;
+        overflow: hidden;
+        background: rgba(148, 163, 184, 0.18);
+        border-radius: 999px;
+      }
+
+      .skeleton-line::after,
+      .skeleton-chip::after,
+      .skeleton-block::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+        transform: translateX(-100%);
+        animation: threadShimmer 1.5s infinite;
+      }
+
+      @keyframes threadShimmer {
+        to { transform: translateX(100%); }
+      }
+
+      .skeleton-line { height: 14px; }
+      .skeleton-chip { height: 28px; width: 120px; }
+      .skeleton-block { height: 18px; border-radius: 14px; }
+
+      .thread-error-state,
+      .comments-empty,
+      .discussion-empty-card {
+        display: grid;
+        place-items: center;
+        gap: 0.75rem;
+        min-height: 220px;
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--text-secondary);
+        border: 1px dashed rgba(148, 163, 184, 0.26);
+        border-radius: 18px;
+      }
+
+      .thread-error-state i,
+      .comments-empty i,
+      .discussion-empty-card i {
+        font-size: 2.4rem;
+        color: var(--accent);
+        opacity: 0.34;
+      }
+
+      .comment-form-shell {
+        padding: 1.25rem;
+      }
+
+      .comment-form-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .comment-form-title {
+        margin: 0 0 0.35rem;
+        color: var(--text);
+        font-size: 1.1rem;
+      }
+
+      .comment-form-subtitle {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      .comment-form-layout {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .comment-form-help {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .comment-form-label {
+        display: block;
+        margin-bottom: 0.45rem;
+        font-weight: 800;
+      }
+
+      .comment-input {
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        background: rgba(248, 250, 252, 0.9);
+        color: var(--text);
+        transition: all 0.2s ease;
+      }
+
+      .comment-textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      .comment-input:focus {
+        outline: none;
+        border-color: rgba(230, 57, 70, 0.32);
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.08);
+      }
+
+      .comment-form-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .comment-submit-btn {
+        flex: 1 1 220px;
+        padding: 0.9rem 1.25rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
+        color: #fff;
+        border: none;
+        font-weight: 800;
+        box-shadow: 0 12px 28px rgba(230, 57, 70, 0.18);
+      }
+
+      .comment-reset-btn {
+        flex: 0 0 auto;
+        padding: 0.9rem 1.1rem;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid rgba(148, 163, 184, 0.24);
+      }
+
+      .comments-stack {
+        padding: 1.25rem;
+      }
+
+      .comments-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .comments-title {
+        margin: 0;
+        font-size: 1.08rem;
+      }
+
+      .comments-list {
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .comment-card {
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(248, 250, 252, 0.88);
+      }
+
+      body.dark-mode .comment-card,
+      html.dark-mode .comment-card {
+        background: rgba(2, 6, 23, 0.26);
+      }
+
+      .comment-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .comment-author {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .comment-avatar {
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.16), rgba(37, 99, 235, 0.14));
+        color: var(--accent);
+        font-weight: 900;
+      }
+
+      .comment-author h4 {
+        margin: 0;
+        color: var(--text);
+        font-size: 0.98rem;
+      }
+
+      .comment-time {
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+      }
+
+      .comment-body {
+        margin: 0;
+        color: var(--text);
+        line-height: 1.7;
+      }
+
+      .comment-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.85rem;
+      }
+
+      .comment-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.38rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .discussion-sidebar-card {
+        padding: 1.2rem;
+      }
+
+      .sidebar-thread-card {
+        padding: 1rem;
+      }
+
+      .sidebar-thread-card h3 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+      }
+
+      .sidebar-thread-card p {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+
+      .sidebar-list {
+        display: grid;
+        gap: 0.65rem;
+        margin-top: 0.9rem;
+      }
+
+      .sidebar-list-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+      }
+
+      @media (max-width: 1080px) {
+        .discussion-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .discussion-detail-container {
+          width: calc(100vw - 1rem);
+          margin: 0.75rem auto 2rem;
+        }
+
+        .discussion-hero,
+        .discussion-panel,
+        .comment-form-shell,
+        .comments-stack,
+        .sidebar-thread-card {
+          border-radius: 18px;
+        }
+
+        .discussion-hero-top,
+        .discussion-thread-head,
+        .comment-form-header,
+        .comments-header {
+          flex-direction: column;
+        }
+
+        .comment-submit-btn,
+        .comment-reset-btn {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -43,83 +595,139 @@
       </div>
     </header>
 
-    <main class="container discussion-detail-container">
-      <section class="subreddit-banner discussion-detail-banner">
-        <div class="sub-info">
-            <img src="../../assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="Logo ULBStudent" class="sub-logo-horizontal">
+    <main class="discussion-detail-container">
+      <section class="discussion-hero">
+        <div class="discussion-hero-top">
           <div>
-            <h2>Discuție postare</h2>
-            <p>Vezi postarea selectată și toate comentariile în pagina dedicată.</p>
+            <span class="discussion-brand"><i class="fa-solid fa-comments"></i> ULBStudent Forum</span>
+            <h1>Discuție</h1>
+            <p>Vezi postarea, votează în sondaj și participă la conversație.</p>
+            <div class="discussion-hero-meta">
+              <span class="discussion-status-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Conversație activă</span>
+              <span class="discussion-pill"><i class="fa-solid fa-shield-heart"></i> Comunitate academică</span>
+            </div>
           </div>
+          <a href="comments.html" class="discussion-back-link"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
         </div>
       </section>
 
-      <a href="comments.html" class="join-btn join-inline-back">Înapoi la toate discuțiile</a>
+      <div class="discussion-layout">
+        <div class="discussion-main">
+          <article id="commentsPostContainer" class="discussion-panel discussion-thread-card is-loading">
+            <div class="thread-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+              <span class="skeleton-chip" style="width:92px;"></span>
+              <span class="skeleton-line" style="width:78%; height:18px;"></span>
+              <span class="skeleton-line" style="width:58%;"></span>
+              <span class="skeleton-line" style="width:92%; height:14px;"></span>
+              <span class="skeleton-line" style="width:88%; height:14px;"></span>
+            </div>
+            <div class="discussion-empty-card" style="margin-top:0; border:none; padding:0; min-height:auto;">
+              <i class="fa-regular fa-window-restore"></i>
+              <strong>Încă nu există detalii pentru această postare</strong>
+              <span>Deschide această pagină din butonul Comentează al unei postări.</span>
+            </div>
+          </article>
 
-      <div id="commentsPostContainer" class="comment-post-preview">
-        <h2 class="comment-post-title">Încă nu există detalii pentru această postare</h2>
-        <p class="comment-post-description">
-          Deschide această pagină din butonul Comentează al unei postări.
-        </p>
-      </div>
+          <section class="comment-form-shell">
+            <div class="comment-form-header">
+              <div>
+                <h3 class="comment-form-title">Adaugă un comentariu</h3>
+                <p class="comment-form-subtitle">Răspunde, adaugă context sau continuă conversația fără formular tehnic.</p>
+              </div>
+              <div class="comment-form-help">
+                <span class="discussion-kicker"><i class="fa-solid fa-bolt"></i> Rapid</span>
+                <span class="discussion-kicker"><i class="fa-solid fa-lock"></i> Email opțional</span>
+              </div>
+            </div>
+            <form id="commentForm" class="comment-form-layout">
+              <div>
+                <label for="commentName" class="comment-form-label">Nume (opțional)</label>
+                <input
+                  type="text"
+                  id="commentName"
+                  name="name"
+                  class="comment-input"
+                  placeholder="Cum dorești să apari în discuție?"
+                >
+              </div>
 
-      <div class="comment-form-shell">
-        <h3 class="comment-form-title">Adaugă un comentariu</h3>
-        <form id="commentForm" class="comment-form-layout">
-          <div>
-            <label for="commentName" class="comment-form-label">Nume (opțional)</label>
-            <input
-              type="text"
-              id="commentName"
-              name="name"
-              class="comment-input"
-              placeholder="Cum dorești să fii creditat?"
-            >
-          </div>
+              <div>
+                <label for="commentText" class="comment-form-label">Comentariul tău *</label>
+                <textarea
+                  id="commentText"
+                  name="comment"
+                  required
+                  class="comment-input comment-textarea"
+                  placeholder="Scrie o opinie, un răspuns sau o întrebare clară..."
+                ></textarea>
+              </div>
 
-          <div>
-            <label for="commentText" class="comment-form-label">Comentariul tău *</label>
-            <textarea
-              id="commentText"
-              name="comment"
-              required
-              class="comment-input comment-textarea"
-              placeholder="Partajează-ți gândurile, răspunsurile sau întrebările..."
-            ></textarea>
-          </div>
+              <div>
+                <label for="commentEmail" class="comment-form-label">Email pentru notificări</label>
+                <input
+                  type="email"
+                  id="commentEmail"
+                  name="email"
+                  class="comment-input"
+                  placeholder="email@exemplu.ro"
+                >
+              </div>
 
-          <div>
-            <label for="commentEmail" class="comment-form-label">Email (pentru notificări)</label>
-            <input
-              type="email"
-              id="commentEmail"
-              name="email"
-              class="comment-input"
-              placeholder="email@exemplu.ro"
-            >
-          </div>
+              <div class="comment-form-actions">
+                <button type="submit" class="comment-submit-btn">
+                  <i class="fa-solid fa-paper-plane"></i> Postează comentariul
+                </button>
+                <button type="reset" class="comment-reset-btn">Șterge</button>
+              </div>
+            </form>
+          </section>
 
-          <div class="comment-form-actions">
-            <button
-              type="submit"
-              class="comment-submit-btn"
-            >
-              <i class="fa-solid fa-paper-plane"></i> Postează comentariu
-            </button>
-            <button
-              type="reset"
-              class="comment-reset-btn"
-            >
-              Șterge
-            </button>
-          </div>
-        </form>
-      </div>
+          <section class="comments-stack is-loading">
+            <div class="comments-header">
+              <div>
+                <h3 id="commentsTitle" class="comments-title">0 comentarii</h3>
+                <p style="margin:0.35rem 0 0; color:var(--text-secondary);">Răspunsuri reale din comunitate, afișate clar și scanabil.</p>
+              </div>
+            </div>
+            <div id="commentsList" class="comments-list">
+              <div class="comment-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+                <div style="display:flex; gap:0.75rem; align-items:center;">
+                  <span class="skeleton-block" style="width:44px; height:44px; border-radius:14px;"></span>
+                  <div style="flex:1; display:grid; gap:0.45rem;">
+                    <span class="skeleton-line" style="width:38%; height:14px;"></span>
+                    <span class="skeleton-line" style="width:24%; height:12px;"></span>
+                  </div>
+                </div>
+                <span class="skeleton-line" style="width:92%; height:14px;"></span>
+                <span class="skeleton-line" style="width:84%; height:14px;"></span>
+              </div>
+            </div>
+            <div id="commentsEmptyState" class="comments-empty" style="display:none;">
+              <i class="fa-regular fa-message"></i>
+              <strong>Nu există comentarii încă</strong>
+              <span>Fii primul care răspunde la această discuție.</span>
+            </div>
+          </section>
+        </div>
 
-      <div class="comments-stack">
-        <h3 id="commentsTitle" class="comments-title">0 comentarii</h3>
-        <div id="commentsList"></div>
-        <p id="commentsEmptyState" class="comments-empty">Încă nu există comentarii.</p>
+        <aside class="discussion-sidebar">
+          <section class="sidebar-thread-card discussion-sidebar-card">
+            <span class="discussion-kicker"><i class="fa-solid fa-layer-group"></i> Despre discuție</span>
+            <h3>Ce poți face aici</h3>
+            <p>Consultă postarea, votează în sondaj, apoi intră în conversație cu un comentariu clar și util.</p>
+            <div class="sidebar-list">
+              <div class="sidebar-list-item"><i class="fa-solid fa-circle-check" style="color: var(--accent);"></i> Voturile sunt salvate pe sondajul aferent postării.</div>
+              <div class="sidebar-list-item"><i class="fa-solid fa-circle-check" style="color: var(--accent);"></i> Comentariile apar în timp real când pagina este deschisă.</div>
+              <div class="sidebar-list-item"><i class="fa-solid fa-circle-check" style="color: var(--accent);"></i> Poți reveni oricând la catalogul complet de discuții.</div>
+            </div>
+          </section>
+
+          <section class="sidebar-thread-card discussion-sidebar-card">
+            <span class="discussion-kicker"><i class="fa-solid fa-wand-magic-sparkles"></i> Sfat</span>
+            <h3>Un răspuns bun</h3>
+            <p>Menține comentariul scurt, concret și respectuos. Răspunsurile utile se citesc rapid și primesc mai multă încredere.</p>
+          </section>
+        </aside>
       </div>
     </main>
 

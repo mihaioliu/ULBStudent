@@ -4,30 +4,152 @@ async function loadProfessorProfile() {
 
   const nameEl = document.getElementById('profName');
   const specializationEl = document.getElementById('profSpecialization');
+  const specializationBadgeEl = document.getElementById('profSpecializationBadge');
+  const avatarEl = document.getElementById('profAvatar');
   const emailEl = document.getElementById('profEmail');
+  const emailAltEl = document.getElementById('profEmailAlt');
+  const emailFeedbackEl = document.getElementById('emailCopyFeedback');
   const subjectsEl = document.getElementById('profSubjects');
   const ratingEl = document.getElementById('profRating');
+  const ratingSummaryEl = document.getElementById('profRatingSummary');
+  const ratingStarsEl = document.getElementById('profRatingStars');
+  const ratingBreakdownEl = document.getElementById('profRatingBreakdown');
+  const reviewCountEl = document.getElementById('profReviewCount');
+  const reviewCountStatEl = document.getElementById('profReviewCountStat');
+  const reviewCountInlineEl = document.getElementById('profReviewCountInline');
+  const teachingCountEl = document.getElementById('profTeachingCount');
+  const teachingCountStatEl = document.getElementById('profTeachingCountStat');
   const reviewsListEl = document.getElementById('reviewsList');
   const reviewsEmptyEl = document.getElementById('reviewsEmptyState');
   const reviewForm = document.getElementById('reviewForm');
   const reviewModal = document.getElementById('reviewModal');
   const openReviewModalBtn = document.getElementById('openReviewModalBtn');
+  const openReviewModalBtnSecondary = document.getElementById('openReviewModalBtnSecondary');
   const closeReviewModalBtn = document.getElementById('closeReviewModalBtn');
   const cancelReviewModalBtn = document.getElementById('cancelReviewModalBtn');
   const reviewModalSubtitle = document.getElementById('reviewModalSubtitle');
 
   let currentProfessor = null;
-  const fallbackName = params.get('name') || 'Profesor';
+  const fallbackName = params.get('name') || 'Profesor ULBS';
   const fallbackSpec = params.get('specializare') || '-';
+
+  const escapeHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const splitSubjects = (value) => {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item || '').trim()).filter(Boolean);
+    }
+
+    return String(value || '')
+      .split(/,|\n|;|\//)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const formatDate = (value) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return 'dată necunoscută';
+    return new Intl.DateTimeFormat('ro-RO', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(parsed);
+  };
+
+  const starMarkup = (rating) => {
+    const value = Math.max(0, Math.min(5, Number(rating) || 0));
+    let markup = '';
+    for (let index = 1; index <= 5; index += 1) {
+      markup += `<i class="fa-${index <= Math.round(value) ? 'solid' : 'regular'} fa-star"></i>`;
+    }
+    return markup;
+  };
+
+  const initialsForName = (fullName) => {
+    const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'UL';
+    return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'UL';
+  };
+
+  const renderSubjectChips = (subjects) => {
+    const list = splitSubjects(subjects);
+    if (!list.length) {
+      subjectsEl.innerHTML = '<span class="prof-empty-inline">Nu sunt publicate materii încă.</span>';
+      return 0;
+    }
+
+    subjectsEl.innerHTML = list.map((subject) => `<span class="prof-subject-pill"><i class="fa-solid fa-book-open"></i> ${escapeHtml(subject)}</span>`).join('');
+    return list.length;
+  };
+
+  const updateRatingSummary = (average, count) => {
+    const safeAverage = Number.isFinite(average) ? average : 0;
+    const safeCount = Number(count) || 0;
+    const summaryLabel = safeCount ? `${safeAverage.toFixed(1)} / 5` : 'Fără recenzii';
+
+    ratingEl.innerHTML = summaryLabel;
+    if (ratingSummaryEl) ratingSummaryEl.textContent = summaryLabel;
+    if (reviewCountEl) reviewCountEl.textContent = `${safeCount} recenzii`;
+    if (reviewCountStatEl) reviewCountStatEl.textContent = String(safeCount);
+    if (reviewCountInlineEl) reviewCountInlineEl.textContent = safeCount === 1 ? '1 recenzie' : `${safeCount} recenzii`;
+
+    if (ratingStarsEl) {
+      ratingStarsEl.innerHTML = safeCount ? starMarkup(safeAverage) : '<i class="fa-regular fa-star"></i>'.repeat(5);
+    }
+
+    if (ratingBreakdownEl) {
+      if (!safeCount) {
+        ratingBreakdownEl.innerHTML = '<span class="prof-empty-inline">Nu există suficiente date pentru breakdown.</span>';
+      } else {
+        const buckets = [5, 4, 3, 2, 1].map((score) => ({
+          score,
+          count: 0
+        }));
+
+        buckets.forEach((bucket) => {
+          bucket.count = 0;
+        });
+
+        const rows = Array.isArray(window.__currentProfessorReviews) ? window.__currentProfessorReviews : [];
+        rows.forEach((row) => {
+          const rounded = Math.max(1, Math.min(5, Math.round(Number(row.rating || 0))));
+          const bucket = buckets.find((item) => item.score === rounded);
+          if (bucket) bucket.count += 1;
+        });
+
+        ratingBreakdownEl.innerHTML = buckets.map((bucket) => {
+          const width = safeCount ? Math.round((bucket.count / safeCount) * 100) : 0;
+          return `
+            <div class="prof-rating-line">
+              <span>${bucket.score} <i class="fa-solid fa-star"></i></span>
+              <div class="prof-rating-bar"><span style="width:${width}%"></span></div>
+              <span style="text-align:right;">${bucket.count}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  };
+
+  const setAvatar = (fullName) => {
+    if (!avatarEl) return;
+    avatarEl.textContent = initialsForName(fullName);
+  };
 
   const getProfessorDisplay = () => {
     if (currentProfessor) {
+      const subjects = currentProfessor.materie || currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || currentProfessor.disciplines || '';
       return {
         id: String(currentProfessor.id || professorId || '').trim(),
         fullName: currentProfessor.nume_complet || currentProfessor.full_name || fallbackName,
         specialization: currentProfessor.specializare || currentProfessor.specialization || fallbackSpec,
         email: currentProfessor.email || currentProfessor.institutional_email || '-',
-        subjects: currentProfessor.materie || currentProfessor.materie_predata || currentProfessor.taught_subject || currentProfessor.subjects || '-'
+        subjects
       };
     }
 
@@ -36,7 +158,7 @@ async function loadProfessorProfile() {
       fullName: fallbackName,
       specialization: fallbackSpec,
       email: '-',
-      subjects: fallbackSpec
+      subjects: ''
     };
   };
 
@@ -104,28 +226,43 @@ async function loadProfessorProfile() {
     }
 
     const professorDisplay = getProfessorDisplay();
+    document.title = `${professorDisplay.fullName} | ULBStudent`;
     nameEl.textContent = professorDisplay.fullName;
+    setAvatar(professorDisplay.fullName);
     specializationEl.textContent = `Specializare: ${professorDisplay.specialization}`;
+    if (specializationBadgeEl) specializationBadgeEl.textContent = professorDisplay.specialization || 'Specializare';
     emailEl.textContent = professorDisplay.email;
-    subjectsEl.textContent = professorDisplay.subjects || '-';
+    if (emailAltEl) emailAltEl.textContent = professorDisplay.email;
+    if (professorDisplay.email && professorDisplay.email !== '-') {
+      emailEl.textContent = professorDisplay.email;
+      if (emailAltEl) emailAltEl.textContent = professorDisplay.email;
+    }
+
+    const teachingCount = renderSubjectChips(professorDisplay.subjects);
+    if (teachingCountEl) teachingCountEl.textContent = teachingCount === 1 ? '1 materie' : `${teachingCount} materii`;
+    if (teachingCountStatEl) teachingCountStatEl.textContent = String(teachingCount);
+
     // Copy email button (profile) — short label and transient feedback
     const copyBtn = document.getElementById('copyEmailBtn');
     if (copyBtn) {
       copyBtn.onclick = async () => {
         const email = (professorDisplay.email || '').trim();
         if (!email || email === '-') {
+          if (emailFeedbackEl) emailFeedbackEl.textContent = 'Adresa de email nu este disponibilă.';
           if (typeof showNotification === 'function') showNotification('Adresa de email nu este disponibilă.');
           return;
         }
-        const originalText = copyBtn.textContent;
         try {
           await navigator.clipboard.writeText(email);
-          copyBtn.textContent = 'Copiat';
+          copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copiat';
+          if (emailFeedbackEl) emailFeedbackEl.textContent = 'Email copiat în clipboard.';
           if (typeof showNotification === 'function') showNotification('Email copiat');
           setTimeout(() => {
-            copyBtn.textContent = originalText;
+            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiază';
+            if (emailFeedbackEl) emailFeedbackEl.textContent = '';
           }, 1400);
         } catch (err) {
+          if (emailFeedbackEl) emailFeedbackEl.textContent = 'Nu s-a putut copia emailul.';
           if (typeof showNotification === 'function') showNotification('Nu s-a putut copia emailul.');
         }
       };
@@ -134,37 +271,56 @@ async function loadProfessorProfile() {
       reviewModalSubtitle.textContent = `Profesor: ${professorDisplay.fullName} • ${professorDisplay.specialization}`;
     }
 
+    if (openReviewModalBtnSecondary) {
+      openReviewModalBtnSecondary.addEventListener('click', openModal);
+    }
+
     async function renderReviews() {
       if (!professorDisplay.id) {
         reviewsListEl.innerHTML = '';
         reviewsEmptyEl.style.display = 'block';
-        ratingEl.textContent = '0/5 (0 recenzii)';
+        window.__currentProfessorReviews = [];
+        updateRatingSummary(0, 0);
         return;
       }
 
       const reviewsResult = await getProfessorReviews(professorDisplay.id);
       const rows = reviewsResult.success ? reviewsResult.data : [];
+      window.__currentProfessorReviews = rows;
 
       reviewsListEl.innerHTML = '';
       if (!rows.length) {
         reviewsEmptyEl.style.display = 'block';
-        ratingEl.textContent = '0/5 (0 recenzii)';
+        updateRatingSummary(0, 0);
         return;
       }
 
       reviewsEmptyEl.style.display = 'none';
       const avg = rows.reduce((sum, row) => sum + Number(row.rating || 0), 0) / rows.length;
-      ratingEl.textContent = `${avg.toFixed(1)}/5 (${rows.length} recenzii)`;
+      updateRatingSummary(avg, rows.length);
 
       rows.forEach((row) => {
         const card = document.createElement('div');
-        card.style.cssText = 'padding: 0.9rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--light-gray);';
+        card.className = 'prof-review-card';
+        const authorName = String(row.autor || row.author || row.student_name || row.created_by_name || row.user_name || 'Student ULBS').trim();
+        const difficulty = row.dificultate ?? row.difficulty;
+        const utility = row.utilitate ?? row.utility;
+        const clarity = row.claritate ?? row.clarity;
+        const comment = String(row.comentariu || row.comment || '').trim();
+        const metaItems = [];
+        if (difficulty !== undefined && difficulty !== null && difficulty !== '') metaItems.push(`<span class="prof-review-meta-pill">Dificultate: ${escapeHtml(difficulty)}</span>`);
+        if (utility !== undefined && utility !== null && utility !== '') metaItems.push(`<span class="prof-review-meta-pill">Utilitate: ${escapeHtml(utility)}</span>`);
+        if (clarity !== undefined && clarity !== null && clarity !== '') metaItems.push(`<span class="prof-review-meta-pill">Claritate: ${escapeHtml(clarity)}</span>`);
         card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:0.8rem; margin-bottom:0.45rem;">
-            <strong>⭐ ${Number(row.rating || 0).toFixed(1)}</strong>
-            <span style="color: var(--text-secondary); font-size: 0.85rem;">${new Date(row.created_at).toLocaleString('ro-RO')}</span>
+          <div class="prof-review-head">
+            <div class="prof-review-author">
+              <strong>${escapeHtml(authorName)}</strong>
+              <span class="prof-review-date">${formatDate(row.created_at)}</span>
+            </div>
+            <div class="prof-rating-stars" aria-hidden="true">${starMarkup(Number(row.rating || 0))}</div>
           </div>
-          <p style="margin:0; color: var(--text);">${escapeHtml(row.comentariu || row.comment || '')}</p>
+          ${comment ? `<p class="prof-review-text">${escapeHtml(comment)}</p>` : '<p class="prof-review-text prof-review-empty-text">Recenzie fără comentariu</p>'}
+          ${metaItems.length ? `<div class="prof-review-meta">${metaItems.join('')}</div>` : ''}
         `;
         reviewsListEl.appendChild(card);
       });
