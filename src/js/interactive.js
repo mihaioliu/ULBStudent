@@ -3,6 +3,63 @@
  * Gestionează: teme, votare, notificări, căutare, gamificație, theme toggle
  */
 
+// Restore saved theme as early as possible to avoid flash and ensure persistence
+(function restoreSavedThemeEarly() {
+  try {
+    const saved = localStorage.getItem('theme');
+    const isDark = saved === 'dark';
+    if (typeof document !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark-mode');
+        document.body && document.body.classList.add('dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+        document.body && document.body.classList.remove('dark-mode');
+      }
+      // If logos exist on the page, try to set an appropriate src quickly
+      try {
+        const logos = document.querySelectorAll('img.header-logo');
+        logos.forEach((logo) => {
+          const src = logo.getAttribute('src') || '';
+          if (isDark && src && !src.includes('white')) {
+            logo.src = src.replace(/logo-color/i, 'logo-white');
+          } else if (!isDark && src && src.includes('logo-white')) {
+            logo.src = src.replace(/logo-white/i, 'logo-color');
+          }
+        });
+      } catch (e) {
+        // noop
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+})();
+
+// Sync theme across tabs/windows and respond to external changes
+window.addEventListener('storage', (ev) => {
+  if (!ev) return;
+  try {
+    if (ev.key === 'theme') {
+      const newTheme = ev.newValue === 'light' ? 'light' : 'dark';
+      // applyTheme is defined later; guard-call if available else set classes directly
+      if (typeof applyTheme === 'function') {
+        applyTheme(newTheme);
+      } else {
+        if (newTheme === 'dark') {
+          document.documentElement.classList.add('dark-mode');
+          document.body && document.body.classList.add('dark-mode');
+        } else {
+          document.documentElement.classList.remove('dark-mode');
+          document.body && document.body.classList.remove('dark-mode');
+        }
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize core interactions FIRST (non-blocking)
   initializeShellPolish();
@@ -1229,7 +1286,7 @@ function initializeAIChat() {
   const aiChatBtn = document.createElement('button');
   aiChatBtn.id = 'aiChatBtn';
   aiChatBtn.className = 'fab-button show';
-  aiChatBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span class="fab-label">Ajutor AI</span>';
+  aiChatBtn.innerHTML = '<img src="/assets/Logos and icons/ulbstudent-icon-circle.png" alt="ULBStudent" aria-hidden="true" style="width: 3rem; height:3rem; object-fit: contain; flex-shrink: 0;" /><span class="fab-label">Ajutor AI</span>';
   aiChatBtn.title = 'Deschide asistentul ULBStudent';
   aiChatBtn.setAttribute('aria-label', 'Deschide asistentul ULBStudent');
   
@@ -1241,7 +1298,10 @@ function initializeAIChat() {
   chatModal.innerHTML = `
     <div class="chat-window">
       <div class="chat-header">
-        <h3><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>Eliot</h3>
+        <h3>
+          <img src="/assets/Logos and icons/ulbstudent-icon-minimalist-bg-transparent.png" alt="ULBStudent" aria-hidden="true" style="width: 3.5rem; height: 3.5rem; object-fit: contain; flex-shrink: 0;" />
+          Eliot
+        </h3>
         <button class="chat-close-btn" id="chatCloseBtn" aria-label="Închide asistentul">&times;</button>
       </div>
       <div class="chat-messages" id="chatMessages">

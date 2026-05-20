@@ -317,6 +317,26 @@ body.dark-mode .review-modal-content {
   margin-top: 1rem;
 }
 
+/* Dark mode overrides: make professor action buttons use red accent */
+html.dark-mode .btn-action,
+body.dark-mode .btn-action,
+html.dark-mode .view-profile-btn,
+body.dark-mode .view-profile-btn,
+html.dark-mode .view-reviews-btn,
+body.dark-mode .view-reviews-btn {
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(230,57,70,0.18) !important;
+  box-shadow: 0 8px 20px rgba(230,57,70,0.12) !important;
+}
+
+html.dark-mode .view-reviews-btn,
+body.dark-mode .view-reviews-btn {
+  /* ensure review button doesn't stay white in dark mode */
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #fff !important;
+}
+
 .btn-action,
 .view-profile-btn,
 .view-reviews-btn {
@@ -991,6 +1011,10 @@ body.dark-mode .stats-right span {
 
 .professors-layout {
   gap: 1rem;
+}
+
+#seedStatus {
+  padding-left: 0.75rem;
 }
 
 .filters-sidebar,

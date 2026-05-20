@@ -8,13 +8,15 @@
   --app-radius: 8px;
   --app-radius-lg: 12px;
   --app-border: rgba(148, 163, 184, 0.24);
-  --app-border-strong: rgba(230, 57, 70, 0.34);
+  --app-accent: #D4AF37; /* metallic gold for light mode */
+  --app-accent-dark: #b8860b;
+  --app-accent-rgb: 212, 175, 55;
+  --app-border-strong: rgba(var(--app-accent-rgb), 0.34);
   --app-bg: #f6f8fb;
   --app-surface: rgba(255, 255, 255, 0.92);
   --app-surface-solid: #ffffff;
   --app-ink: #101827;
   --app-muted: #64748b;
-  --app-accent: #e63946;
   --app-accent-2: #2563eb;
   --app-accent-3: #0f766e;
   --app-shadow-sm: 0 10px 26px rgba(15, 23, 42, 0.08);
@@ -29,7 +31,7 @@ html {
 body {
   min-width: 320px;
   background:
-    radial-gradient(circle at 12% 8%, rgba(230, 57, 70, 0.08), transparent 32%),
+    radial-gradient(circle at 12% 8%, rgba(212, 175, 55, 0.08), transparent 32%),
     radial-gradient(circle at 88% 16%, rgba(37, 99, 235, 0.1), transparent 34%),
     linear-gradient(180deg, #f8fafc 0%, #eef3f8 46%, #f8fafc 100%) !important;
   color: var(--app-ink);
@@ -43,6 +45,9 @@ html.dark-mode body {
   --app-ink: #f8fafc;
   --app-muted: #cbd5e1;
   --app-border: rgba(100, 116, 139, 0.44);
+  --app-accent: #e63946; /* restore red accent in dark mode */
+  --app-accent-dark: #b91c1c;
+  --app-accent-rgb: 230, 57, 70;
   background:
     radial-gradient(circle at 12% 8%, rgba(230, 57, 70, 0.18), transparent 32%),
     radial-gradient(circle at 88% 16%, rgba(96, 165, 250, 0.12), transparent 34%),
@@ -99,9 +104,9 @@ nav .nav-link.active,
 .nav-link:hover,
 .nav-link.active {
   color: #fff !important;
-  border-color: rgba(230, 57, 70, 0.5) !important;
-  background: linear-gradient(135deg, #e63946, #b91c1c) !important;
-  box-shadow: 0 14px 30px rgba(230, 57, 70, 0.24) !important;
+  border-color: rgba(var(--app-accent-rgb), 0.5) !important;
+  background: linear-gradient(135deg, var(--app-accent), var(--app-accent-dark)) !important;
+  box-shadow: 0 14px 30px rgba(var(--app-accent-rgb), 0.24) !important;
 }
 
 main.container:not(#home),
@@ -213,7 +218,7 @@ html.dark-mode .subreddit-banner {
   inset: auto -8% -58% 42%;
   z-index: -1;
   height: 76%;
-  background: linear-gradient(135deg, rgba(230, 57, 70, 0.14), rgba(37, 99, 235, 0.14));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.14), rgba(37, 99, 235, 0.14));
   clip-path: polygon(8% 0, 100% 24%, 78% 100%, 0 72%);
   pointer-events: none;
 }
@@ -319,6 +324,77 @@ textarea {
   transform: translateY(-3px);
   border-color: var(--app-border-strong) !important;
   box-shadow: var(--app-shadow) !important;
+}
+
+body.dark-mode .feature-tile:hover,
+body.dark-mode .value-card:hover,
+body.dark-mode .studio-board-card:hover,
+html.dark-mode .feature-tile:hover,
+html.dark-mode .value-card:hover,
+html.dark-mode .studio-board-card:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(96, 165, 250, 0.28) !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22) !important;
+  filter: none !important;
+}
+
+body.dark-mode .value-props-section .value-card,
+html.dark-mode .value-props-section .value-card {
+  transition: none !important;
+}
+
+body.dark-mode .value-props-section .value-card:hover,
+html.dark-mode .value-props-section .value-card:hover {
+  transform: none !important;
+  border-color: var(--app-border) !important;
+  box-shadow: var(--app-shadow-sm) !important;
+  background: var(--app-surface) !important;
+  filter: none !important;
+}
+
+#home > .value-props-section .value-card,
+#home > .value-props-section .value-card:hover,
+body.dark-mode #home > .value-props-section .value-card,
+body.dark-mode #home > .value-props-section .value-card:hover,
+html.dark-mode #home > .value-props-section .value-card,
+html.dark-mode #home > .value-props-section .value-card:hover {
+  transform: none !important;
+  transition: none !important;
+  border-color: rgba(71, 85, 105, 0.5) !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1) !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  filter: none !important;
+}
+
+body.dark-mode #home > .value-props-section .value-card i,
+html.dark-mode #home > .value-props-section .value-card i,
+body.dark-mode #home > .value-props-section .value-card span,
+html.dark-mode #home > .value-props-section .value-card span,
+body.dark-mode #home > .value-props-section .value-card strong,
+html.dark-mode #home > .value-props-section .value-card strong {
+  color: #f8fafc !important;
+}
+
+/* Light mode: style homepage value cards with white background and dark content */
+body:not(.dark-mode) #home > .value-props-section .value-card i,
+html:not(.dark-mode) #home > .value-props-section .value-card i,
+body:not(.dark-mode) #home > .value-props-section .value-card span,
+html:not(.dark-mode) #home > .value-props-section .value-card span,
+body:not(.dark-mode) #home > .value-props-section .value-card strong,
+html:not(.dark-mode) #home > .value-props-section .value-card strong {
+  color: var(--app-ink) !important;
+}
+
+/* Override: make homepage value cards white in light mode (looks better on main page) */
+body:not(.dark-mode) #home > .value-props-section .value-card,
+html:not(.dark-mode) #home > .value-props-section .value-card,
+body:not(.dark-mode) #home > .value-props-section .value-card:hover,
+html:not(.dark-mode) #home > .value-props-section .value-card:hover {
+  background: var(--app-surface) !important;
+  border-color: var(--app-border) !important;
+  box-shadow: var(--app-shadow-sm) !important;
+  color: var(--app-ink) !important;
 }
 
 .empty-state-card,
@@ -474,14 +550,31 @@ footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+body:not(.dark-mode) footer,
+html:not(.dark-mode) footer {
+  background: linear-gradient(135deg, #0b2f63 0%, #0a2a57 58%, #0b2448 100%) !important;
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 footer::before {
   content: "";
   position: absolute;
   inset: -30% -10% auto 55%;
   height: 220px;
-  background: linear-gradient(135deg, rgba(230, 57, 70, 0.22), rgba(37, 99, 235, 0.18));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(37, 99, 235, 0.18));
   transform: skewX(-18deg);
   pointer-events: none;
+}
+
+body:not(.dark-mode) footer::before,
+html:not(.dark-mode) footer::before {
+  background: linear-gradient(135deg, rgba(11, 47, 99, 0.38), rgba(11, 47, 99, 0.06)) !important;
+}
+
+/* Dark mode: make footer overlay red (keep light mode gold) */
+body.dark-mode footer::before,
+html.dark-mode footer::before {
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.22), rgba(37, 99, 235, 0.18)) !important;
 }
 
 @media (max-width: 920px) {
@@ -529,8 +622,8 @@ footer::before {
   }
 
   .header-logo {
-    width: min(230px, 76vw) !important;
-    max-width: min(230px, 76vw) !important;
+    width: min(290px, 82vw) !important;
+    max-width: min(290px, 82vw) !important;
   }
 
   header.nav-open nav ul {
@@ -635,8 +728,8 @@ nav .nav-link.active,
 .nav-link:hover,
 .nav-link.active {
   transform: translateY(-1px) !important;
-  border-color: rgba(230, 57, 70, 0.2) !important;
-  background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(37, 99, 235, 0.08)) !important;
+  border-color: rgba(212, 175, 55, 0.2) !important;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(212, 175, 55, 0.08)) !important;
   color: var(--app-ink) !important;
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08) !important;
 }
@@ -744,6 +837,63 @@ body.dark-mode .user-menu-trigger {
   background: rgba(15, 23, 42, 0.66) !important;
   color: #f8fafc !important;
   border-color: rgba(71, 85, 105, 0.42) !important;
+}
+
+/* Dark mode: make header action buttons red for visibility */
+body.dark-mode .header-actions .btn-signin,
+html.dark-mode .header-actions .btn-signin,
+body.dark-mode .header-actions .btn-theme-toggle,
+html.dark-mode .header-actions .btn-theme-toggle {
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(230, 57, 70, 0.22) !important;
+  box-shadow: 0 12px 24px rgba(230, 57, 70, 0.14) !important;
+}
+
+/* Dark mode: make secondary hero CTA ("Caută documente") red */
+html.dark-mode .hero-cta.secondary,
+body.dark-mode .hero-cta.secondary {
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(230,57,70,0.22) !important;
+  box-shadow: 0 10px 22px rgba(230,57,70,0.14) !important;
+}
+
+/* Dark mode: map common gold/yellow text elements to red */
+html.dark-mode .badge.active,
+body.dark-mode .badge.active {
+  background: transparent !important;
+  color: #e63946 !important;
+  border-color: #e63946 !important;
+}
+
+html.dark-mode .helpful-count,
+body.dark-mode .helpful-count {
+  background: rgba(230,57,70,0.12) !important;
+  color: #e63946 !important;
+}
+
+html.dark-mode .discussions-sidebar-tag,
+html.dark-mode .thread-tag,
+html.dark-mode .discussion-status-pill,
+body.dark-mode .discussions-sidebar-tag,
+body.dark-mode .thread-tag,
+body.dark-mode .discussion-status-pill {
+  background: rgba(230,57,70,0.12) !important;
+  border-color: rgba(230,57,70,0.34) !important;
+  color: #e63946 !important;
+}
+
+html.dark-mode .post-votes i.is-active-up,
+html.dark-mode .post-votes i.is-active-down,
+body.dark-mode .post-votes i.is-active-up,
+body.dark-mode .post-votes i.is-active-down {
+  color: #e63946 !important;
+}
+
+html.dark-mode .post-votes:hover,
+body.dark-mode .post-votes:hover {
+  background: linear-gradient(135deg, rgba(230,57,70,0.18), rgba(230,57,70,0.06)) !important;
 }
 
 .user-menu-avatar {
@@ -889,9 +1039,55 @@ body.dark-mode .user-account-summary {
   background: transparent !important;
 }
 
+/* Dark mode: map small gold labels / numbers and icon accents to red */
+html.dark-mode .studio-board-card span,
+body.dark-mode .studio-board-card span,
+html.dark-mode .studio-board-card.is-featured span,
+body.dark-mode .studio-board-card.is-featured span,
+html.dark-mode .feature-tile span,
+body.dark-mode .feature-tile span,
+html.dark-mode .value-card span,
+body.dark-mode .value-card span {
+  color: var(--accent) !important;
+}
+
+html.dark-mode .value-card i,
+body.dark-mode .value-card i,
+html.dark-mode .feature-tile i,
+body.dark-mode .feature-tile i,
+html.dark-mode .studio-board-card i,
+body.dark-mode .studio-board-card i {
+  background: rgba(230,57,70,0.06) !important;
+  color: var(--accent) !important;
+  border-radius: 8px !important;
+  padding: 0.45rem !important;
+}
+
+/* Ensure featured studio card number follows accent */
+html.dark-mode .studio-board-card.is-featured span,
+body.dark-mode .studio-board-card.is-featured span {
+  color: var(--accent) !important;
+}
+
 .user-dropdown-menu hr {
   margin: 0.35rem 0 !important;
   border-top: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Force light-mode hover to remain metallic gold across buttons */
+body:not(.dark-mode) :is(button, a[class*="btn"], .btn-secondary, .btn-action, .btn-primary, .btn-danger, .btn-signin, .btn-signup, .view-profile-btn, .view-reviews-btn, .hero-cta, .search-submit-btn):hover {
+  background: linear-gradient(135deg, #D4AF37, #b8860b) !important;
+  color: #ffffff !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(212, 175, 55, 0.22) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Remove external glow for buttons in dark mode */
+html.dark-mode :is(button, a[class*="btn"], .btn-secondary, .btn-action, .btn-primary, .btn-danger, .btn-signin, .btn-signup, .view-profile-btn, .view-reviews-btn, .hero-cta, .search-submit-btn) {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
 }
 
 footer {
@@ -1014,4 +1210,257 @@ footer {
   .footer-bottom {
     text-align: center;
   }
+}
+
+/* ==========================================================
+   GLOBAL ACCENT OVERRIDES (LIGHT MODE)
+   ========================================================== */
+
+:root {
+  --global-search-accent: #e63946;
+}
+
+.advanced-search-section .filter-checkbox input,
+.filters-sidebar .faculty-item input[type="checkbox"],
+.docs-filters-sidebar .faculty-item input[type="checkbox"] {
+  accent-color: var(--global-search-accent);
+}
+
+.advanced-search-section .filter-checkbox input:checked + span,
+.advanced-search-section .filter-checkbox input:checked + span i,
+.filters-sidebar .faculty-item input[type="checkbox"]:checked + label,
+.docs-filters-sidebar .faculty-item input[type="checkbox"]:checked + label {
+  color: var(--global-search-accent) !important;
+}
+
+button.password-toggle,
+button.password-toggle:hover,
+button.password-toggle:focus-visible,
+button.password-toggle:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Force metallic-gold style for all action buttons in light mode */
+body:not(.dark-mode) button,
+body:not(.dark-mode) .btn-primary,
+body:not(.dark-mode) .btn-secondary,
+body:not(.dark-mode) .btn-danger,
+body:not(.dark-mode) .btn-signin,
+body:not(.dark-mode) .btn-signup,
+body:not(.dark-mode) .btn-theme-toggle,
+body:not(.dark-mode) .join-btn,
+body:not(.dark-mode) .action-btn,
+body:not(.dark-mode) .btn-action,
+body:not(.dark-mode) .settings-nav-btn,
+body:not(.dark-mode) .search-submit-btn,
+body:not(.dark-mode) .hero-cta,
+body:not(.dark-mode) .post-submit-btn,
+body:not(.dark-mode) .btn-download,
+body:not(.dark-mode) .btn-preview,
+body:not(.dark-mode) .reset-filters-btn,
+body:not(.dark-mode) .view-profile-btn,
+body:not(.dark-mode) .view-reviews-btn,
+body:not(.dark-mode) .nav-toggle-btn,
+body:not(.dark-mode) a[class*="btn"] {
+  background: linear-gradient(135deg, #D4AF37, #b8860b) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 12px 24px rgba(212, 175, 55, 0.22) !important;
+}
+
+body:not(.dark-mode) button:hover,
+body:not(.dark-mode) .btn-primary:hover,
+body:not(.dark-mode) .btn-secondary:hover,
+body:not(.dark-mode) .btn-danger:hover,
+body:not(.dark-mode) .btn-signin:hover,
+body:not(.dark-mode) .btn-signup:hover,
+body:not(.dark-mode) .btn-theme-toggle:hover,
+body:not(.dark-mode) .join-btn:hover,
+body:not(.dark-mode) .action-btn:hover,
+body:not(.dark-mode) .btn-action:hover,
+body:not(.dark-mode) .settings-nav-btn:hover,
+body:not(.dark-mode) .search-submit-btn:hover,
+body:not(.dark-mode) .hero-cta:hover,
+body:not(.dark-mode) .post-submit-btn:hover,
+body:not(.dark-mode) .btn-download:hover,
+body:not(.dark-mode) .btn-preview:hover,
+body:not(.dark-mode) .reset-filters-btn:hover,
+body:not(.dark-mode) .view-profile-btn:hover,
+body:not(.dark-mode) .view-reviews-btn:hover,
+
+/* Dark mode: make professor page action buttons red (Details / Add review) */
+html.dark-mode .view-profile-btn,
+body.dark-mode .view-profile-btn,
+html.dark-mode .view-reviews-btn,
+body.dark-mode .view-reviews-btn {
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(230,57,70,0.22) !important;
+  box-shadow: 0 10px 22px rgba(230,57,70,0.12) !important;
+}
+
+html.dark-mode .view-profile-btn:hover,
+body.dark-mode .view-profile-btn:hover,
+html.dark-mode .view-reviews-btn:hover,
+body.dark-mode .view-reviews-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 14px 28px rgba(230,57,70,0.16) !important;
+}
+body:not(.dark-mode) .nav-toggle-btn:hover,
+body:not(.dark-mode) a[class*="btn"]:hover {
+  background: linear-gradient(135deg, #c9a227, #a67608) !important;
+}
+
+/* Light mode: pages with inline red styles from screenshots */
+body:not(.dark-mode) .primary-btn,
+body:not(.dark-mode) .discussions-post-btn,
+body:not(.dark-mode) .discussions-filter-pill.is-active,
+body:not(.dark-mode) .discussions-sidebar-cta,
+body:not(.dark-mode) #registerForm > button[type="submit"] {
+  background: linear-gradient(135deg, #D4AF37, #b8860b) !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(212, 175, 55, 0.24) !important;
+}
+
+body:not(.dark-mode) .primary-btn:hover,
+body:not(.dark-mode) .discussions-post-btn:hover,
+body:not(.dark-mode) .discussions-sidebar-cta:hover,
+body:not(.dark-mode) #registerForm > button[type="submit"]:hover {
+  box-shadow: 0 14px 30px rgba(212, 175, 55, 0.28) !important;
+}
+
+body:not(.dark-mode) .checkbox-row input:checked + .checkbox-chip {
+  background: linear-gradient(135deg, #D4AF37, #b8860b) !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+}
+
+body:not(.dark-mode) .discussions-sidebar-tag,
+body:not(.dark-mode) .thread-tag,
+body:not(.dark-mode) .discussion-status-pill {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.34) !important;
+  color: #a67608 !important;
+}
+
+body:not(.dark-mode) .discussions-sidebar-tag:hover,
+body:not(.dark-mode) .discussions-action-btn:hover,
+body:not(.dark-mode) .discussions-refresh-btn:hover,
+body:not(.dark-mode) .discussions-post-action:hover {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+  color: #a67608 !important;
+}
+
+body:not(.dark-mode) .comment-submit-btn {
+  background: linear-gradient(135deg, #D4AF37, #b8860b) !important;
+  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.22) !important;
+  color: #fff !important;
+}
+
+body:not(.dark-mode) .comment-input:focus,
+body:not(.dark-mode) .input-shell:focus-within,
+body:not(.dark-mode) .discussions-form-field input:focus,
+body:not(.dark-mode) .discussions-form-field textarea:focus,
+body:not(.dark-mode) .discussions-form-field select:focus {
+  border-color: rgba(212, 175, 55, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.14) !important;
+}
+
+body:not(.dark-mode) .post-votes:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.08)) !important;
+}
+
+/* Keep password visibility toggle neutral (no colored button background) */
+body:not(.dark-mode) button.password-toggle,
+body:not(.dark-mode) button.password-toggle:hover,
+body:not(.dark-mode) button.password-toggle:focus-visible,
+body:not(.dark-mode) button.password-toggle:active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body:not(.dark-mode) .post-votes i.is-active-down,
+body:not(.dark-mode) .post-votes i.is-active-up {
+  color: #b8860b !important;
+}
+
+/* Make action buttons in post cards smaller and inline (side-by-side) */
+.post-card .post-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 0.75rem !important;
+  align-items: center !important;
+  padding-top: 0.75rem !important;
+}
+
+.post-card .post-actions .post-submit-btn,
+.post-card .post-actions .comment-submit-btn,
+.post-card .post-actions .action-btn,
+.post-card .post-actions .discussions-post-btn,
+.post-card .post-actions .discussions-sidebar-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.45rem 0.9rem !important;
+  font-size: 0.9rem !important;
+  min-height: 34px !important;
+  border-radius: 10px !important;
+  width: auto !important;
+  white-space: nowrap !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+}
+
+/* Reduce icon-only action button size when inside post-actions */
+.post-card .post-actions .action-btn {
+  padding: 0.4rem 0.6rem !important;
+  font-size: 1rem !important;
+}
+
+/* Light mode: badge active (Forum activ) to be metallic gold */
+body:not(.dark-mode) .badge.active {
+  background: transparent !important;
+  color: #D4AF37 !important;
+  border-color: #D4AF37 !important;
+}
+
+/* Light mode: helpful count button to be metallic gold */
+body:not(.dark-mode) .helpful-count {
+  background: rgba(212, 175, 55, 0.15) !important;
+  color: #D4AF37 !important;
+}
+
+/* Light mode: make the left accent lines in the Discussions sidebar rules metallic gold */
+body:not(.dark-mode) .discussions-sidebar-card .discussions-sidebar-content .discussions-sidebar-rule {
+  border-left: 4px solid #D4AF37 !important;
+  background: linear-gradient(90deg, rgba(212,175,55,0.04) 0%, transparent 12%) !important;
+  box-shadow: none !important;
+  padding-left: 1rem !important;
+  border-radius: 10px !important;
+}
+
+body:not(.dark-mode) .discussions-sidebar-card .discussions-sidebar-content .discussions-sidebar-rule strong {
+  color: var(--text) !important;
+}
+
+body:not(.dark-mode) .discussions-sidebar-card .discussions-sidebar-content .discussions-sidebar-rule span {
+  color: var(--text-secondary) !important;
+}
+
+body:not(.dark-mode) .helpful-count:hover {
+  background: rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Light mode: search filters - checkbox stays red, text becomes gold when checked */
+body:not(.dark-mode) .advanced-search-section .filter-checkbox input {
+  accent-color: #e63946 !important;
+}
+
+body:not(.dark-mode) .advanced-search-section .filter-checkbox input:checked + span,
+body:not(.dark-mode) .advanced-search-section .filter-checkbox input:checked + span i {
+  color: #D4AF37 !important;
 }

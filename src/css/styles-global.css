@@ -9,9 +9,9 @@
   --surface-solid: #ffffff;
   --text: #0f172a;
   --text-secondary: #475569;
-  --accent: #e63946; /* ULBS Red/Crimson */
-  --accent-hover: #c92a36;
-  --accent-glow: rgba(230, 57, 70, 0.35);
+  --accent: #D4AF37; /* Metallic Gold */
+  --accent-hover: #b8860b;
+  --accent-glow: rgba(212, 175, 55, 0.35);
   --primary-blue: #2563eb;
   --primary-blue-glow: rgba(37, 99, 235, 0.35);
   --muted: #f1f5f9;
@@ -254,9 +254,9 @@ header {
 }
 
 .header-logo {
-  width: clamp(150px, 18vw, 240px);
+  width: clamp(240px, 28vw, 360px);
   height: auto;
-  max-width: min(240px, 30vw);
+  max-width: min(360px, 42vw);
   object-fit: contain;
 }
 
@@ -789,6 +789,36 @@ body.dark-mode .announcement-card:hover {
   box-shadow: 0 18px 38px rgba(0, 0, 0, 0.42);
 }
 
+/* Ensure in dark mode the activity/stat cards show red accents on hover
+   (override any accidental gold styles) */
+body.dark-mode .stat-card:hover,
+html.dark-mode .stat-card:hover,
+body.dark-mode .activity-item:hover,
+html.dark-mode .activity-item:hover,
+body.dark-mode #home .stat-card:hover,
+html.dark-mode #home .stat-card:hover,
+body.dark-mode #home .activity-item:hover,
+html.dark-mode #home .activity-item:hover {
+  border-color: rgba(230,57,70,0.65) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.5) !important;
+  background: rgba(15,23,42,0.92) !important;
+}
+
+body.dark-mode .announcement-badge {
+  background: #e63946;
+  color: #ffffff;
+}
+
+body.dark-mode .announcement-card.important .announcement-badge {
+  background: #e63946;
+  color: #ffffff;
+}
+
+body.dark-mode .announcement-card.info .announcement-badge {
+  background: #e63946;
+  color: #ffffff;
+}
+
 body.dark-mode .search-section {
   background-color: #252d3d;
 }
@@ -1072,8 +1102,14 @@ body.dark-mode .progress-bar {
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e63946;
+  color: var(--accent);
   margin-bottom: 0.25rem;
+}
+
+/* Dark mode: keep stat numbers red */
+body.dark-mode .stat-value,
+html.dark-mode .stat-value {
+  color: #e63946 !important;
 }
 
 .stat-label {
@@ -1864,7 +1900,7 @@ footer {
   }
 
   .header-logo {
-    width: clamp(210px, 56vw, 330px);
+    width: clamp(250px, 62vw, 390px);
     height: auto;
   }
 
@@ -3108,7 +3144,8 @@ body.dark-mode .chat-window {
 }
 
 body.dark-mode .chat-header {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
 }
 
 body.dark-mode .chat-input-area {
@@ -3412,18 +3449,18 @@ input:focus {
   font-weight: 800;
   letter-spacing: 0.3px;
   margin-bottom: 0.55rem;
-  background: #fee2e2;
-  color: #991b1b;
+  background: #D4AF37;
+  color: #ffffff;
 }
 
 .announcement-card.important .announcement-badge {
-  background: #ffedd5;
-  color: #9a3412;
+  background: #D4AF37;
+  color: #ffffff;
 }
 
 .announcement-card.info .announcement-badge {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #D4AF37;
+  color: #ffffff;
 }
 
 .announcement-meta {
@@ -3941,6 +3978,41 @@ main#home {
   filter: saturate(1) blur(0);
 }
 
+#home #featuredReviewsGrid > *,
+#home #featuredReviewsGrid > *.is-active,
+#home #featuredReviewsGrid.is-sliding > *.is-active,
+#home #leaderboardFeed > *,
+#home #leaderboardFeed > *.is-active,
+#home #leaderboardFeed.is-sliding > *.is-active,
+#home #recentActivityFeed > *,
+#home #recentActivityFeed > *.is-active,
+#home #recentActivityFeed.is-sliding > *.is-active {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+#home #testimonialsGrid > *,
+#home #testimonialsGrid > *.is-active,
+#home #testimonialsGrid.is-sliding > *.is-active {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+#home #testimonialsGrid {
+  gap: 0.85rem;
+}
+
+#home #testimonialsGrid > * {
+  min-width: calc(100% - 0.85rem);
+  max-width: calc(100% - 0.85rem);
+}
+
 #home .home-slider-track.is-sliding > *.is-active {
   animation: homeSlidePulse 0.62s cubic-bezier(0.16, 0.84, 0.28, 1);
 }
@@ -4036,8 +4108,8 @@ main#home {
 
 .badge.active {
   background: transparent;
-  color: #ff6b6b;
-  border-color: #ff6b6b;
+  color: #D4AF37;
+  border-color: #D4AF37;
 }
 
 .badge.curious {
@@ -4453,7 +4525,7 @@ main.container[style*="max-width:720px"] {
 
 .profile-banner {
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(230, 57, 70, 0.1), rgba(37, 99, 235, 0.08));
+  background: linear-gradient(135deg, rgba(11, 47, 99, 0.08), rgba(212, 175, 55, 0.06));
 }
 
 .profile-header-content {
@@ -4662,7 +4734,7 @@ body.dark-mode .report-field {
 }
 
 .profile-banner-bg {
-  background: linear-gradient(135deg, var(--accent) 0%, #d63447 100%);
+  background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(11,47,99,0.04));
 }
 
 .profile-email {
@@ -4684,10 +4756,23 @@ body.dark-mode .report-field {
 }
 
 .profile-badge {
-  background: var(--accent);
-  color: white;
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
+}
+
+/* Light mode: use metallic gold accents for profile badges */
+body:not(.dark-mode) .profile-badge {
+  background: rgba(212,175,55,0.12);
+  color: #D4AF37;
+  font-weight: 700;
+}
+
+/* Dark mode: keep red accent for badges if desired */
+body.dark-mode .profile-badge,
+html.dark-mode .profile-badge {
+  background: rgba(230,57,70,0.12);
+  color: #e63946;
+  font-weight: 700;
 }
 
 .profile-empty-state {
@@ -5367,7 +5452,7 @@ main#home {
 
 .panel-card-highlight {
   grid-template-columns: minmax(0, 1fr) auto;
-  background: linear-gradient(135deg, rgba(230, 57, 70, 0.9), rgba(37, 99, 235, 0.78));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.95), rgba(37, 99, 235, 0.82));
 }
 
 .panel-card-highlight span {
@@ -5458,6 +5543,15 @@ main#home {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 237, 0.96));
   border: 1px solid rgba(251, 146, 60, 0.2);
   box-shadow: none;
+}
+
+/* Dark mode: make the announcements panel match other dark surfaces */
+html.dark-mode #home > .announcements-section,
+body.dark-mode #home > .announcements-section {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text) !important;
 }
 
 #home .home-split-grid {
@@ -5652,7 +5746,7 @@ body.dark-mode #home .stat-card {
   }
 
   .header-logo {
-    width: min(200px, 70vw);
+    width: min(290px, 82vw);
     max-width: 100%;
   }
 
@@ -6075,6 +6169,15 @@ input[type='radio'],
   border: 1px solid rgba(148, 163, 184, 0.34) !important;
 }
 
+/* Dark mode: make the edit-profile button stand out in red */
+body.dark-mode .btn-edit-profile,
+html.dark-mode .btn-edit-profile {
+  background: linear-gradient(135deg, #e63946 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(185, 28, 28, 0.82) !important;
+  box-shadow: 0 10px 30px rgba(230,57,70,0.16) !important;
+}
+
 .contact-grid {
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 1rem;
@@ -6384,6 +6487,61 @@ body.dark-mode .settings-page {
   background: rgba(15, 23, 42, 0.9);
   border-color: rgba(71, 85, 105, 0.52);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+}
+
+/* Settings page — dark mode tweaks: make selected language clearly visible and reset button prominent */
+body.dark-mode select#languageSetting,
+html.dark-mode select#languageSetting {
+  color: #f8fafc !important;
+  background: rgba(15,23,42,0.9) !important;
+  border: 1px solid rgba(230,57,70,0.14) !important;
+  padding: 0.55rem !important;
+}
+
+/* Option styling where supported (OS/browsers may vary) */
+body.dark-mode select#languageSetting option,
+html.dark-mode select#languageSetting option {
+  color: #f8fafc !important;
+  background: rgba(15,23,42,0.92) !important;
+}
+
+/* Make the reset button red in dark mode */
+body.dark-mode #resetSettingsBtn,
+html.dark-mode #resetSettingsBtn {
+  background: linear-gradient(135deg, #e63946 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(185,28,28,0.82) !important;
+  box-shadow: 0 10px 30px rgba(230,57,70,0.12) !important;
+}
+
+body.dark-mode #resetSettingsBtn:hover,
+html.dark-mode #resetSettingsBtn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 14px 36px rgba(230,57,70,0.18) !important;
+}
+
+/* Admin panel: make "Creează notificare" button red in dark mode */
+body.dark-mode #adminGoNotificationsBtn,
+html.dark-mode #adminGoNotificationsBtn {
+  background: linear-gradient(135deg, #e63946 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(185, 28, 28, 0.82) !important;
+  box-shadow: 0 10px 30px rgba(230,57,70,0.14) !important;
+}
+
+body.dark-mode #adminGoNotificationsBtn:hover,
+html.dark-mode #adminGoNotificationsBtn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 16px 40px rgba(230,57,70,0.2) !important;
+}
+
+/* Homepage: ensure feature/value-card icons are visible in light mode */
+/* Scoped: home page value cards — force white icons in light mode */
+body:not(.dark-mode) #home > .value-props-section .value-card i,
+html:not(.dark-mode) #home > .value-props-section .value-card i {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.12) !important;
 }
 
 html.dark-mode .empty-state-card,
@@ -6956,7 +7114,7 @@ body:not(.dark-mode) .panel-card strong {
 
 html:not(.dark-mode) .panel-card-highlight,
 body:not(.dark-mode) .panel-card-highlight {
-  background: linear-gradient(135deg, #e63946 0%, #1d4ed8 100%) !important;
+  background: linear-gradient(135deg, #d4af37 0%, #1d4ed8 100%) !important;
   color: #ffffff !important;
 }
 
@@ -6972,6 +7130,20 @@ body.dark-mode .hero-trust-row span {
   background: rgba(15, 23, 42, 0.88) !important;
   border-color: rgba(100, 116, 139, 0.48) !important;
   color: #cbd5e1 !important;
+}
+
+/* Dark mode: panel highlight should be red -> blue (mirrors light mode gold -> blue) */
+html.dark-mode .panel-card-highlight,
+body.dark-mode .panel-card-highlight {
+  background: linear-gradient(135deg, #e63946 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+}
+
+html.dark-mode .panel-card-highlight small,
+html.dark-mode .panel-card-highlight strong,
+body.dark-mode .panel-card-highlight small,
+body.dark-mode .panel-card-highlight strong {
+  color: #ffffff !important;
 }
 
 html.dark-mode .hero-trust-row strong,
@@ -7059,7 +7231,7 @@ body.dark-mode .report-faq {
   width: auto !important;
   min-width: 44px !important;
   height: 44px !important;
-  padding: 0 0.9rem !important;
+  padding: 0 0.85rem 0 0.15rem !important;
   gap: 0.5rem !important;
   background: linear-gradient(135deg, #111827 0%, #1f2937 100%) !important;
   color: #fff !important;
@@ -7091,7 +7263,26 @@ body.dark-mode #aiChatBtn {
 
 .chat-header {
   border-radius: 8px 8px 0 0 !important;
-  background: linear-gradient(135deg, #111827 0%, #243045 100%) !important;
+  background: linear-gradient(135deg, #D4AF37 0%, #b8860b 100%) !important;
+  color: #1a1403 !important;
+}
+
+html:not(.dark-mode) .chat-header {
+  background: linear-gradient(135deg, #D4AF37 0%, #b8860b 100%) !important;
+  color: #1a1403 !important;
+}
+
+html:not(.dark-mode) .chat-header h3 {
+  color: #1a1403 !important;
+}
+
+html:not(.dark-mode) .chat-header .chat-close-btn {
+  background: rgba(26, 20, 3, 0.12) !important;
+  color: #1a1403 !important;
+}
+
+html:not(.dark-mode) .chat-header .chat-close-btn:hover {
+  background: rgba(26, 20, 3, 0.2) !important;
 }
 
 .chat-header h3 {
@@ -7468,16 +7659,35 @@ header {
   color: #fff;
 }
 
+/* Light mode: featured studio card should match other light cards (white surface) */
+html:not(.dark-mode) .studio-board-card.is-featured,
+body:not(.dark-mode) .studio-board-card.is-featured {
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,247,237,0.96)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06) !important;
+  color: #111827 !important;
+}
+
+html:not(.dark-mode) .studio-board-card.is-featured strong,
+body:not(.dark-mode) .studio-board-card.is-featured strong {
+  color: #111827 !important;
+}
+
+html:not(.dark-mode) .studio-board-card.is-featured p,
+body:not(.dark-mode) .studio-board-card.is-featured p {
+  color: var(--text-secondary) !important;
+}
+
 .studio-board-card span,
 .feature-tile span {
-  color: var(--landing-red);
+  color: #d4af37;
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .studio-board-card.is-featured span {
-  color: #fca5a5;
+  color: #d4af37;
 }
 
 .studio-board-card strong,
@@ -7543,14 +7753,14 @@ header {
   height: 2.6rem;
   margin-bottom: auto;
   border-radius: 8px;
-  background: rgba(230, 57, 70, 0.1);
-  color: var(--landing-red);
+  background: rgba(212, 175, 55, 0.14);
+  color: #d4af37;
   font-size: 1.05rem;
 }
 
 .feature-tile-large i {
   background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  color: #d4af37;
 }
 
 .feature-tile-large span,

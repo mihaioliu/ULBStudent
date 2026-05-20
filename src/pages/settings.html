@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    <script>
+      (function() {
+        try {
+          const saved = localStorage.getItem('theme');
+          const isDark = saved === 'dark';
+          if (isDark) {
+            document.documentElement.classList.add('dark-mode');
+            try { document.body && document.body.classList.add('dark-mode'); } catch(e){}
+            try {
+              document.querySelectorAll('img.header-logo').forEach((logo) => {
+                const src = logo.getAttribute('src') || '';
+                if (src && !src.includes('white')) {
+                  logo.src = src.replace(/logo-color/i, 'logo-white');
+                }
+              });
+            } catch(e) {}
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
     <link rel="icon" type="image/png" href="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
     <link rel="apple-touch-icon" href="assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
     <meta name="description" content="Setări - ULBStudent" />
