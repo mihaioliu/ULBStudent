@@ -2878,8 +2878,8 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   if (oldSignUp) oldSignUp.remove();
   
   // Remove old menu if any
-  const oldMenu = headerActions.querySelector('.user-menu');
-  if (oldMenu) oldMenu.remove();
+  // Remove any existing .user-menu across the document to avoid duplicates
+  document.querySelectorAll('.user-menu').forEach((m) => m.remove());
   
   // Create user profile menu
   const userMenu = document.createElement('div');
@@ -2999,6 +2999,19 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   
   userMenu.appendChild(dropdownMenu);
   headerActions.appendChild(userMenu);
+
+  // If mobile controls container exists (mobile) move the userMenu into it
+  try {
+    const mobileControls = document.querySelector('.mobile-controls');
+    if (mobileControls && window.innerWidth <= 768) {
+      // hide any duplicate in headerActions
+      const orig = headerActions.querySelector('.user-menu');
+      if (orig && orig !== userMenu) orig.style.display = 'none';
+      mobileControls.appendChild(userMenu);
+    }
+  } catch (e) {
+    // noop
+  }
 }
 
 /**

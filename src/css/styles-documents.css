@@ -841,6 +841,14 @@ html.dark-mode .empty-state-card p {
     max-width: 100% !important;
     text-align: left !important;
     overflow-wrap: anywhere !important;
+    /* Ensure labels render horizontally and don't break into single letters */
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    letter-spacing: 0 !important;
+    display: inline-flex !important;
   }
 
   .documents-section .section-header h2,

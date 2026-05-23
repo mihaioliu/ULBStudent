@@ -1186,6 +1186,25 @@ footer {
   }
 }
 
+/* Ensure user dropdown is visible and scrollable on small screens */
+@media (max-width: 920px) {
+  .user-dropdown-menu {
+    position: fixed !important;
+    top: 68px !important; /* place below header */
+    right: 12px !important;
+    left: auto !important;
+    z-index: 12000 !important;
+    max-height: calc(100vh - 84px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Slightly reduce padding inside dropdown to fit mobile */
+  .user-dropdown-menu .dropdown-item {
+    padding: 0.6rem 0.8rem !important;
+  }
+}
+
 @media (max-width: 680px) {
   header {
     padding: 0.75rem 0.8rem !important;

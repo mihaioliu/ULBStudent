@@ -419,6 +419,7 @@
       // Load saved settings (DB-first, local fallback)
       const applySettingsToUI = (settings) => {
         if (!settings || typeof settings !== 'object') return;
+        const currentTheme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
 
         if (settings.language) document.getElementById('languageSetting').value = settings.language;
 
@@ -438,14 +439,13 @@
         if (settings.appearance) {
           if (settings.appearance.fontSize) document.getElementById('fontSizeSetting').value = settings.appearance.fontSize;
           if (typeof settings.appearance.animations === 'boolean') document.getElementById('animationsSetting').checked = settings.appearance.animations;
-          const normalizedTheme = (settings.appearance.theme || 'light') === 'light' ? 'light' : 'dark';
-          const themeInput = document.querySelector(`input[name="theme"][value="${normalizedTheme}"]`);
+          const themeInput = document.querySelector(`input[name="theme"][value="${currentTheme}"]`);
           if (themeInput) themeInput.checked = true;
 
           document.documentElement.setAttribute('data-font-size', settings.appearance.fontSize || 'normal');
           document.documentElement.setAttribute('data-animations', settings.appearance.animations === false ? 'off' : 'on');
           if (typeof applyTheme === 'function') {
-            applyTheme(normalizedTheme);
+            applyTheme(currentTheme);
           }
         }
       };

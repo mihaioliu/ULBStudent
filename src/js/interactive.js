@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeFeaturedProfessors();    // Nume profesori din baza de date
   initializeHomepageData();          // Secțiuni homepage alimentate din DB
   initializeHomeSectionSliders();    // ↔️ Slider pe secțiuni homepage
+  initializeReviewLoadMore();        // 📄 Load-more pentru recenzii pe mobil
   initializeSearchableDropdowns();    // Căutare în dropdown-uri mari
 
   // ASYNC: Protect pages and initialize session in BACKGROUND (non-blocking)
@@ -173,7 +174,7 @@ function initializeAppSettings() {
 
   const appearance = settings?.appearance || {};
   const cachedTheme = localStorage.getItem('theme') || '';
-  const preferredTheme = String(appearance.theme || cachedTheme || 'light').toLowerCase();
+  const preferredTheme = String(cachedTheme || appearance.theme || 'light').toLowerCase();
   const normalizedTheme = preferredTheme === 'light' ? 'light' : 'dark';
 
   localStorage.setItem('theme', normalizedTheme);
@@ -447,8 +448,24 @@ function initializeHomeSectionSliders() {
 
   const getVisibleIndex = (track, cards) => {
     if (!track || !cards.length) return 0;
-    const ratio = track.scrollLeft / Math.max(track.clientWidth, 1);
-    return Math.max(0, Math.min(cards.length - 1, Math.round(ratio)));
+    try {
+      const trackRect = track.getBoundingClientRect();
+      const center = track.scrollLeft + (track.clientWidth / 2);
+      let bestIndex = 0;
+      let bestDistance = Infinity;
+      cards.forEach((card, idx) => {
+        const cardLeft = card.offsetLeft;
+        const cardCenter = cardLeft + (card.offsetWidth / 2);
+        const dist = Math.abs(cardCenter - center);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestIndex = idx;
+        }
+      });
+      return bestIndex;
+    } catch (e) {
+      return 0;
+    }
   };
 
   const updateActiveCardState = (track) => {
@@ -494,12 +511,24 @@ function initializeHomeSectionSliders() {
       const nextCard = cards[nextIndex];
       if (!nextCard) return;
 
-      track.classList.add('is-sliding');
-      track.scrollTo({ left: nextCard.offsetLeft, behavior: 'smooth' });
+      // Compute precise scroll target to CENTER the card inside the track
+      const targetLeft = Math.max(
+        0,
+        Math.round(nextCard.offsetLeft - (track.clientWidth - nextCard.offsetWidth) / 2)
+      );
 
+      track.classList.add('is-sliding');
+      track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+
+      // After animation: ensure exact alignment (fix fractional pixels) and update state
       window.setTimeout(() => {
-        track.classList.remove('is-sliding');
-        updateActiveCardState(track);
+        try {
+          track.classList.remove('is-sliding');
+          track.scrollLeft = targetLeft; // snap exactly to center
+          updateActiveCardState(track);
+        } catch (e) {
+          // noop
+        }
       }, 420);
     });
   });
@@ -529,6 +558,40 @@ function initializeHomeSectionSliders() {
         scrollTicking = false;
       });
     }, { passive: true });
+
+      // Snap to nearest card when touch/pointer interaction ends
+      const snapToClosest = () => {
+        const cards = Array.from(track.children || []);
+        if (!cards.length) return;
+        // choose nearest by center
+        const center = track.scrollLeft + (track.clientWidth / 2);
+        let bestIndex = 0;
+        let bestDistance = Infinity;
+        cards.forEach((card, idx) => {
+          const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+          const dist = Math.abs(cardCenter - center);
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            bestIndex = idx;
+          }
+        });
+        const targetCard = cards[bestIndex];
+        if (!targetCard) return;
+        const targetLeft = Math.max(
+          0,
+          Math.round(targetCard.offsetLeft - (track.clientWidth - targetCard.offsetWidth) / 2)
+        );
+        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+        window.setTimeout(() => {
+          track.scrollLeft = targetLeft;
+          updateActiveCardState(track);
+        }, 320);
+      };
+
+      track.addEventListener('pointerup', snapToClosest);
+      track.addEventListener('touchend', snapToClosest);
+      track.addEventListener('pointercancel', snapToClosest);
+      track.addEventListener('mouseleave', snapToClosest);
 
     window.setTimeout(() => updateActiveCardState(track), 80);
   });
@@ -771,6 +834,119 @@ function initializeMobileNavigation() {
     header.insertBefore(toggleBtn, nav);
   }
 
+  // Create a mobile controls container for the nav toggle + theme toggle
+  let mobileControls = header.querySelector('.mobile-controls');
+  if (!mobileControls) {
+    mobileControls = document.createElement('div');
+    mobileControls.className = 'mobile-controls';
+    // place it before nav so it's above the collapsible menu
+    header.insertBefore(mobileControls, nav);
+  }
+
+  const themeBtn = header.querySelector('.btn-theme-toggle');
+
+  function arrangeMobileControls() {
+    if (window.innerWidth <= 768) {
+      // Ensure mobileControls contains the toggle and theme button
+      if (!mobileControls.contains(toggleBtn)) mobileControls.appendChild(toggleBtn);
+      if (themeBtn && !mobileControls.contains(themeBtn)) mobileControls.appendChild(themeBtn);
+      // Move user menu (if present) into mobile controls as well
+      const userMenu = header.querySelector('.user-menu');
+      if (userMenu && !mobileControls.contains(userMenu)) {
+        // hide original location to avoid duplicates
+        const headerActions = header.querySelector('.header-actions');
+        if (headerActions) {
+          const orig = headerActions.querySelector('.user-menu');
+          if (orig) orig.style.display = 'none';
+        }
+        mobileControls.appendChild(userMenu);
+      }
+      // hide header-actions' theme button (we moved it)
+      if (header.querySelector('.header-actions')) {
+        const haTheme = header.querySelector('.header-actions .btn-theme-toggle');
+        if (haTheme) haTheme.style.display = 'none';
+      }
+    } else {
+      // move elements back to their original locations on larger screens
+      // restore theme toggle inside header-actions
+      const headerActions = header.querySelector('.header-actions');
+      if (headerActions && themeBtn && !headerActions.contains(themeBtn)) {
+        headerActions.insertBefore(themeBtn, headerActions.firstChild);
+        themeBtn.style.display = '';
+      }
+      // put toggle back before nav (in case layout relies on it)
+      if (!header.contains(toggleBtn)) header.insertBefore(toggleBtn, nav);
+      // restore user menu back to header-actions
+      const userMenu = mobileControls.querySelector('.user-menu');
+      if (userMenu && headerActions && !headerActions.contains(userMenu)) {
+        headerActions.appendChild(userMenu);
+        userMenu.style.display = '';
+      }
+    }
+  }
+
+  // arrange controls initially and on resize
+  arrangeMobileControls();
+  window.addEventListener('resize', arrangeMobileControls);
+
+  // Move only the signin/signup buttons into the mobile nav on small screens.
+  const headerActions = header.querySelector('.header-actions');
+  const signInBtn = header.querySelector('.btn-signin');
+  const signUpBtn = header.querySelector('.btn-signup');
+  let mobileSignInLi = null;
+  let mobileSignUpLi = null;
+
+  function moveActionsToNav() {
+    if (!headerActions || !navList) return;
+    // clean up any legacy full-action clones that might exist
+    const legacyClone = nav.querySelector('.mobile-cloned-actions');
+    if (legacyClone) {
+      legacyClone.remove();
+    }
+    if (window.innerWidth <= 768) {
+      // create cloned li items only once
+      if (!mobileSignInLi && signInBtn) {
+        mobileSignInLi = document.createElement('li');
+        mobileSignInLi.className = 'mobile-nav-action';
+        const clone = signInBtn.cloneNode(true);
+        clone.classList.remove('btn-theme-toggle');
+        mobileSignInLi.appendChild(clone);
+      }
+
+      if (!mobileSignUpLi && signUpBtn) {
+        mobileSignUpLi = document.createElement('li');
+        mobileSignUpLi.className = 'mobile-nav-action';
+        const clone = signUpBtn.cloneNode(true);
+        mobileSignUpLi.appendChild(clone);
+      }
+
+      // append clones to nav list if not present
+      if (mobileSignInLi && !navList.contains(mobileSignInLi)) {
+        navList.appendChild(mobileSignInLi);
+      }
+      if (mobileSignUpLi && !navList.contains(mobileSignUpLi)) {
+        navList.appendChild(mobileSignUpLi);
+      }
+
+      // hide original signin/signup in header but keep theme toggle visible
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (signUpBtn) signUpBtn.style.display = 'none';
+      // ensure theme toggle stays visible
+      const themeBtn = header.querySelector('.btn-theme-toggle');
+      if (themeBtn) themeBtn.style.display = '';
+    } else {
+      // restore originals and remove clones
+      if (mobileSignInLi && navList.contains(mobileSignInLi)) navList.removeChild(mobileSignInLi);
+      if (mobileSignUpLi && navList.contains(mobileSignUpLi)) navList.removeChild(mobileSignUpLi);
+      if (signInBtn) signInBtn.style.display = '';
+      if (signUpBtn) signUpBtn.style.display = '';
+    }
+  }
+
+  // Initial placement and on resize
+  moveActionsToNav();
+  window.addEventListener('resize', moveActionsToNav);
+
   const closeMenu = () => {
     header.classList.remove('nav-open');
     toggleBtn.setAttribute('aria-expanded', 'false');
@@ -798,6 +974,75 @@ function initializeMobileNavigation() {
       closeMenu();
     }
   });
+}
+
+/* Load-more for featured reviews on mobile: show a small batch and reveal more on demand */
+function initializeReviewLoadMore() {
+  const track = document.getElementById('featuredReviewsGrid');
+  if (!track) return;
+
+  const items = Array.from(track.children || []);
+  const total = items.length;
+  const perPage = 3;
+  if (total <= perPage) return;
+
+  // Create load more button after the track
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'reviews-loadmore-btn';
+  btn.textContent = 'Arată mai multe';
+  btn.setAttribute('aria-expanded', 'false');
+  track.after(btn);
+
+  // Helper to update visible items depending on screen size and current count
+  const update = (reset = false) => {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) {
+      // show all on larger screens
+      items.forEach(el => el.style.display = 'block');
+      btn.style.display = 'none';
+      return;
+    }
+
+    // On mobile show only a limited number
+    let shown = Number(btn.dataset.shownCount) || perPage;
+    if (reset) shown = perPage;
+    items.forEach((el, idx) => {
+      el.style.display = idx < shown ? 'block' : 'none';
+    });
+
+    if (shown >= total) {
+      btn.textContent = 'Arată mai puține';
+      btn.setAttribute('aria-expanded', 'true');
+    } else {
+      btn.textContent = 'Arată mai multe';
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.style.display = total > perPage ? 'inline-flex' : 'none';
+    btn.dataset.shownCount = shown;
+  };
+
+  // Click handler toggles between expanding by perPage or collapsing
+  btn.addEventListener('click', () => {
+    const shown = Number(btn.dataset.shownCount) || perPage;
+    if (shown >= total) {
+      // collapse
+      btn.dataset.shownCount = perPage;
+      update(true);
+      // scroll to top of section to keep context
+      track.parentElement && track.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // expand by next batch
+      const next = Math.min(total, shown + perPage);
+      btn.dataset.shownCount = next;
+      update(false);
+    }
+  });
+
+  // Initial update and responsive handling
+  update(true);
+  window.addEventListener('resize', () => update(true));
 }
 
 function initializeAccessibilityEnhancements() {
