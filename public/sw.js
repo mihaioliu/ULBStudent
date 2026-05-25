@@ -28,6 +28,7 @@ const APP_SHELL = [
   '/termeni-conditii.html',
   '/politica-confidentialitate.html',
   '/assets/Logos%20and%20icons/ulbstudent-icon-circle.png',
+  '/assets/Logos%20and%20icons/ulbstudent-icon-minimalist-bg-transparent.png',
   '/assets/Logos%20and%20icons/ulbstudent-icon-square.png',
   '/assets/Logos%20and%20icons/ulbstudent-logo-color.png',
   '/assets/Logos%20and%20icons/ulbstudent-logo-white.png'

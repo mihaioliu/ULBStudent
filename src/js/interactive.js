@@ -1531,7 +1531,7 @@ function initializeAIChat() {
   const aiChatBtn = document.createElement('button');
   aiChatBtn.id = 'aiChatBtn';
   aiChatBtn.className = 'fab-button show';
-  aiChatBtn.innerHTML = '<img src="/assets/Logos and icons/ulbstudent-icon-circle.png" alt="ULBStudent" aria-hidden="true" style="width: 3rem; height:3rem; object-fit: contain; flex-shrink: 0;" /><span class="fab-label">Ajutor AI</span>';
+  aiChatBtn.innerHTML = '<img src="assets/Logos%20and%20icons/ulbstudent-icon-circle.png" alt="ULBStudent" aria-hidden="true" style="width: 3rem; height:3rem; object-fit: contain; flex-shrink: 0;" /><span class="fab-label">Ajutor AI</span>';
   aiChatBtn.title = 'Deschide asistentul ULBStudent';
   aiChatBtn.setAttribute('aria-label', 'Deschide asistentul ULBStudent');
   
@@ -1544,7 +1544,7 @@ function initializeAIChat() {
     <div class="chat-window">
       <div class="chat-header">
         <h3>
-          <img src="/assets/Logos and icons/ulbstudent-icon-minimalist-bg-transparent.png" alt="ULBStudent" aria-hidden="true" style="width: 3.5rem; height: 3.5rem; object-fit: contain; flex-shrink: 0;" />
+          <img src="assets/Logos%20and%20icons/ulbstudent-icon-minimalist-bg-transparent.png" alt="ULBStudent" aria-hidden="true" style="width: 3.5rem; height: 3.5rem; object-fit: contain; flex-shrink: 0;" />
           Eliot
         </h3>
         <button class="chat-close-btn" id="chatCloseBtn" aria-label="Închide asistentul">&times;</button>
