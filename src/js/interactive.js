@@ -3,6 +3,63 @@
  * Gestionează: teme, votare, notificări, căutare, gamificație, theme toggle
  */
 
+// Restore saved theme as early as possible to avoid flash and ensure persistence
+(function restoreSavedThemeEarly() {
+  try {
+    const saved = localStorage.getItem('theme');
+    const isDark = saved === 'dark';
+    if (typeof document !== 'undefined') {
+      if (isDark) {
+        document.documentElement.classList.add('dark-mode');
+        document.body && document.body.classList.add('dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+        document.body && document.body.classList.remove('dark-mode');
+      }
+      // If logos exist on the page, try to set an appropriate src quickly
+      try {
+        const logos = document.querySelectorAll('img.header-logo');
+        logos.forEach((logo) => {
+          const src = logo.getAttribute('src') || '';
+          if (isDark && src && !src.includes('white')) {
+            logo.src = src.replace(/logo-color/i, 'logo-white');
+          } else if (!isDark && src && src.includes('logo-white')) {
+            logo.src = src.replace(/logo-white/i, 'logo-color');
+          }
+        });
+      } catch (e) {
+        // noop
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+})();
+
+// Sync theme across tabs/windows and respond to external changes
+window.addEventListener('storage', (ev) => {
+  if (!ev) return;
+  try {
+    if (ev.key === 'theme') {
+      const newTheme = ev.newValue === 'light' ? 'light' : 'dark';
+      // applyTheme is defined later; guard-call if available else set classes directly
+      if (typeof applyTheme === 'function') {
+        applyTheme(newTheme);
+      } else {
+        if (newTheme === 'dark') {
+          document.documentElement.classList.add('dark-mode');
+          document.body && document.body.classList.add('dark-mode');
+        } else {
+          document.documentElement.classList.remove('dark-mode');
+          document.body && document.body.classList.remove('dark-mode');
+        }
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize core interactions FIRST (non-blocking)
   initializeShellPolish();
@@ -42,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeFeaturedProfessors();    // Nume profesori din baza de date
   initializeHomepageData();          // Secțiuni homepage alimentate din DB
   initializeHomeSectionSliders();    // ↔️ Slider pe secțiuni homepage
+  initializeReviewLoadMore();        // 📄 Load-more pentru recenzii pe mobil
   initializeSearchableDropdowns();    // Căutare în dropdown-uri mari
 
   // ASYNC: Protect pages and initialize session in BACKGROUND (non-blocking)
@@ -66,9 +124,10 @@ function initializeShellPolish() {
   const textBrand = headerContent?.querySelector('h1');
 
   if (headerContent && !existingLogo && textBrand?.textContent?.trim().toLowerCase() === 'ulbstudent') {
+    const homeHref = window.location.pathname.includes('/src/pages/') ? '../../index.html' : 'index.html';
     headerContent.innerHTML = `
-      <a href="index.html" class="header-logo-link" aria-label="ULBStudent acasă">
-        <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+      <a href="${homeHref}" class="header-logo-link" aria-label="ULBStudent acasă">
+        <img src="${getAssetUrl('ulbstudent-logo-color.png')}" alt="ULBStudent Logo" class="header-logo">
       </a>
     `;
   }
@@ -115,7 +174,7 @@ function initializeAppSettings() {
 
   const appearance = settings?.appearance || {};
   const cachedTheme = localStorage.getItem('theme') || '';
-  const preferredTheme = String(appearance.theme || cachedTheme || 'light').toLowerCase();
+  const preferredTheme = String(cachedTheme || appearance.theme || 'light').toLowerCase();
   const normalizedTheme = preferredTheme === 'light' ? 'light' : 'dark';
 
   localStorage.setItem('theme', normalizedTheme);
@@ -138,11 +197,19 @@ function initializeUnifiedFooter() {
   }
 
   const year = new Date().getFullYear();
+  const footerPageUrl = (pageName) => {
+    const isInsidePagesFolder = window.location.pathname.includes('/src/pages/');
+    if (pageName.startsWith('index.html')) {
+      return isInsidePagesFolder ? '../../' + pageName : './' + pageName;
+    }
+
+    return isInsidePagesFolder ? pageName : 'src/pages/' + pageName;
+  };
 
   footer.innerHTML = `
     <div class="footer-content">
       <div class="footer-section">
-        <img src="assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent" class="footer-brand-logo">
+        <img src="${getAssetUrl('ulbstudent-logo-white.png')}" alt="ULBStudent" class="footer-brand-logo">
         <p>Comunitate digitală pentru studenții ULBS: profesori, documente, întrebări, progres academic și decizii mai clare.</p>
         <div class="footer-socials" aria-label="Social media ULBStudent">
           <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
@@ -153,27 +220,27 @@ function initializeUnifiedFooter() {
       <div class="footer-section">
         <h4>Pagini importante</h4>
         <ul>
-          <li><a href="index.html">Acasă</a></li>
-          <li><a href="index.html#platforma">Despre proiect</a></li>
-          <li><a href="index.html#functionalitati">Funcționalități</a></li>
-          <li><a href="subreddit.html">Forum</a></li>
-          <li><a href="documente.html">Documente</a></li>
-          <li><a href="profesori.html">Profesori</a></li>
+          <li><a href="${footerPageUrl('index.html')}">Acasă</a></li>
+          <li><a href="${footerPageUrl('index.html')}#platforma">Despre proiect</a></li>
+          <li><a href="${footerPageUrl('index.html')}#functionalitati">Funcționalități</a></li>
+          <li><a href="${footerPageUrl('subreddit.html')}">Forum</a></li>
+          <li><a href="${footerPageUrl('documente.html')}">Documente</a></li>
+          <li><a href="${footerPageUrl('profesori.html')}">Profesori</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h4>Cont și suport</h4>
         <ul>
           <!-- Download link removed per design: keep site navigation consistent -->
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="raporteaza-problema.html">Raportează problema</a></li>
+          <li><a href="${footerPageUrl('contact.html')}">Contact</a></li>
+          <li><a href="${footerPageUrl('raporteaza-problema.html')}">Raportează problema</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h4>Legal</h4>
         <ul>
-          <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
-          <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
+          <li><a href="${footerPageUrl('termeni-conditii.html')}">Termeni și condiții</a></li>
+          <li><a href="${footerPageUrl('politica-confidentialitate.html')}">Politica de confidențialitate</a></li>
         </ul>
       </div>
     </div>
@@ -226,8 +293,8 @@ function initializeThemeToggle() {
  */
 function applyTheme(theme) {
   const themeToggle = document.getElementById('themeToggle');
-  const logoColor = 'assets/Logos%20and%20icons/ulbstudent-logo-color.png';
-  const logoWhite = 'assets/Logos%20and%20icons/ulbstudent-logo-white.png';
+  const logoColor = getAssetUrl('ulbstudent-logo-color.png');
+  const logoWhite = getAssetUrl('ulbstudent-logo-white.png');
   
   if (theme === 'dark') {
     // Dark mode
@@ -257,6 +324,22 @@ function applyTheme(theme) {
 // ============================================
 // 0.5 AUTHENTICATION BUTTONS
 // ============================================
+function getAuthPageUrl(pageName) {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/src/pages/')) {
+    return pageName;
+  }
+  return 'src/pages/' + pageName;
+}
+
+function getAssetUrl(assetName) {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/src/pages/')) {
+    return '../../assets/Logos%20and%20icons/' + assetName;
+  }
+  return 'assets/Logos%20and%20icons/' + assetName;
+}
+
 function initializeAuthButtons() {
   const signInBtn = document.querySelector('.btn-signin');
   const signUpBtn = document.querySelector('.btn-signup');
@@ -271,11 +354,11 @@ function initializeAuthButtons() {
 }
 
 function showSignInModal() {
-  window.location.href = 'login.html';
+  window.location.href = getAuthPageUrl('login.html');
 }
 
 function showSignUpModal() {
-  window.location.href = 'register.html';
+  window.location.href = getAuthPageUrl('register.html');
 }
 
 function initializeSearchableDropdowns() {
@@ -365,8 +448,24 @@ function initializeHomeSectionSliders() {
 
   const getVisibleIndex = (track, cards) => {
     if (!track || !cards.length) return 0;
-    const ratio = track.scrollLeft / Math.max(track.clientWidth, 1);
-    return Math.max(0, Math.min(cards.length - 1, Math.round(ratio)));
+    try {
+      const trackRect = track.getBoundingClientRect();
+      const center = track.scrollLeft + (track.clientWidth / 2);
+      let bestIndex = 0;
+      let bestDistance = Infinity;
+      cards.forEach((card, idx) => {
+        const cardLeft = card.offsetLeft;
+        const cardCenter = cardLeft + (card.offsetWidth / 2);
+        const dist = Math.abs(cardCenter - center);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestIndex = idx;
+        }
+      });
+      return bestIndex;
+    } catch (e) {
+      return 0;
+    }
   };
 
   const updateActiveCardState = (track) => {
@@ -412,12 +511,24 @@ function initializeHomeSectionSliders() {
       const nextCard = cards[nextIndex];
       if (!nextCard) return;
 
-      track.classList.add('is-sliding');
-      track.scrollTo({ left: nextCard.offsetLeft, behavior: 'smooth' });
+      // Compute precise scroll target to CENTER the card inside the track
+      const targetLeft = Math.max(
+        0,
+        Math.round(nextCard.offsetLeft - (track.clientWidth - nextCard.offsetWidth) / 2)
+      );
 
+      track.classList.add('is-sliding');
+      track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+
+      // After animation: ensure exact alignment (fix fractional pixels) and update state
       window.setTimeout(() => {
-        track.classList.remove('is-sliding');
-        updateActiveCardState(track);
+        try {
+          track.classList.remove('is-sliding');
+          track.scrollLeft = targetLeft; // snap exactly to center
+          updateActiveCardState(track);
+        } catch (e) {
+          // noop
+        }
       }, 420);
     });
   });
@@ -447,6 +558,40 @@ function initializeHomeSectionSliders() {
         scrollTicking = false;
       });
     }, { passive: true });
+
+      // Snap to nearest card when touch/pointer interaction ends
+      const snapToClosest = () => {
+        const cards = Array.from(track.children || []);
+        if (!cards.length) return;
+        // choose nearest by center
+        const center = track.scrollLeft + (track.clientWidth / 2);
+        let bestIndex = 0;
+        let bestDistance = Infinity;
+        cards.forEach((card, idx) => {
+          const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+          const dist = Math.abs(cardCenter - center);
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            bestIndex = idx;
+          }
+        });
+        const targetCard = cards[bestIndex];
+        if (!targetCard) return;
+        const targetLeft = Math.max(
+          0,
+          Math.round(targetCard.offsetLeft - (track.clientWidth - targetCard.offsetWidth) / 2)
+        );
+        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+        window.setTimeout(() => {
+          track.scrollLeft = targetLeft;
+          updateActiveCardState(track);
+        }, 320);
+      };
+
+      track.addEventListener('pointerup', snapToClosest);
+      track.addEventListener('touchend', snapToClosest);
+      track.addEventListener('pointercancel', snapToClosest);
+      track.addEventListener('mouseleave', snapToClosest);
 
     window.setTimeout(() => updateActiveCardState(track), 80);
   });
@@ -689,6 +834,119 @@ function initializeMobileNavigation() {
     header.insertBefore(toggleBtn, nav);
   }
 
+  // Create a mobile controls container for the nav toggle + theme toggle
+  let mobileControls = header.querySelector('.mobile-controls');
+  if (!mobileControls) {
+    mobileControls = document.createElement('div');
+    mobileControls.className = 'mobile-controls';
+    // place it before nav so it's above the collapsible menu
+    header.insertBefore(mobileControls, nav);
+  }
+
+  const themeBtn = header.querySelector('.btn-theme-toggle');
+
+  function arrangeMobileControls() {
+    if (window.innerWidth <= 768) {
+      // Ensure mobileControls contains the toggle and theme button
+      if (!mobileControls.contains(toggleBtn)) mobileControls.appendChild(toggleBtn);
+      if (themeBtn && !mobileControls.contains(themeBtn)) mobileControls.appendChild(themeBtn);
+      // Move user menu (if present) into mobile controls as well
+      const userMenu = header.querySelector('.user-menu');
+      if (userMenu && !mobileControls.contains(userMenu)) {
+        // hide original location to avoid duplicates
+        const headerActions = header.querySelector('.header-actions');
+        if (headerActions) {
+          const orig = headerActions.querySelector('.user-menu');
+          if (orig) orig.style.display = 'none';
+        }
+        mobileControls.appendChild(userMenu);
+      }
+      // hide header-actions' theme button (we moved it)
+      if (header.querySelector('.header-actions')) {
+        const haTheme = header.querySelector('.header-actions .btn-theme-toggle');
+        if (haTheme) haTheme.style.display = 'none';
+      }
+    } else {
+      // move elements back to their original locations on larger screens
+      // restore theme toggle inside header-actions
+      const headerActions = header.querySelector('.header-actions');
+      if (headerActions && themeBtn && !headerActions.contains(themeBtn)) {
+        headerActions.insertBefore(themeBtn, headerActions.firstChild);
+        themeBtn.style.display = '';
+      }
+      // put toggle back before nav (in case layout relies on it)
+      if (!header.contains(toggleBtn)) header.insertBefore(toggleBtn, nav);
+      // restore user menu back to header-actions
+      const userMenu = mobileControls.querySelector('.user-menu');
+      if (userMenu && headerActions && !headerActions.contains(userMenu)) {
+        headerActions.appendChild(userMenu);
+        userMenu.style.display = '';
+      }
+    }
+  }
+
+  // arrange controls initially and on resize
+  arrangeMobileControls();
+  window.addEventListener('resize', arrangeMobileControls);
+
+  // Move only the signin/signup buttons into the mobile nav on small screens.
+  const headerActions = header.querySelector('.header-actions');
+  const signInBtn = header.querySelector('.btn-signin');
+  const signUpBtn = header.querySelector('.btn-signup');
+  let mobileSignInLi = null;
+  let mobileSignUpLi = null;
+
+  function moveActionsToNav() {
+    if (!headerActions || !navList) return;
+    // clean up any legacy full-action clones that might exist
+    const legacyClone = nav.querySelector('.mobile-cloned-actions');
+    if (legacyClone) {
+      legacyClone.remove();
+    }
+    if (window.innerWidth <= 768) {
+      // create cloned li items only once
+      if (!mobileSignInLi && signInBtn) {
+        mobileSignInLi = document.createElement('li');
+        mobileSignInLi.className = 'mobile-nav-action';
+        const clone = signInBtn.cloneNode(true);
+        clone.classList.remove('btn-theme-toggle');
+        mobileSignInLi.appendChild(clone);
+      }
+
+      if (!mobileSignUpLi && signUpBtn) {
+        mobileSignUpLi = document.createElement('li');
+        mobileSignUpLi.className = 'mobile-nav-action';
+        const clone = signUpBtn.cloneNode(true);
+        mobileSignUpLi.appendChild(clone);
+      }
+
+      // append clones to nav list if not present
+      if (mobileSignInLi && !navList.contains(mobileSignInLi)) {
+        navList.appendChild(mobileSignInLi);
+      }
+      if (mobileSignUpLi && !navList.contains(mobileSignUpLi)) {
+        navList.appendChild(mobileSignUpLi);
+      }
+
+      // hide original signin/signup in header but keep theme toggle visible
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (signUpBtn) signUpBtn.style.display = 'none';
+      // ensure theme toggle stays visible
+      const themeBtn = header.querySelector('.btn-theme-toggle');
+      if (themeBtn) themeBtn.style.display = '';
+    } else {
+      // restore originals and remove clones
+      if (mobileSignInLi && navList.contains(mobileSignInLi)) navList.removeChild(mobileSignInLi);
+      if (mobileSignUpLi && navList.contains(mobileSignUpLi)) navList.removeChild(mobileSignUpLi);
+      if (signInBtn) signInBtn.style.display = '';
+      if (signUpBtn) signUpBtn.style.display = '';
+    }
+  }
+
+  // Initial placement and on resize
+  moveActionsToNav();
+  window.addEventListener('resize', moveActionsToNav);
+
   const closeMenu = () => {
     header.classList.remove('nav-open');
     toggleBtn.setAttribute('aria-expanded', 'false');
@@ -716,6 +974,75 @@ function initializeMobileNavigation() {
       closeMenu();
     }
   });
+}
+
+/* Load-more for featured reviews on mobile: show a small batch and reveal more on demand */
+function initializeReviewLoadMore() {
+  const track = document.getElementById('featuredReviewsGrid');
+  if (!track) return;
+
+  const items = Array.from(track.children || []);
+  const total = items.length;
+  const perPage = 3;
+  if (total <= perPage) return;
+
+  // Create load more button after the track
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'reviews-loadmore-btn';
+  btn.textContent = 'Arată mai multe';
+  btn.setAttribute('aria-expanded', 'false');
+  track.after(btn);
+
+  // Helper to update visible items depending on screen size and current count
+  const update = (reset = false) => {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) {
+      // show all on larger screens
+      items.forEach(el => el.style.display = 'block');
+      btn.style.display = 'none';
+      return;
+    }
+
+    // On mobile show only a limited number
+    let shown = Number(btn.dataset.shownCount) || perPage;
+    if (reset) shown = perPage;
+    items.forEach((el, idx) => {
+      el.style.display = idx < shown ? 'block' : 'none';
+    });
+
+    if (shown >= total) {
+      btn.textContent = 'Arată mai puține';
+      btn.setAttribute('aria-expanded', 'true');
+    } else {
+      btn.textContent = 'Arată mai multe';
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.style.display = total > perPage ? 'inline-flex' : 'none';
+    btn.dataset.shownCount = shown;
+  };
+
+  // Click handler toggles between expanding by perPage or collapsing
+  btn.addEventListener('click', () => {
+    const shown = Number(btn.dataset.shownCount) || perPage;
+    if (shown >= total) {
+      // collapse
+      btn.dataset.shownCount = perPage;
+      update(true);
+      // scroll to top of section to keep context
+      track.parentElement && track.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // expand by next batch
+      const next = Math.min(total, shown + perPage);
+      btn.dataset.shownCount = next;
+      update(false);
+    }
+  });
+
+  // Initial update and responsive handling
+  update(true);
+  window.addEventListener('resize', () => update(true));
 }
 
 function initializeAccessibilityEnhancements() {
@@ -1204,7 +1531,7 @@ function initializeAIChat() {
   const aiChatBtn = document.createElement('button');
   aiChatBtn.id = 'aiChatBtn';
   aiChatBtn.className = 'fab-button show';
-  aiChatBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span class="fab-label">Ajutor AI</span>';
+  aiChatBtn.innerHTML = '<img src="/assets/Logos and icons/ulbstudent-icon-circle.png" alt="ULBStudent" aria-hidden="true" style="width: 3rem; height:3rem; object-fit: contain; flex-shrink: 0;" /><span class="fab-label">Ajutor AI</span>';
   aiChatBtn.title = 'Deschide asistentul ULBStudent';
   aiChatBtn.setAttribute('aria-label', 'Deschide asistentul ULBStudent');
   
@@ -1216,7 +1543,10 @@ function initializeAIChat() {
   chatModal.innerHTML = `
     <div class="chat-window">
       <div class="chat-header">
-        <h3><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>Eliot</h3>
+        <h3>
+          <img src="/assets/Logos and icons/ulbstudent-icon-minimalist-bg-transparent.png" alt="ULBStudent" aria-hidden="true" style="width: 3.5rem; height: 3.5rem; object-fit: contain; flex-shrink: 0;" />
+          Eliot
+        </h3>
         <button class="chat-close-btn" id="chatCloseBtn" aria-label="Închide asistentul">&times;</button>
       </div>
       <div class="chat-messages" id="chatMessages">
@@ -3743,7 +4073,7 @@ function initializePostCreation() {
     const user = getCurrentUser();
     if (!user) {
       showToast('Trebuie să fii conectat pentru a posta', 'error');
-      setTimeout(() => window.location.href = 'login.html', 1500);
+      setTimeout(() => window.location.href = getAuthPageUrl('login.html'), 1500);
       return;
     }
     
@@ -3863,20 +4193,32 @@ function initializePostCreation() {
 }
 
 function renderCommentCard(comment) {
-  const item = document.createElement('div');
-  item.style.cssText = 'background: var(--light-gray); padding: 1.5rem; border-radius: 8px; border-left: 3px solid var(--accent);';
-  const authorName = comment.name || comment.nume || 'Anonim';
-  const commentText = comment.content || comment.comentariu || '';
+  const item = document.createElement('article');
+  item.className = 'comment-card';
+
+  const authorName = String(comment.name || comment.nume || comment.author || comment.created_by_name || 'Anonim').trim() || 'Anonim';
+  const commentText = String(comment.content || comment.comentariu || comment.comment || '').trim();
+  const initials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'AN';
+  const email = String(comment.email || comment.notification_email || '').trim();
+  const replyCount = Number(comment.reply_count || comment.replies || 0);
+
   item.innerHTML = `
-    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-      <div style="font-size: 1.4rem; color: var(--accent);"><i class="fa-solid fa-comment" aria-hidden="true"></i></div>
-      <div>
-        <h4 style="margin: 0; color: var(--text);">${escapeHtml(authorName)}</h4>
-        <p style="margin: 0; color: #888; font-size: 0.85rem;">${formatTimeAgo(comment.created_at)}</p>
+    <div class="comment-card-head">
+      <div class="comment-author">
+        <div class="comment-avatar" aria-hidden="true">${escapeHtml(initials)}</div>
+        <div>
+          <h4>${escapeHtml(authorName)}</h4>
+          <div class="comment-time">${formatTimeAgo(comment.created_at)}</div>
+        </div>
       </div>
     </div>
-    <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(commentText)}</p>
+    <p class="comment-body">${commentText ? escapeHtml(commentText) : '<span style="color: var(--text-secondary); font-style: italic;">Recenzie fără comentariu</span>'}</p>
+    <div class="comment-meta">
+      ${email ? `<span class="comment-meta-pill"><i class="fa-regular fa-envelope"></i> ${escapeHtml(email)}</span>` : ''}
+      <span class="comment-meta-pill"><i class="fa-solid fa-reply"></i> ${replyCount} răspunsuri</span>
+    </div>
   `;
+
   return item;
 }
 
@@ -3891,6 +4233,74 @@ async function initializeCommentsData() {
   const params = new URLSearchParams(window.location.search);
   const postId = String(params.get('post') || '').trim();
 
+  const setLoadingState = () => {
+    if (postContainer) {
+      postContainer.classList.add('is-loading');
+      postContainer.innerHTML = `
+        <div class="thread-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+          <span class="skeleton-chip" style="width:92px;"></span>
+          <span class="skeleton-line" style="width:78%; height:18px;"></span>
+          <span class="skeleton-line" style="width:58%;"></span>
+          <span class="skeleton-line" style="width:92%; height:14px;"></span>
+          <span class="skeleton-line" style="width:88%; height:14px;"></span>
+        </div>`;
+    }
+
+    if (commentsList) {
+      commentsList.parentElement?.classList.add('is-loading');
+      commentsList.innerHTML = `
+        <div class="comment-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <span class="skeleton-block" style="width:44px; height:44px; border-radius:14px;"></span>
+            <div style="flex:1; display:grid; gap:0.45rem;">
+              <span class="skeleton-line" style="width:38%; height:14px;"></span>
+              <span class="skeleton-line" style="width:24%; height:12px;"></span>
+            </div>
+          </div>
+          <span class="skeleton-line" style="width:92%; height:14px;"></span>
+          <span class="skeleton-line" style="width:84%; height:14px;"></span>
+        </div>
+      `;
+    }
+
+    if (commentsTitle) commentsTitle.textContent = 'Se încarcă comentariile...';
+    if (emptyState) emptyState.style.display = 'none';
+  };
+
+  const setErrorState = (message) => {
+    if (postContainer) {
+      postContainer.classList.remove('is-loading');
+      postContainer.innerHTML = `
+        <div class="thread-error-state">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <strong>Postarea nu a putut fi încărcată</strong>
+          <span>${escapeHtml(message || 'Reîncearcă sau revino la lista de discuții.')}</span>
+          <a href="comments.html" class="discussion-back-link" style="margin-top:0.25rem;"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
+        </div>
+      `;
+    }
+
+    if (commentsList) commentsList.innerHTML = '';
+    if (commentsTitle) commentsTitle.textContent = '0 comentarii';
+    if (emptyState) emptyState.style.display = 'none';
+    if (form) {
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+    }
+  };
+
+  const splitTags = (content = '') => {
+    const match = String(content || '').match(/#taguri:\s*([\s\S]*)$/i);
+    if (!match) return [];
+    return match[1]
+      .split(/,|\n|;/)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  };
+
+  setLoadingState();
+
   if (!postId) {
     if (emptyState) emptyState.style.display = 'block';
     if (commentsTitle) commentsTitle.textContent = '0 comentarii';
@@ -3898,167 +4308,189 @@ async function initializeCommentsData() {
       const submitButton = form.querySelector('button[type="submit"]');
       if (submitButton) submitButton.disabled = true;
     }
+    setErrorState('Lipsește identificatorul postării în adresă.');
     return;
   }
 
   const postResult = await getPostById(postId);
-  if (postResult.success && postResult.data && postContainer) {
-    const renderPostPreview = () => {
-      const parsed = parsePostDisplay(postResult.data.title || '', postResult.data.content || '');
-      const poll = parsePollDisplay(parsed.content || '');
-      const contentWithoutPoll = String(parsed.content || '')
-        .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
-        .trim();
-
-      const descriptionBlock = contentWithoutPoll
-        ? `<p style="color: var(--text-secondary); line-height: 1.6; margin: 0;">${escapeHtml(contentWithoutPoll)}</p>`
-        : '';
-
-      postContainer.innerHTML = `
-        <h2 style="color: var(--text); margin: 0 0 1rem 0;">${escapeHtml(parsed.title || postResult.data.title || 'Postare')}</h2>
-        ${descriptionBlock}
-        ${poll ? buildPollMarkup(postResult.data, poll) : ''}
-      `;
-
-      if (poll) {
-        const pollCard = postContainer.querySelector('.post-poll-card');
-        if (pollCard) {
-          const submitBtn = pollCard.querySelector('[data-poll-submit]');
-          const pollInputs = Array.from(pollCard.querySelectorAll('.post-poll-option input'));
-
-          if (submitBtn) {
-            submitBtn.addEventListener('click', async () => {
-              const selectedIndexes = pollInputs
-                .filter((input) => input.checked)
-                .map((input) => Number(input.value))
-                .filter((value) => Number.isInteger(value));
-
-              if (selectedIndexes.length === 0) {
-                showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
-                return;
-              }
-
-              if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
-                showToast('Acest sondaj permite un singur răspuns.', 'warning');
-                return;
-              }
-
-              let persistedInDatabase = false;
-              const originalLabel = submitBtn.textContent || 'Trimite votul';
-              submitBtn.disabled = true;
-              submitBtn.classList.add('is-loading');
-              submitBtn.textContent = 'Se trimite...';
-
-              try {
-                const client = await initSupabaseClient();
-                const user = await getAuthenticatedUser(false);
-
-                if (user?.id) {
-                  const { data: pollRow, error: pollError } = await client
-                    .from('polls')
-                    .select('id, allow_multiple_answers')
-                    .eq('post_id', postResult.data.id)
-                    .maybeSingle();
-
-                  if (pollError) throw pollError;
-
-                  if (pollRow?.id) {
-                    const { data: optionRows, error: optionError } = await client
-                      .from('poll_options')
-                      .select('id, position')
-                      .eq('poll_id', pollRow.id)
-                      .order('position', { ascending: true });
-
-                    if (optionError) throw optionError;
-
-                    const existingVote = await client
-                      .from('poll_votes')
-                      .select('id')
-                      .eq('poll_id', pollRow.id)
-                      .eq('voter_id', user.id)
-                      .maybeSingle();
-
-                    if (existingVote.data?.id) {
-                      showToast('Ai votat deja acest sondaj.', 'warning');
-                      return;
-                    }
-
-                    const selectedOptionIds = selectedIndexes
-                      .map((index) => optionRows?.[index]?.id)
-                      .filter(Boolean);
-
-                    if (!selectedOptionIds.length) {
-                      showToast('Nu s-au găsit opțiunile sondajului.', 'error');
-                      return;
-                    }
-
-                    if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
-                      showToast('Acest sondaj permite un singur răspuns.', 'warning');
-                      return;
-                    }
-
-                    const { error: voteError } = await client.from('poll_votes').insert([{
-                      poll_id: pollRow.id,
-                      voter_id: user.id,
-                      selected_option_ids: selectedOptionIds
-                    }]);
-
-                    if (voteError) throw voteError;
-                    persistedInDatabase = true;
-                  }
-                }
-              } catch (error) {
-                console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
-              } finally {
-                if (submitBtn.isConnected) {
-                  submitBtn.disabled = false;
-                  submitBtn.classList.remove('is-loading');
-                  submitBtn.textContent = originalLabel;
-                }
-              }
-
-              const nextState = loadPollState(postResult.data.id, poll.options.length);
-              selectedIndexes.forEach((index) => {
-                nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
-              });
-              nextState.selected = selectedIndexes;
-              nextState.voted = true;
-              savePollState(postResult.data.id, nextState);
-
-              renderPostPreview();
-              showToast(
-                persistedInDatabase
-                  ? 'Votul a fost salvat în Supabase.'
-                  : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
-                persistedInDatabase ? 'success' : 'info'
-              );
-            });
-          }
-
-          hydratePollCard(pollCard, postResult.data);
-        }
-      }
-    };
-
-    renderPostPreview();
+  if (!postResult.success || !postResult.data) {
+    setErrorState('Nu există o postare validă pentru această conversație.');
+    return;
   }
 
-  const loadAndRender = async () => {
-    const loaded = await getComments(postId);
-    commentsList.innerHTML = '';
-    const rows = loaded.success ? loaded.data : [];
-    if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
+  const loaded = await getComments(postId);
+  const rows = loaded.success ? loaded.data : [];
+  const parsed = parsePostDisplay(postResult.data.title || '', postResult.data.content || '');
+  const poll = parsePollDisplay(parsed.content || '');
+  const contentWithoutPoll = String(parsed.content || '')
+    .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
+    .trim();
+  const tags = splitTags(postResult.data.content || '');
+  const authorName = String(postResult.data.author_name || postResult.data.nume || postResult.data.user_name || postResult.data.created_by_name || 'Autor anonim').trim();
+  const authorInitials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'UA';
+  const statusLabel = rows.length > 0 ? 'Conversație activă' : 'Așteaptă răspunsuri';
+  const postCommentsCount = rows.length;
+  const postVotes = Number(postResult.data.votes || postResult.data.vote_count || 0);
 
-    if (rows.length === 0) {
-      if (emptyState) emptyState.style.display = 'block';
-      return;
+  if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
+  if (postContainer) {
+    postContainer.classList.remove('is-loading');
+    const displayTitle = parsed.title || postResult.data.title || 'Postare';
+    const sanitizedContent = contentWithoutPoll || '';
+    postContainer.innerHTML = `
+      <div class="discussion-thread-head">
+        <div class="thread-title-row">
+          <div class="discussion-hero-meta" style="margin-top:0;">
+            <span class="discussion-status-pill"><i class="fa-solid fa-signal"></i> ${escapeHtml(statusLabel)}</span>
+            <span class="discussion-pill"><i class="fa-solid fa-tag"></i> ${escapeHtml(parsed.categoryLabel || 'General')}</span>
+          </div>
+          <h2 class="thread-title">${escapeHtml(displayTitle)}</h2>
+          <div class="thread-meta-row">
+            <span><i class="fa-solid fa-user"></i> ${escapeHtml(authorName)}</span>
+            <span><i class="fa-regular fa-clock"></i> ${escapeHtml(formatTimeAgo(postResult.data.created_at))}</span>
+          </div>
+        </div>
+      </div>
+      ${tags.length ? `<div class="thread-tags">${tags.map((tag) => `<span class="thread-tag">#${escapeHtml(tag.replace(/^#/, ''))}</span>`).join('')}</div>` : ''}
+      ${sanitizedContent ? `<div class="thread-content">${escapeHtml(sanitizedContent).replace(/\n/g, '<br>')}</div>` : '<div class="thread-content" style="color: var(--text-secondary); font-style: italic;">Postare fără conținut suplimentar.</div>'}
+      ${poll ? buildPollMarkup(postResult.data, poll) : ''}
+      <div class="thread-stats">
+        <span class="thread-stat"><i class="fa-solid fa-arrow-up"></i> ${postVotes} voturi</span>
+        <span class="thread-stat"><i class="fa-solid fa-message"></i> ${postCommentsCount} comentarii</span>
+        <span class="thread-stat"><i class="fa-solid fa-circle-info"></i> ID ${escapeHtml(String(postResult.data.id || postId))}</span>
+      </div>
+    `;
+
+    if (poll) {
+      const pollCard = postContainer.querySelector('.post-poll-card');
+      if (pollCard) {
+        const submitBtn = pollCard.querySelector('[data-poll-submit]');
+        const pollInputs = Array.from(pollCard.querySelectorAll('.post-poll-option input'));
+
+        if (submitBtn) {
+          submitBtn.addEventListener('click', async () => {
+            const selectedIndexes = pollInputs
+              .filter((input) => input.checked)
+              .map((input) => Number(input.value))
+              .filter((value) => Number.isInteger(value));
+
+            if (selectedIndexes.length === 0) {
+              showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
+              return;
+            }
+
+            if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
+              showToast('Acest sondaj permite un singur răspuns.', 'warning');
+              return;
+            }
+
+            let persistedInDatabase = false;
+            const originalLabel = submitBtn.textContent || 'Trimite votul';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('is-loading');
+            submitBtn.textContent = 'Se trimite...';
+
+            try {
+              const client = await initSupabaseClient();
+              const user = await getAuthenticatedUser(false);
+
+              if (user?.id) {
+                const { data: pollRow, error: pollError } = await client
+                  .from('polls')
+                  .select('id, allow_multiple_answers')
+                  .eq('post_id', postResult.data.id)
+                  .maybeSingle();
+
+                if (pollError) throw pollError;
+
+                if (pollRow?.id) {
+                  const { data: optionRows, error: optionError } = await client
+                    .from('poll_options')
+                    .select('id, position')
+                    .eq('poll_id', pollRow.id)
+                    .order('position', { ascending: true });
+
+                  if (optionError) throw optionError;
+
+                  const existingVote = await client
+                    .from('poll_votes')
+                    .select('id')
+                    .eq('poll_id', pollRow.id)
+                    .eq('voter_id', user.id)
+                    .maybeSingle();
+
+                  if (existingVote.data?.id) {
+                    showToast('Ai votat deja acest sondaj.', 'warning');
+                    return;
+                  }
+
+                  const selectedOptionIds = selectedIndexes
+                    .map((index) => optionRows?.[index]?.id)
+                    .filter(Boolean);
+
+                  if (!selectedOptionIds.length) {
+                    showToast('Nu s-au găsit opțiunile sondajului.', 'error');
+                    return;
+                  }
+
+                  if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
+                    showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                    return;
+                  }
+
+                  const { error: voteError } = await client.from('poll_votes').insert([{ 
+                    poll_id: pollRow.id,
+                    voter_id: user.id,
+                    selected_option_ids: selectedOptionIds
+                  }]);
+
+                  if (voteError) throw voteError;
+                  persistedInDatabase = true;
+                }
+              }
+            } catch (error) {
+              console.warn('Poll vote persistence failed; local state was used:', error?.message || error);
+            } finally {
+              if (submitBtn.isConnected) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('is-loading');
+                submitBtn.textContent = originalLabel;
+              }
+            }
+
+            const nextState = loadPollState(postResult.data.id, poll.options.length);
+            selectedIndexes.forEach((index) => {
+              nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
+            });
+            nextState.selected = selectedIndexes;
+            nextState.voted = true;
+            savePollState(postResult.data.id, nextState);
+
+            showToast(
+              persistedInDatabase
+                ? 'Votul a fost salvat în Supabase.'
+                : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
+              persistedInDatabase ? 'success' : 'info'
+            );
+
+            const refreshedLoaded = await getComments(postId);
+            const refreshedRows = refreshedLoaded.success ? refreshedLoaded.data : rows;
+            commentsTitle.textContent = `${refreshedRows.length} comentarii`;
+          });
+        }
+
+        hydratePollCard(pollCard, postResult.data);
+      }
     }
+  }
 
+  commentsList.innerHTML = '';
+  if (!rows.length) {
+    if (emptyState) emptyState.style.display = 'grid';
+  } else {
     if (emptyState) emptyState.style.display = 'none';
-    rows.forEach(row => commentsList.appendChild(renderCommentCard(row)));
-  };
-
-  await loadAndRender();
+    rows.forEach((row) => commentsList.appendChild(renderCommentCard(row)));
+  }
 
   await setupRealtimeComments(postId, commentsList, commentsTitle, emptyState);
 
@@ -4101,7 +4533,16 @@ async function initializeCommentsData() {
 
       await saveComment(postId, name, email, comment.trim());
       form.reset();
-      await loadAndRender();
+      const refreshed = await getComments(postId);
+      const refreshedRows = refreshed.success ? refreshed.data : [];
+      commentsList.innerHTML = '';
+      if (commentsTitle) commentsTitle.textContent = `${refreshedRows.length} comentarii`;
+      if (!refreshedRows.length) {
+        if (emptyState) emptyState.style.display = 'grid';
+      } else {
+        if (emptyState) emptyState.style.display = 'none';
+        refreshedRows.forEach((row) => commentsList.appendChild(renderCommentCard(row)));
+      }
       showToast('Comentariul a fost salvat.', 'success');
     } catch (error) {
       showToast(error.message || 'Eroare la salvarea comentariului.', 'error');

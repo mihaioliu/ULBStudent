@@ -1,0 +1,1031 @@
+﻿<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Discuții și comentarii - ULBStudent. Comunitate academică cu postări, voturi și sondaje." />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="../../assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="../../assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    
+    <title>Discuții - ULBStudent | Comunitate studenți</title>
+    <link rel="stylesheet" href="../css/styles-global.css" />
+    <link rel="stylesheet" href="../css/app-polish.css" />
+    <link rel="stylesheet" href="../css/styles-subreddit.css" />
+    <link rel="stylesheet" href="../css/toast-notifications.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <style>
+      /* ==========================================================
+         PREMIUM DISCUSSIONS PAGE - Apple/Stripe/Linear Design
+         ========================================================== */
+
+      .discussions-hero {
+        margin: 3rem auto 2rem;
+        max-width: 1180px;
+        padding: 0 2rem;
+        text-align: left;
+      }
+
+      .discussions-hero-content {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+      }
+
+      .discussions-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: fit-content;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.66);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.dark-mode .discussions-hero-badge,
+      html.dark-mode .discussions-hero-badge {
+        background: rgba(15, 23, 42, 0.58);
+        color: #e2e8f0;
+      }
+
+      .discussions-hero h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 5vw, 3.8rem);
+        line-height: 1.1;
+        letter-spacing: -0.04em;
+      }
+
+      .discussions-hero p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        max-width: 60ch;
+      }
+
+      .discussions-hero-stats {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .hero-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .hero-stat strong {
+        font-size: 1.8rem;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-stat span {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+
+      .discussions-container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .discussions-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 2.5rem;
+        margin-bottom: 4rem;
+      }
+
+      @media (max-width: 1024px) {
+        .discussions-layout {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        .discussions-sidebar {
+          grid-row: 1;
+          grid-column: 1;
+        }
+      }
+
+      /* ========== CREATE POST ========== */
+      .discussions-create-post {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 24px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .discussions-create-post,
+      html.dark-mode .discussions-create-post {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .discussions-create-post-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .discussions-user-avatar {
+        width: 3rem;
+        height: 3rem;
+        min-width: 3rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.2), rgba(37, 99, 235, 0.2));
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        color: var(--accent);
+      }
+
+      .discussions-form-fields {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .discussions-form-field {
+        display: grid;
+        gap: 0.4rem;
+      }
+
+      .discussions-form-field label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .discussions-form-field input,
+      .discussions-form-field textarea,
+      .discussions-form-field select {
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-form-field input,
+      body.dark-mode .discussions-form-field textarea,
+      body.dark-mode .discussions-form-field select,
+      html.dark-mode .discussions-form-field input,
+      html.dark-mode .discussions-form-field textarea,
+      html.dark-mode .discussions-form-field select {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .discussions-form-field input:focus,
+      .discussions-form-field textarea:focus,
+      .discussions-form-field select:focus {
+        outline: none;
+        border-color: rgba(230, 57, 70, 0.38);
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+      }
+
+      .discussions-form-field textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .discussions-form-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      .discussions-form-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        align-items: center;
+      }
+
+      .discussions-media-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .discussions-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-action-btn,
+      html.dark-mode .discussions-action-btn {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .discussions-action-btn:hover {
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.24);
+      }
+
+      .discussions-post-btn {
+        margin-left: auto;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, #e63946 0%, #d63447 100%);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 8px 20px rgba(230, 57, 70, 0.2);
+      }
+
+      .discussions-post-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(230, 57, 70, 0.25);
+      }
+
+      .discussions-post-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* ========== TOOLBAR ========== */
+      .discussions-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .discussions-filters {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .discussions-filter-pill {
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-filter-pill,
+      html.dark-mode .discussions-filter-pill {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .discussions-filter-pill.is-active {
+        background: linear-gradient(135deg, #e63946, #d63447);
+        color: #fff;
+        border-color: rgba(230, 57, 70, 0.4);
+      }
+
+      .discussions-refresh-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-refresh-btn,
+      html.dark-mode .discussions-refresh-btn {
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .discussions-refresh-btn:hover {
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.24);
+        animation: spin 0.6s linear;
+      }
+
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      /* ========== POSTĂRI ========== */
+      .discussions-post-card {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-post-card,
+      html.dark-mode .discussions-post-card {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .discussions-post-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .discussions-post-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .discussions-post-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .discussions-post-author-avatar {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.15), rgba(37, 99, 235, 0.15));
+        display: grid;
+        place-items: center;
+        font-size: 1rem;
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .discussions-post-author-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .discussions-post-author-name {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      .discussions-post-author-time {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+
+      .discussions-post-category-badge {
+        display: inline-flex;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        background: rgba(230, 57, 70, 0.1);
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .discussions-post-title {
+        margin: 0;
+        font-size: 1.25rem;
+        line-height: 1.4;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+      }
+
+      .discussions-post-content {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .discussions-post-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+
+      .discussions-post-tag {
+        display: inline-flex;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .discussions-post-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .discussions-post-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        flex: 1;
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .discussions-post-action:hover {
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--accent);
+        border-color: rgba(230, 57, 70, 0.2);
+      }
+
+      .discussions-post-action i {
+        font-size: 1rem;
+      }
+
+      /* ========== POLL ========== */
+      .discussions-poll {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 14px;
+        background: rgba(37, 99, 235, 0.05);
+        border: 1px solid rgba(37, 99, 235, 0.15);
+      }
+
+      .discussions-poll-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .discussions-poll-badge {
+        display: inline-flex;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        background: rgba(37, 99, 235, 0.15);
+        color: var(--primary-blue);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .discussions-poll-question {
+        margin: 0;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+      }
+
+      .discussions-poll-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .discussions-poll-option {
+        display: flex;
+        align-items: center;
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      body.dark-mode .discussions-poll-option,
+      html.dark-mode .discussions-poll-option {
+        background: rgba(15, 23, 42, 0.4);
+      }
+
+      .discussions-poll-option:hover {
+        background: rgba(37, 99, 235, 0.1);
+        border-color: rgba(37, 99, 235, 0.35);
+      }
+
+      .discussions-poll-option input {
+        margin-right: 0.75rem;
+        cursor: pointer;
+      }
+
+      .discussions-poll-option-label {
+        flex: 1;
+        cursor: pointer;
+      }
+
+      .discussions-poll-results {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      /* ========== SIDEBAR ========== */
+      .discussions-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .discussions-sidebar-card {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .discussions-sidebar-card,
+      html.dark-mode .discussions-sidebar-card {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .discussions-sidebar-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .discussions-sidebar-content {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .discussions-sidebar-rule {
+        padding: 0.75rem;
+        border-radius: 10px;
+        background: rgba(148, 163, 184, 0.05);
+        border-left: 3px solid rgba(230, 57, 70, 0.3);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .discussions-sidebar-rule strong {
+        color: var(--text);
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+
+      .discussions-sidebar-rule span {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+      }
+
+      .discussions-sidebar-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .discussions-sidebar-tag {
+        display: inline-flex;
+        padding: 0.5rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(230, 57, 70, 0.08);
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .discussions-sidebar-tag:hover {
+        background: rgba(230, 57, 70, 0.15);
+      }
+
+      .discussions-sidebar-cta {
+        display: block;
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #e63946, #d63447);
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+      }
+
+      .discussions-sidebar-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(230, 57, 70, 0.2);
+      }
+
+      /* ========== EMPTY STATE ========== */
+      .discussions-empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 20px;
+        margin: 2rem 0;
+      }
+
+      body.dark-mode .discussions-empty-state,
+      html.dark-mode .discussions-empty-state {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .discussions-empty-state i {
+        font-size: 3.5rem;
+        color: var(--accent);
+        opacity: 0.3;
+        margin-bottom: 1rem;
+      }
+
+      .discussions-empty-state h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+      }
+
+      .discussions-empty-state p {
+        margin: 0;
+        color: var(--text-secondary);
+        max-width: 40ch;
+        margin: 0 auto;
+      }
+
+      /* ========== RESPONSIVE ========== */
+      @media (max-width: 768px) {
+        .discussions-hero {
+          padding: 0 1rem;
+          margin-top: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .discussions-hero h1 {
+          font-size: clamp(1.8rem, 4vw, 2.5rem);
+        }
+
+        .discussions-container {
+          padding: 0 1rem;
+        }
+
+        .discussions-layout {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .discussions-form-meta {
+          grid-template-columns: 1fr;
+        }
+
+        .discussions-form-actions {
+          flex-direction: column-reverse;
+        }
+
+        .discussions-post-btn {
+          margin-left: 0;
+          width: 100%;
+        }
+
+        .discussions-sidebar {
+          order: -1;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Header: logo + meniu -->
+    <header>
+      <div class="header-content">
+        <a href="../../index.html" class="header-logo-link">
+          <img src="../../assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+        </a>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="../../index.html" class="nav-link">Acasă</a></li>
+          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="comments.html" class="nav-link active">Discuții</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="btn-signin">Conectare</button>
+        <button class="btn-signup">Înregistrare</button>
+      </div>
+    </header>
+
+    <!-- DISCUSSIONS HERO -->
+    <section class="discussions-hero">
+      <div class="discussions-hero-content">
+        <span class="discussions-hero-badge"><i class="fa-solid fa-comments"></i> Comunitate academică</span>
+        <div>
+          <h1>Discuții</h1>
+          <p>Întreabă, răspunde și găsește rapid ajutor de la colegi despre orice subiect academic.</p>
+        </div>
+        <div class="discussions-hero-stats">
+          <div class="hero-stat">
+            <strong id="heroPostCount">0</strong>
+            <span>postări</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="heroCommentCount">0</strong>
+            <span>răspunsuri</span>
+          </div>
+          <div class="hero-stat">
+            <strong id="heroUserCount">0</strong>
+            <span>utilizatori activi</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="discussions-container">
+      <div class="discussions-layout">
+        <!-- MAIN FEED -->
+        <div class="discussions-feed">
+          <!-- CREATE POST -->
+          <div class="discussions-create-post">
+            <div class="discussions-create-post-header">
+              <div class="discussions-user-avatar">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div style="flex: 1;">
+                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Creează o nouă postare</p>
+              </div>
+            </div>
+
+            <form id="postCreateForm" class="discussions-form-fields">
+              <div class="discussions-form-field">
+                <label for="postTitleInput">Titlu postare</label>
+                <input id="postTitleInput" type="text" placeholder="De exemplu: Cum rezolv problema de DP?" required>
+              </div>
+
+              <div class="discussions-form-field">
+                <label for="postContentInput">Descriere</label>
+                <textarea id="postContentInput" placeholder="Explică mai detaliat problema, ce ai încercat..." required></textarea>
+              </div>
+
+              <div class="discussions-form-meta">
+                <div class="discussions-form-field">
+                  <label for="postCategoryInput">Categorie</label>
+                  <select id="postCategoryInput">
+                    <option value="general">General</option>
+                    <option value="intrebare">Întrebare</option>
+                    <option value="resursa">Resursa</option>
+                    <option value="anunt">Anunț</option>
+                  </select>
+                </div>
+                <div class="discussions-form-field">
+                  <label for="postTagsInput">Tag-uri</label>
+                  <input id="postTagsInput" type="text" placeholder="ex: sesiune, c++, algebra">
+                </div>
+              </div>
+
+              <input id="postAttachmentInput" type="file" accept="image/*,application/pdf" style="display: none;">
+              <div id="postAttachmentList" class="post-attachment-list"></div>
+
+              <div class="discussions-form-actions">
+                <div class="discussions-media-buttons">
+                  <button type="button" class="discussions-action-btn" data-action="image" title="Adaugă imagine">
+                    <i class="fa-solid fa-image"></i>
+                  </button>
+                  <button type="button" class="discussions-action-btn" data-action="link" title="Adaugă link">
+                    <i class="fa-solid fa-link"></i>
+                  </button>
+                  <button type="button" class="discussions-action-btn" data-action="poll" title="Adaugă sondaj">
+                    <i class="fa-solid fa-square-poll-horizontal"></i>
+                  </button>
+                </div>
+                <button type="submit" class="discussions-post-btn">Postează</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TOOLBAR -->
+          <div class="discussions-toolbar">
+            <div class="discussions-filters">
+              <button class="discussions-filter-pill is-active" data-sort="recent">Recente</button>
+              <button class="discussions-filter-pill" data-sort="popular">Populare</button>
+              <button class="discussions-filter-pill" data-sort="trending">Fără răspuns</button>
+              <button class="discussions-filter-pill" data-sort="polls">Sondaje</button>
+            </div>
+            <button id="refreshPostsBtn" class="discussions-refresh-btn" title="Reîncarcă postări">
+              <i class="fa-solid fa-rotate"></i>
+            </button>
+          </div>
+
+          <!-- POSTS FEED -->
+          <div id="postsFeed"></div>
+
+          <!-- EMPTY STATE -->
+          <div id="postsEmptyState" class="discussions-empty-state hidden-initial">
+            <i class="fa-solid fa-inbox"></i>
+            <h3>Nu există discuții încă</h3>
+            <p>Fii primul care publică o întrebare pentru comunitate și ajută alți studenți!</p>
+          </div>
+
+          <!-- COMMENTS SECTION -->
+          <div class="comments-stack">
+            <div id="commentsList"></div>
+            <p id="commentsEmptyState" class="comments-empty hidden-initial">Încă nu există comentarii pentru această postare.</p>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="discussions-sidebar">
+          <!-- REGULI -->
+          <div class="discussions-sidebar-card">
+            <h3 class="discussions-sidebar-title">
+              <i class="fa-solid fa-star"></i> Reguli comunitate
+            </h3>
+            <div class="discussions-sidebar-content">
+              <div class="discussions-sidebar-rule">
+                <strong>Pune întrebări clare</strong>
+                <span>Formulează exact ce nu înțelegi</span>
+              </div>
+              <div class="discussions-sidebar-rule">
+                <strong>Adaugă taguri precise</strong>
+                <span>Exemple: "sesiune", "dinamica", "c++"</span>
+              </div>
+              <div class="discussions-sidebar-rule">
+                <strong>Marchează răspunsul corect</strong>
+                <span>Ajută-i pe alții să-și găsească soluția</span>
+              </div>
+              <div class="discussions-sidebar-rule">
+                <strong>Fii respectuos</strong>
+                <span>Comunitate academică profesionistă</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAGURI POPULARE -->
+          <div class="discussions-sidebar-card">
+            <h3 class="discussions-sidebar-title">
+              <i class="fa-solid fa-tag"></i> Tag-uri populare
+            </h3>
+            <div class="discussions-sidebar-tags">
+              <span class="discussions-sidebar-tag">#sesiune</span>
+              <span class="discussions-sidebar-tag">#exam</span>
+              <span class="discussions-sidebar-tag">#proiect</span>
+              <span class="discussions-sidebar-tag">#algoritmi</span>
+              <span class="discussions-sidebar-tag">#baze-date</span>
+              <span class="discussions-sidebar-tag">#web</span>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="discussions-sidebar-card" style="text-align: center; padding: 2rem 1.5rem;">
+            <i class="fa-solid fa-lightbulb" style="font-size: 2.5rem; color: var(--accent); opacity: 0.4; margin-bottom: 0.75rem; display: block;"></i>
+            <h4 style="margin: 0 0 0.5rem; color: var(--text);">Pune o întrebare</h4>
+            <p style="margin: 0 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">Comunitatea este gata să-ți ajute cu orice problemă academică.</p>
+            <a href="#postsFeed" class="discussions-sidebar-cta">Creează postare</a>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- POLL COMPOSER MODAL -->
+    <div id="pollComposerModal" class="poll-modal" aria-hidden="true">
+      <div class="poll-modal-backdrop" data-poll-close></div>
+      <section class="poll-modal-panel" role="dialog" aria-modal="true" aria-labelledby="pollComposerTitle">
+        <div class="poll-modal-header">
+          <div>
+            <span class="section-eyebrow">Sondaj</span>
+            <h3 id="pollComposerTitle">Creează un sondaj</h3>
+          </div>
+          <button type="button" class="poll-modal-close" data-poll-close aria-label="Închide editorul de sondaj">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="poll-modal-body">
+          <label class="poll-field">
+            <span>Întrebare</span>
+            <input id="pollQuestionInput" type="text" class="post-input" placeholder="Ce variantă alegem?" maxlength="180" />
+          </label>
+
+          <div class="poll-mode-switch" role="radiogroup" aria-label="Tip răspuns">
+            <button type="button" class="poll-mode-pill is-active" data-poll-mode="single" aria-pressed="true">Un singur răspuns</button>
+            <button type="button" class="poll-mode-pill" data-poll-mode="multiple" aria-pressed="false">Răspunsuri multiple</button>
+          </div>
+
+          <div class="poll-options-header">
+            <div>
+              <strong>Opțiuni</strong>
+              <p>Minimum 2 opțiuni. Poți adăuga sau șterge opțiuni înainte de publicare.</p>
+            </div>
+            <button type="button" class="poll-add-option-btn" id="pollAddOptionBtn">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              Adaugă opțiune
+            </button>
+          </div>
+
+          <div id="pollOptionsList" class="poll-options-list"></div>
+          <p id="pollComposerError" class="poll-composer-error" aria-live="polite"></p>
+        </div>
+
+        <div class="poll-modal-actions">
+          <button type="button" class="hero-cta secondary" data-poll-close>Renunță</button>
+          <button type="button" class="hero-cta primary" id="pollSaveBtn">Adaugă sondajul</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <img src="../../assets/Logos%20and%20icons/ulbstudent-logo-white.png" alt="ULBStudent Logo" class="footer-logo">
+          <h4>ULBStudent</h4>
+          <p>Platforma de suport pentru comunitatea studenților ULBS.</p>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Linkuri rapide</h4>
+          <ul class="footer-list-reset">
+            <li><a href="../../index.html">Acasă</a></li>
+            <li><a href="documente.html">Documente</a></li>
+            <li><a href="comments.html">Discuții</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Ajutor</h4>
+          <ul class="footer-list-reset">
+            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
+            <li><a href="termeni-conditii.html">Termeni și condiții</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>Email: <strong>support@ulbstudent.ro</strong></p>
+          <p>© 2026 ULBStudent. Toate drepturile rezervate.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/interactive.js"></script>
+  </body>
+</html>
+
+
+
+
+
+

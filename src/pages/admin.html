@@ -1,0 +1,1256 @@
+﻿<!DOCTYPE HTML>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Admin Panel - ULBStudent" />
+    <meta name="author" content="ULBStudent" />
+    <meta name="theme-color" content="#e63946" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="../../assets/Logos%20and%20icons/ulbstudent-icon-circle.png" />
+    <link rel="apple-touch-icon" href="../../assets/Logos%20and%20icons/ulbstudent-icon-square.png" />
+    <title>Admin Panel - ULBStudent</title>
+    <link rel="stylesheet" href="../css/styles-global.css" />
+    <link rel="stylesheet" href="../css/app-polish.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <style>
+      .admin-page {
+        width: min(1360px, calc(100% - 2rem));
+        margin: 1.75rem auto 3rem;
+        padding: 0;
+        display: grid;
+        gap: 1.2rem;
+      }
+
+      .admin-hero,
+      .admin-card,
+      .admin-stat,
+      .admin-empty,
+      .admin-empty-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .admin-hero,
+      body.dark-mode .admin-card,
+      body.dark-mode .admin-stat,
+      body.dark-mode .admin-empty,
+      body.dark-mode .admin-empty-card,
+      html.dark-mode .admin-hero,
+      html.dark-mode .admin-card,
+      html.dark-mode .admin-stat,
+      html.dark-mode .admin-empty,
+      html.dark-mode .admin-empty-card {
+        background: rgba(15, 23, 42, 0.62);
+        border-color: rgba(148, 163, 184, 0.16);
+      }
+
+      .admin-hero {
+        padding: 1.35rem;
+        background:
+          radial-gradient(circle at 15% 18%, rgba(230, 57, 70, 0.12), transparent 26%),
+          radial-gradient(circle at 82% 15%, rgba(37, 99, 235, 0.12), transparent 24%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82));
+      }
+
+      body.dark-mode .admin-hero,
+      html.dark-mode .admin-hero {
+        background:
+          radial-gradient(circle at 15% 18%, rgba(230, 57, 70, 0.15), transparent 26%),
+          radial-gradient(circle at 82% 15%, rgba(96, 165, 250, 0.12), transparent 24%),
+          linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(17, 24, 39, 0.86));
+      }
+
+      .admin-hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .admin-hero-copy {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        min-width: 0;
+      }
+
+      .admin-hero-icon {
+        width: 4.25rem;
+        height: 4.25rem;
+        border-radius: 24px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(145deg, #e63946, #7f1d1d);
+        color: #fff;
+        box-shadow: 0 18px 40px rgba(230, 57, 70, 0.24);
+        flex-shrink: 0;
+      }
+
+      .admin-hero-icon i {
+        font-size: 1.65rem;
+      }
+
+      .admin-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.55rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(230, 57, 70, 0.08);
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .admin-header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .admin-header p {
+        margin: 0.45rem 0 0;
+        color: var(--text-secondary);
+        max-width: 64ch;
+      }
+
+      .admin-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.95rem;
+      }
+
+      .admin-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+        font-weight: 600;
+      }
+
+      body.dark-mode .admin-pill,
+      html.dark-mode .admin-pill {
+        background: rgba(15, 23, 42, 0.58);
+        color: #e2e8f0;
+      }
+
+      .admin-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.65rem;
+      }
+
+      .admin-hero-actions .btn-primary,
+      .admin-hero-actions .btn-secondary {
+        min-height: 46px;
+      }
+
+      .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.9rem;
+      }
+
+      .admin-stat {
+        padding: 1rem;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.82)),
+          rgba(255, 255, 255, 0.8);
+        transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      }
+
+      .admin-stat:hover,
+      .admin-tab:hover,
+      .btn-admin-save:hover,
+      .admin-action:hover,
+      .admin-hero-actions .btn-primary:hover,
+      .admin-hero-actions .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .admin-stat-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .admin-stat-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(37, 99, 235, 0.1));
+        color: var(--accent);
+      }
+
+      .admin-stat h3 {
+        margin: 0;
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        line-height: 1;
+        color: var(--text);
+      }
+
+      .admin-stat p {
+        margin: 0.2rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .admin-stat small {
+        display: block;
+        margin-top: 0.45rem;
+        color: var(--text-secondary);
+      }
+
+      .admin-tabs {
+        display: inline-flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        padding: 0.35rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .admin-tabs,
+      html.dark-mode .admin-tabs {
+        background: rgba(15, 23, 42, 0.58);
+      }
+
+      .admin-tab {
+        position: relative;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        font-weight: 700;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      }
+
+      .admin-tab.active {
+        color: var(--text);
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(230, 57, 70, 0.06));
+        border-color: rgba(230, 57, 70, 0.22);
+      }
+
+      .admin-card {
+        padding: 1.05rem;
+      }
+
+      .admin-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.95rem;
+      }
+
+      .admin-card h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .admin-card p {
+        margin: 0.35rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .admin-card-tools {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
+      }
+
+      .admin-table-wrap {
+        overflow-x: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      body.dark-mode .admin-table-wrap,
+      html.dark-mode .admin-table-wrap {
+        background: rgba(15, 23, 42, 0.34);
+      }
+
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 860px;
+      }
+
+      .admin-table thead th {
+        position: sticky;
+        top: 0;
+        background: rgba(248, 250, 252, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 1;
+      }
+
+      body.dark-mode .admin-table thead th,
+      html.dark-mode .admin-table thead th {
+        background: rgba(15, 23, 42, 0.92);
+      }
+
+      .admin-table th,
+      .admin-table td {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        text-align: left;
+        padding: 0.9rem 0.95rem;
+        vertical-align: top;
+      }
+
+      .admin-table tr:hover td {
+        background: rgba(230, 57, 70, 0.035);
+      }
+
+      .admin-table th {
+        color: var(--text-secondary);
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .admin-row-primary {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .admin-subtext {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--text-secondary);
+        font-size: 0.86rem;
+      }
+
+      .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+
+      .admin-badge.neutral {
+        background: rgba(148, 163, 184, 0.14);
+        color: var(--text-secondary);
+        border-color: rgba(148, 163, 184, 0.18);
+      }
+
+      .admin-badge.warning {
+        background: rgba(245, 158, 11, 0.14);
+        color: #92400e;
+        border-color: rgba(245, 158, 11, 0.18);
+      }
+
+      .admin-badge.success {
+        background: rgba(16, 185, 129, 0.14);
+        color: #047857;
+        border-color: rgba(16, 185, 129, 0.18);
+      }
+
+      .admin-badge.danger {
+        background: rgba(239, 68, 68, 0.14);
+        color: #b91c1c;
+        border-color: rgba(239, 68, 68, 0.18);
+      }
+
+      .admin-badge.info {
+        background: rgba(37, 99, 235, 0.14);
+        color: #1d4ed8;
+        border-color: rgba(37, 99, 235, 0.18);
+      }
+
+      .admin-inline-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .admin-inline-actions select,
+      .btn-admin-save,
+      .admin-action,
+      .admin-input,
+      .admin-textarea {
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 14px;
+        padding: 0.7rem 0.85rem;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--text);
+      }
+
+      body.dark-mode .admin-inline-actions select,
+      body.dark-mode .btn-admin-save,
+      body.dark-mode .admin-action,
+      body.dark-mode .admin-input,
+      body.dark-mode .admin-textarea,
+      html.dark-mode .admin-inline-actions select,
+      html.dark-mode .btn-admin-save,
+      html.dark-mode .admin-action,
+      html.dark-mode .admin-input,
+      html.dark-mode .admin-textarea {
+        background: rgba(15, 23, 42, 0.62);
+        color: #fff;
+      }
+
+      .admin-inline-actions select {
+        width: 100%;
+      }
+
+      .btn-admin-save,
+      .admin-action {
+        cursor: pointer;
+        background: linear-gradient(135deg, #e63946, #b91c1c);
+        color: #fff;
+        border-color: rgba(230, 57, 70, 0.46);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        min-height: 42px;
+      }
+
+      .btn-admin-save.secondary,
+      .admin-action.secondary {
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--text);
+        border-color: rgba(148, 163, 184, 0.22);
+      }
+
+      .admin-empty {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        gap: 0.65rem;
+        padding: 1.8rem 1.25rem;
+        margin-top: 0.9rem;
+      }
+
+      .admin-empty-card {
+        padding: 1.1rem;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(230, 57, 70, 0.08), transparent 30%),
+          rgba(255, 255, 255, 0.76);
+      }
+
+      .admin-empty-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(37, 99, 235, 0.1));
+        color: var(--accent);
+        font-size: 1.25rem;
+      }
+
+      .admin-empty h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .admin-empty p {
+        margin: 0;
+        color: var(--text-secondary);
+        max-width: 58ch;
+      }
+
+      .admin-hidden {
+        display: none !important;
+      }
+
+      .admin-panel-stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .admin-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-top: 1rem;
+      }
+
+      .admin-field {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .admin-field label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .admin-field input,
+      .admin-field select,
+      .admin-field textarea {
+        width: 100%;
+      }
+
+      .admin-field textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .admin-panel-intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .admin-panel-intro h2 {
+        margin: 0;
+      }
+
+      .admin-panel-intro p {
+        margin: 0.3rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      @media (max-width: 1100px) {
+        .admin-stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .admin-hero-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-hero-actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .admin-page {
+          width: min(100% - 1rem, 1360px);
+          margin-top: 1rem;
+        }
+
+        .admin-hero,
+        .admin-card {
+          padding: 1rem;
+        }
+
+        .admin-hero-copy {
+          flex-direction: column;
+        }
+
+        .admin-stats,
+        .admin-form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-tabs {
+          width: 100%;
+          overflow-x: auto;
+          flex-wrap: nowrap;
+          scrollbar-width: none;
+        }
+
+        .admin-tabs::-webkit-scrollbar {
+          display: none;
+        }
+
+        .admin-tab {
+          white-space: nowrap;
+        }
+
+        .admin-card-head,
+        .admin-panel-intro {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .admin-table-wrap {
+          overflow: visible;
+          border: none;
+          background: transparent;
+        }
+
+        .admin-table,
+        .admin-table thead,
+        .admin-table tbody,
+        .admin-table tr,
+        .admin-table th,
+        .admin-table td {
+          display: block;
+          width: 100%;
+          min-width: 0;
+        }
+
+        .admin-table thead {
+          display: none;
+        }
+
+        .admin-table tr {
+          margin-bottom: 0.85rem;
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          border-radius: 18px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.72);
+          box-shadow: var(--shadow-sm);
+        }
+
+        body.dark-mode .admin-table tr,
+        html.dark-mode .admin-table tr {
+          background: rgba(15, 23, 42, 0.58);
+        }
+
+        .admin-table td {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          align-items: center;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .admin-table td::before {
+          content: attr(data-label);
+          color: var(--text-secondary);
+          font-size: 0.78rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          flex-shrink: 0;
+        }
+
+        .admin-table td:last-child {
+          border-bottom: none;
+        }
+
+        .admin-inline-actions {
+          width: 100%;
+          justify-content: flex-end;
+        }
+
+        .admin-inline-actions select,
+        .btn-admin-save {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="header-content">
+        <a href="../../index.html" class="header-logo-link">
+          <img src="assets/Logos%20and%20icons/ulbstudent-logo-color.png" alt="ULBStudent Logo" class="header-logo">
+        </a>
+        <p class="tagline">Comunitatea ta de studiu</p>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="../../index.html" class="nav-link">Acasă</a></li>
+          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
+          <li><a href="documente.html" class="nav-link">Documente</a></li>
+          <li><a href="comments.html" class="nav-link">Discuții</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-theme-toggle" id="themeToggle" title="Schimbă tema">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="container admin-page admin-page-shell">
+      <section class="admin-hero">
+        <div class="admin-hero-grid">
+          <div class="admin-hero-copy">
+            <div class="admin-hero-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <div class="admin-kicker"><i class="fa-solid fa-lock"></i> Zonă administrativă</div>
+              <h1><i class="fa-solid fa-user-shield"></i> Admin Panel</h1>
+              <p>Zonă de administrare pentru raportări, notificări și roluri utilizatori. Dashboard-ul este conceput pentru triere rapidă, control clar și verificare vizuală ușoară.</p>
+              <div class="admin-hero-meta">
+                <span class="admin-pill"><i class="fa-solid fa-circle-check"></i> Administrator</span>
+                <span class="admin-pill"><i class="fa-solid fa-bolt"></i> Status platformă activ</span>
+                <span class="admin-pill"><i class="fa-solid fa-layer-group"></i> 3 taburi operaționale</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-hero-actions">
+            <button class="btn-secondary" type="button" id="adminGoNotificationsBtn">
+              <i class="fa-solid fa-bullhorn"></i> Creează notificare
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-stats">
+        <div class="admin-stat">
+          <div class="admin-stat-head">
+            <div>
+              <p>Raportări totale</p>
+              <h3 id="statReports">0</h3>
+            </div>
+            <div class="admin-stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          </div>
+          <small>Toate raportările primite de platformă.</small>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-head">
+            <div>
+              <p>Raportări deschise</p>
+              <h3 id="statOpenReports">0</h3>
+            </div>
+            <div class="admin-stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+          </div>
+          <small>Cazuri care necesită analiză sau răspuns.</small>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-head">
+            <div>
+              <p>Notificări</p>
+              <h3 id="statNotifications">0</h3>
+            </div>
+            <div class="admin-stat-icon"><i class="fa-solid fa-bell"></i></div>
+          </div>
+          <small>Mesaje de sistem și anunțuri administrative.</small>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-head">
+            <div>
+              <p>Utilizatori</p>
+              <h3 id="statUsers">0</h3>
+            </div>
+            <div class="admin-stat-icon"><i class="fa-solid fa-users"></i></div>
+          </div>
+          <small>Conturi gestionate în platformă.</small>
+        </div>
+      </section>
+
+      <section class="admin-tabs" id="adminTabs" aria-label="Taburi admin">
+        <button class="admin-tab active" data-target="panelReports"><i class="fa-solid fa-triangle-exclamation"></i> Raportări</button>
+        <button class="admin-tab" data-target="panelNotifications"><i class="fa-solid fa-bell"></i> Notificări</button>
+        <button class="admin-tab" data-target="panelUsers"><i class="fa-solid fa-users"></i> Utilizatori</button>
+      </section>
+
+      <section id="panelReports" class="admin-card">
+        <div class="admin-card-head">
+          <div>
+            <h2>Raportări probleme</h2>
+            <p>Listează sesizările utilizatorilor cu stare și acțiuni rapide de triere.</p>
+          </div>
+          <div class="admin-card-tools">
+            <span class="admin-pill"><i class="fa-solid fa-filter"></i> Fără filtrare avansată</span>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="reportsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tip</th>
+                <th>Pagină</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="reportsEmpty" class="admin-empty admin-empty-card admin-hidden"></div>
+      </section>
+
+      <section id="panelNotifications" class="admin-card admin-hidden">
+        <div class="admin-card-head">
+          <div>
+            <h2>Notificări sistem</h2>
+            <p>Gestionează anunțurile deja existente și statusul lor de publicare.</p>
+          </div>
+          <div class="admin-card-tools">
+            <span class="admin-pill"><i class="fa-solid fa-bell-concierge"></i> Broadcast intern</span>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="notificationsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Titlu</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="notificationsEmpty" class="admin-empty admin-empty-card admin-hidden"></div>
+      </section>
+
+      <section id="panelUsers" class="admin-card admin-hidden">
+        <div class="admin-card-head">
+          <div>
+            <h2>Utilizatori și roluri</h2>
+            <p>Controlează conturile și rolurile cu o vizualizare clară asupra identității și accesului.</p>
+          </div>
+          <div class="admin-card-tools">
+            <span class="admin-pill"><i class="fa-solid fa-user-check"></i> Acces controlat</span>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nume</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Acțiune</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="usersEmpty" class="admin-empty admin-empty-card admin-hidden"></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>ULBStudent</h4>
+          <p>Panou administrativ pentru managementul platformei.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/interactive.js"></script>
+    <script>
+      const adminState = {
+        reports: [],
+        notifications: [],
+        users: []
+      };
+
+      function adminEscape(value) {
+        const text = String(value || '');
+        if (typeof escapeHtml === 'function') return escapeHtml(text);
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function rowValue(row, candidates, fallback = '-') {
+        for (const key of candidates) {
+          const value = row?.[key];
+          if (value !== null && value !== undefined && String(value).trim() !== '') {
+            return value;
+          }
+        }
+        return fallback;
+      }
+
+      function getStatusBadge(status, kind = 'report') {
+        const normalized = String(status || '').toLowerCase();
+        const reportMap = {
+          nou: { label: 'Nou', className: 'warning', icon: 'fa-circle-exclamation' },
+          in_analiza: { label: 'În analiză', className: 'info', icon: 'fa-spinner' },
+          rezolvat: { label: 'Rezolvat', className: 'success', icon: 'fa-circle-check' },
+          respins: { label: 'Respins', className: 'danger', icon: 'fa-circle-xmark' }
+        };
+
+        const userMap = {
+          admin: { label: 'Admin', className: 'info', icon: 'fa-user-shield' },
+          profesor: { label: 'Profesor', className: 'success', icon: 'fa-chalkboard-user' },
+          student: { label: 'Student', className: 'neutral', icon: 'fa-user' }
+        };
+
+        if (kind === 'user') {
+          return userMap[normalized] || { label: normalized || 'Necunoscut', className: 'neutral', icon: 'fa-user' };
+        }
+
+        return reportMap[normalized] || { label: normalized || 'Necunoscut', className: 'neutral', icon: 'fa-circle-dot' };
+      }
+
+      function renderEmptyState(target, iconClass, title, description) {
+        if (!target) return;
+        target.classList.remove('admin-hidden');
+        target.innerHTML = `
+          <div class="admin-empty-icon"><i class="fa-solid ${adminEscape(iconClass)}"></i></div>
+          <h3>${adminEscape(title)}</h3>
+          <p>${adminEscape(description)}</p>
+        `;
+      }
+
+      async function ensureAdminAccess() {
+        await protectPage();
+        const user = await getAuthenticatedUser(false);
+
+        if (!user?.id) {
+          window.location.href = 'login.html';
+          return null;
+        }
+
+        await resolveAndCacheUserRole(user);
+        const role = localStorage.getItem('role');
+        const isAdmin = role === 'admin' || String(user.email || '').toLowerCase() === 'admin@ulbstudent.ro';
+
+        if (!isAdmin) {
+          if (typeof showNotification === 'function') {
+            showNotification('⛔ Acces interzis: doar administratorii pot deschide această pagină.');
+          }
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 700);
+          return null;
+        }
+
+        return user;
+      }
+
+      function wireTabs() {
+        const tabButtons = Array.from(document.querySelectorAll('.admin-tab'));
+        tabButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            tabButtons.forEach((item) => item.classList.remove('active'));
+            button.classList.add('active');
+
+            const target = button.getAttribute('data-target');
+            document.querySelectorAll('main .admin-card').forEach((panel) => {
+              panel.classList.toggle('admin-hidden', panel.id !== target);
+            });
+          });
+        });
+      }
+
+      function updateStats() {
+        const reports = adminState.reports;
+        const openReports = reports.filter((item) => {
+          const status = String(rowValue(item, ['status'], 'nou')).toLowerCase();
+          return status === 'nou' || status === 'in_analiza';
+        });
+
+        document.getElementById('statReports').textContent = String(reports.length);
+        document.getElementById('statOpenReports').textContent = String(openReports.length);
+        document.getElementById('statNotifications').textContent = String(adminState.notifications.length);
+        document.getElementById('statUsers').textContent = String(adminState.users.length);
+      }
+
+      function renderReports() {
+        const tableBody = document.querySelector('#reportsTable tbody');
+        const empty = document.getElementById('reportsEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.reports.length) {
+          renderEmptyState(empty, 'fa-inbox', 'Nu există raportări momentan', 'Când utilizatorii trimit probleme, acestea vor apărea aici pentru revizuire și rezolvare.');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.reports.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const type = rowValue(row, ['type', 'tip']);
+          const page = rowValue(row, ['page', 'pagina']);
+          const email = rowValue(row, ['email']);
+          const status = rowValue(row, ['status'], 'nou');
+          const statusBadge = getStatusBadge(status, 'report');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="ID"><span class="admin-row-primary">#${adminEscape(id)}</span></td>
+            <td data-label="Tip"><span class="admin-row-primary">${adminEscape(type)}</span></td>
+            <td data-label="Pagină"><span class="admin-row-primary">${adminEscape(page)}</span></td>
+            <td data-label="Email"><span class="admin-row-primary">${adminEscape(email)}</span></td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="report-status" data-id="${adminEscape(id)}">
+                  <option value="nou" ${status === 'nou' ? 'selected' : ''}>nou</option>
+                  <option value="in_analiza" ${status === 'in_analiza' ? 'selected' : ''}>in_analiza</option>
+                  <option value="rezolvat" ${status === 'rezolvat' ? 'selected' : ''}>rezolvat</option>
+                  <option value="respins" ${status === 'respins' ? 'selected' : ''}>respins</option>
+                </select>
+                <span class="admin-badge ${statusBadge.className}"><i class="fa-solid ${statusBadge.icon}"></i> ${adminEscape(statusBadge.label)}</span>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-report" data-id="${adminEscape(id)}"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      function renderNotifications() {
+        const tableBody = document.querySelector('#notificationsTable tbody');
+        const empty = document.getElementById('notificationsEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.notifications.length) {
+          renderEmptyState(empty, 'fa-bell-slash', 'Nu există notificări active', 'Dacă nu există mesaje de administrare, poți folosi acest spațiu pentru a monitoriza viitoarele anunțuri.');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.notifications.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const title = rowValue(row, ['title', 'titlu']);
+          const email = rowValue(row, ['email']);
+          const status = rowValue(row, ['status'], 'nou');
+          const statusBadge = getStatusBadge(status, 'report');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="ID"><span class="admin-row-primary">#${adminEscape(id)}</span></td>
+            <td data-label="Titlu"><span class="admin-row-primary">${adminEscape(title)}</span></td>
+            <td data-label="Email"><span class="admin-row-primary">${adminEscape(email)}</span></td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="notification-status" data-id="${adminEscape(id)}">
+                  <option value="nou" ${status === 'nou' ? 'selected' : ''}>nou</option>
+                  <option value="in_analiza" ${status === 'in_analiza' ? 'selected' : ''}>in_analiza</option>
+                  <option value="rezolvat" ${status === 'rezolvat' ? 'selected' : ''}>rezolvat</option>
+                </select>
+                <span class="admin-badge ${statusBadge.className}"><i class="fa-solid ${statusBadge.icon}"></i> ${adminEscape(statusBadge.label)}</span>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-notification" data-id="${adminEscape(id)}"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      function renderUsers() {
+        const tableBody = document.querySelector('#usersTable tbody');
+        const empty = document.getElementById('usersEmpty');
+        tableBody.innerHTML = '';
+
+        if (!adminState.users.length) {
+          renderEmptyState(empty, 'fa-users-slash', 'Nu există utilizatori afișați', 'Listarea se va completa automat atunci când baza de date returnează conturi disponibile.');
+          return;
+        }
+
+        empty.classList.add('admin-hidden');
+
+        adminState.users.forEach((row) => {
+          const id = rowValue(row, ['id']);
+          const name = rowValue(row, ['nume_complet', 'full_name'], '-');
+          const email = rowValue(row, ['email']);
+          const role = String(rowValue(row, ['role'], 'student')).toLowerCase();
+          const roleBadge = getStatusBadge(role, 'user');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td data-label="ID"><span class="admin-row-primary">#${adminEscape(id)}</span></td>
+            <td data-label="Nume"><span class="admin-row-primary">${adminEscape(name)}</span></td>
+            <td data-label="Email"><span class="admin-row-primary">${adminEscape(email)}</span></td>
+            <td>
+              <div class="admin-inline-actions">
+                <select data-kind="user-role" data-id="${adminEscape(id)}" data-email="${adminEscape(email)}">
+                  <option value="student" ${role === 'student' ? 'selected' : ''}>student</option>
+                  <option value="profesor" ${role === 'profesor' ? 'selected' : ''}>profesor</option>
+                  <option value="admin" ${role === 'admin' ? 'selected' : ''}>admin</option>
+                </select>
+                <span class="admin-badge ${roleBadge.className}"><i class="fa-solid ${roleBadge.icon}"></i> ${adminEscape(roleBadge.label)}</span>
+              </div>
+            </td>
+            <td>
+              <button class="btn-admin-save" data-action="save-user-role" data-id="${adminEscape(id)}" data-email="${adminEscape(email)}"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      async function loadAdminData() {
+        const client = await initSupabaseClient();
+
+        async function fetchRows(tableName) {
+          const attempts = [
+            () => client.from(tableName).select('*').order('created_at', { ascending: false }).limit(150),
+            () => client.from(tableName).select('*').order('id', { ascending: false }).limit(150),
+            () => client.from(tableName).select('*').limit(150)
+          ];
+
+          let lastError = null;
+          for (const run of attempts) {
+            const result = await run();
+            if (!result.error) return result;
+            lastError = result.error;
+          }
+
+          return { data: [], error: lastError };
+        }
+
+        const [reportsRes, notificationsRes, usersRes] = await Promise.all([
+          fetchRows('raportari'),
+          fetchRows('notificari'),
+          fetchRows('utilizatori')
+        ]);
+
+        adminState.reports = Array.isArray(reportsRes.data) ? reportsRes.data : [];
+        adminState.notifications = Array.isArray(notificationsRes.data) ? notificationsRes.data : [];
+        adminState.users = Array.isArray(usersRes.data) ? usersRes.data : [];
+
+        if (reportsRes.error || notificationsRes.error || usersRes.error) {
+          const message = reportsRes.error?.message || notificationsRes.error?.message || usersRes.error?.message || 'Eroare la încărcarea datelor.';
+          if (typeof showNotification === 'function') {
+            showNotification('' + message);
+          }
+        }
+
+        updateStats();
+        renderReports();
+        renderNotifications();
+        renderUsers();
+      }
+
+      async function saveReportStatus(reportId) {
+        const statusSelect = document.querySelector(`select[data-kind="report-status"][data-id="${CSS.escape(String(reportId))}"]`);
+        if (!statusSelect) return;
+
+        const status = statusSelect.value;
+        const client = await initSupabaseClient();
+        const result = await client.from('raportari').update({ status }).eq('id', reportId);
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification(result.error.message, 'error');
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('Status raportare actualizat.', 'success');
+        }
+        await loadAdminData();
+      }
+
+      async function saveNotificationStatus(notificationId) {
+        const statusSelect = document.querySelector(`select[data-kind="notification-status"][data-id="${CSS.escape(String(notificationId))}"]`);
+        if (!statusSelect) return;
+
+        const status = statusSelect.value;
+        const client = await initSupabaseClient();
+        const result = await client.from('notificari').update({ status }).eq('id', notificationId);
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification(result.error.message, 'error');
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('Status notificare actualizat.', 'success');
+        }
+        await loadAdminData();
+      }
+
+      async function saveUserRole(userId, email) {
+        const selectById = document.querySelector(`select[data-kind="user-role"][data-id="${CSS.escape(String(userId))}"]`);
+        const newRole = selectById?.value || 'student';
+
+        const client = await initSupabaseClient();
+        let result = await client.from('utilizatori').update({ role: newRole }).eq('id', userId);
+
+        if (result.error && email) {
+          result = await client.from('utilizatori').update({ role: newRole }).eq('email', email);
+        }
+
+        if (result.error) {
+          if (typeof showNotification === 'function') {
+            showNotification(result.error.message, 'error');
+          }
+          return;
+        }
+
+        if (typeof showNotification === 'function') {
+          showNotification('Rol utilizator actualizat.', 'success');
+        }
+        await loadAdminData();
+      }
+
+      function wireTableActions() {
+        document.addEventListener('click', async (event) => {
+          const button = event.target.closest('[data-action]');
+          if (!button) return;
+
+          const action = button.getAttribute('data-action');
+          const id = button.getAttribute('data-id');
+          const email = button.getAttribute('data-email');
+
+          if (action === 'save-report' && id) {
+            await saveReportStatus(id);
+            return;
+          }
+
+          if (action === 'save-notification' && id) {
+            await saveNotificationStatus(id);
+            return;
+          }
+
+          if (action === 'save-user-role' && id) {
+            await saveUserRole(id, email);
+          }
+        });
+      }
+
+      async function initializeAdminPanel() {
+        const user = await ensureAdminAccess();
+        if (!user) return;
+
+        wireTabs();
+        wireTableActions();
+        const goNotificationsBtn = document.getElementById('adminGoNotificationsBtn');
+        if (goNotificationsBtn) {
+          goNotificationsBtn.addEventListener('click', () => {
+            const notificationsTab = document.querySelector('.admin-tab[data-target="panelNotifications"]');
+            if (notificationsTab) notificationsTab.click();
+          });
+        }
+        await loadAdminData();
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeAdminPanel);
+    </script>
+  </body>
+</html>

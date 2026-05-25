@@ -280,6 +280,16 @@ body.dark-mode .doc-card {
 .doc-card[data-dept-group="engineering"]::before {
   background: linear-gradient(180deg, #2563eb, #0ea5e9);
 }
+
+body:not(.dark-mode) .doc-card[data-dept-group="engineering"]::before,
+html:not(.dark-mode) .doc-card[data-dept-group="engineering"]::before {
+  background: linear-gradient(180deg, #0B2F63, #0a2a57);
+}
+
+body.dark-mode .doc-card[data-dept-group="engineering"]::before,
+html.dark-mode .doc-card[data-dept-group="engineering"]::before {
+  background: linear-gradient(180deg, #e63946, #c81e3d);
+}
 .doc-card[data-dept-group="socio"]::before {
   background: linear-gradient(180deg, #f59e0b, #f97316);
 }
@@ -831,6 +841,14 @@ html.dark-mode .empty-state-card p {
     max-width: 100% !important;
     text-align: left !important;
     overflow-wrap: anywhere !important;
+    /* Ensure labels render horizontally and don't break into single letters */
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    letter-spacing: 0 !important;
+    display: inline-flex !important;
   }
 
   .documents-section .section-header h2,

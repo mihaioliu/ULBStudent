@@ -18,6 +18,21 @@ const TABLES = {
 };
 
 /**
+ * Helper function to get the correct auth page URL based on current location
+ */
+function getAuthPageUrl(pageName) {
+  const currentPath = window.location.pathname;
+  if (pageName === 'index.html') {
+    return currentPath.includes('/src/pages/') ? '../../index.html' : 'index.html';
+  }
+
+  if (currentPath.includes('/src/pages/')) {
+    return pageName;
+  }
+  return 'src/pages/' + pageName;
+}
+
+/**
  * Wait for Supabase to load from CDN
  */
 async function waitForSupabase() {
@@ -214,8 +229,8 @@ async function resolveAndCacheUserRole(user) {
  * Resolve role after login and redirect to role-specific page.
  */
 async function routeByUserRole(options = {}) {
-  const professorDashboard = options.professorDashboard || 'profile.html';
-  const studentDashboard = options.studentDashboard || 'index.html';
+  const professorDashboard = getAuthPageUrl(options.professorDashboard || 'profile.html');
+  const studentDashboard = getAuthPageUrl(options.studentDashboard || 'index.html');
 
   const user = await getAuthenticatedUser(false);
   if (!user?.id) {
@@ -487,7 +502,7 @@ async function logoutUser() {
     console.log('Logout successful');
     
     // Redirect to login
-    window.location.href = 'login.html';
+    window.location.href = getAuthPageUrl('login.html');
     return { success: true };
   } catch (error) {
     console.error('Logout error:', error.message);
@@ -496,7 +511,7 @@ async function logoutUser() {
     localStorage.removeItem('supabase.auth.token');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('role');
-    window.location.href = 'login.html';
+    window.location.href = getAuthPageUrl('login.html');
   }
 }
 
@@ -2740,7 +2755,7 @@ async function protectPage() {
       localStorage.removeItem('currentUser');
       localStorage.removeItem('supabase.auth.token');
       localStorage.removeItem('role');
-      window.location.href = 'login.html?redirect=' + encodeURIComponent(currentPage);
+      window.location.href = getAuthPageUrl('login.html') + '?redirect=' + encodeURIComponent(currentPage);
       return;
     }
 
@@ -2755,7 +2770,7 @@ async function protectPage() {
       const role = await resolveAndCacheUserRole(user || getCurrentUser());
       if (!allowedRoles.includes(role)) {
         console.warn(`⛔ Access denied for ${currentPage}. Required roles: ${allowedRoles.join(', ')}, got: ${role}`);
-        window.location.href = 'index.html';
+        window.location.href = getAuthPageUrl('index.html');
       }
     }
   }
@@ -2797,7 +2812,7 @@ async function updateHeaderWithUserInfo() {
           // Session expired, redirect
           localStorage.removeItem('currentUser');
           localStorage.removeItem('supabase.auth.token');
-          window.location.href = 'login.html';
+          window.location.href = getAuthPageUrl('login.html');
         }
       }).catch(err => {
         console.warn('Background auth check failed:', err);
@@ -2841,12 +2856,12 @@ function showLoginButtonsInHeader(headerActions) {
   const signIn = document.createElement('button');
   signIn.className = 'btn-signin';
   signIn.textContent = 'Conectare';
-  signIn.addEventListener('click', () => window.location.href = 'login.html');
+  signIn.addEventListener('click', () => window.location.href = getAuthPageUrl('login.html'));
   
   const signUp = document.createElement('button');
   signUp.className = 'btn-signup';
   signUp.textContent = 'Înregistrare';
-  signUp.addEventListener('click', () => window.location.href = 'register.html');
+  signUp.addEventListener('click', () => window.location.href = getAuthPageUrl('register.html'));
   
   headerActions.appendChild(signIn);
   headerActions.appendChild(signUp);
@@ -2863,79 +2878,57 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   if (oldSignUp) oldSignUp.remove();
   
   // Remove old menu if any
-  const oldMenu = headerActions.querySelector('.user-menu');
-  if (oldMenu) oldMenu.remove();
+  // Remove any existing .user-menu across the document to avoid duplicates
+  document.querySelectorAll('.user-menu').forEach((m) => m.remove());
   
   // Create user profile menu
   const userMenu = document.createElement('div');
   userMenu.className = 'user-menu';
-  
-  const isMobileScreen = window.innerWidth <= 768;
-  
-  userMenu.style.cssText = `
-    display: flex;
-    align-items: center;
-    gap: ${isMobileScreen ? '0.45rem' : '0.75rem'};
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.16) 0%, rgba(212, 175, 55, 0.26) 100%);
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    box-shadow: 0 8px 18px rgba(212, 175, 55, 0.18);
-    backdrop-filter: blur(10px);
-    padding: ${isMobileScreen ? '0.42rem 0.62rem' : '0.45rem 0.78rem'};
-    border-radius: 10px;
-    cursor: pointer;
-    position: relative;
-    font-size: ${isMobileScreen ? '0.76rem' : '0.86rem'};
-  `;
-  
+
   const userEmail = user.email || 'Student';
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
   const accountIsAdmin = resolvedRole === 'admin' || String(user.user_metadata?.role || '').toLowerCase() === 'admin' || String(userEmail).toLowerCase() === 'admin@ulbstudent.ro';
   const accountIsProfessor = resolvedRole === 'profesor' || resolvedRole === 'professor' || user.user_metadata?.account_type === 'professor';
   const accountType = accountIsAdmin ? 'ADMIN' : (accountIsProfessor ? 'Profesor' : 'Student');
-  const roleColor = accountIsAdmin ? 'rgba(212, 175, 55, 1)' : (accountIsProfessor ? '#f97316' : '#0ea5e9');
-  
-  const showEmail = window.innerWidth > 480; // Hide email on very small screens
-  
+  const userInitials = String(userName || 'UL')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2) || 'UL';
+
   userMenu.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
-      <i class="fa-solid fa-user-circle" style="font-size: ${isMobileScreen ? '1.05rem' : '1.28rem'}; color: var(--accent);"></i>
-      <div style="color: var(--text); display: flex; flex-direction: column;">
-        <div style="font-weight: 700; font-size: ${isMobileScreen ? '0.74rem' : '0.82rem'};">${escapeHtml(userName)}</div>
-        <div style="font-size: 0.65rem; opacity: 1; color: ${accountIsAdmin ? 'rgba(212, 175, 55, 1)' : (accountIsProfessor ? '#ffd166' : roleColor)}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">${accountType}</div>
-        ${showEmail ? `<div style="font-size: 0.66rem; opacity: 0.82;">${escapeHtml(userEmail)}</div>` : ''}
-      </div>
-    </div>
-    <i class="fa-solid fa-chevron-down" style="color: var(--text); font-size: 0.66rem;"></i>
+    <button type="button" class="user-menu-trigger" aria-label="Deschide meniul contului" aria-expanded="false">
+      <span class="user-menu-avatar" aria-hidden="true">${escapeHtml(userInitials)}</span>
+      <span class="user-menu-copy">
+        <span class="user-menu-name">${escapeHtml(userName)}</span>
+        <span class="user-menu-role">${escapeHtml(accountType)}</span>
+      </span>
+      <i class="fa-solid fa-chevron-down user-menu-caret" aria-hidden="true"></i>
+    </button>
   `;
   
   // Create dropdown menu
   const dropdownMenu = document.createElement('div');
   dropdownMenu.className = 'user-dropdown-menu';
-  
-  // Check if we're on mobile/tablet
-  const isMobile = window.innerWidth <= 768;
-  
-  dropdownMenu.style.cssText = `
-    position: absolute;
-    top: 100%;
-    ${isMobile ? 'left: 50%; transform: translateX(-50%);' : 'right: 0;'}
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 18px 36px rgba(0,0,0,0.22);
-    min-width: 200px;
-    margin-top: 0.5rem;
-    display: none;
-    z-index: 9999;
-    overflow: hidden;
-    max-width: 90vw;
-    backdrop-filter: blur(12px);
+
+  const accountSummary = `
+    <div class="user-account-summary">
+      <div class="user-account-avatar" aria-hidden="true">${escapeHtml(userInitials)}</div>
+      <div>
+        <div class="user-account-name">${escapeHtml(userName)}</div>
+        <div class="user-account-meta">
+          <span>${escapeHtml(accountType)}</span>
+          <span>${escapeHtml(userEmail)}</span>
+        </div>
+      </div>
+    </div>
   `;
   
   const adminMenuItem = accountIsAdmin
     ? `
-    <a href="admin.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    <a href="${getAuthPageUrl('admin.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fa-solid fa-user-shield"></i> Admin Panel
     </a>
     `
@@ -2943,17 +2936,18 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
 
   const professorMenuItem = accountIsProfessor
     ? `
-    <a href="professor-panel.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    <a href="${getAuthPageUrl('professor-panel.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fa-solid fa-chalkboard-user"></i> Panou profesor
     </a>
     `
     : '';
 
   dropdownMenu.innerHTML = `
-    <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    ${accountSummary}
+    <a href="${getAuthPageUrl('profile.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fa-solid fa-user"></i> Profilul Meu
     </a>
-    <a href="settings.html" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
+    <a href="${getAuthPageUrl('settings.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
       <i class="fa-solid fa-gear"></i> Setări
     </a>
     ${professorMenuItem}
@@ -2963,17 +2957,26 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
       <i class="fa-solid fa-right-from-bracket"></i> Deconectare
     </button>
   `;
+
+  const trigger = userMenu.querySelector('.user-menu-trigger');
+  const syncExpandedState = (isOpen) => {
+    userMenu.classList.toggle('is-open', isOpen);
+    if (trigger) trigger.setAttribute('aria-expanded', String(isOpen));
+    dropdownMenu.style.display = isOpen ? 'block' : 'none';
+  };
   
   // Toggle dropdown on click
-  userMenu.addEventListener('click', (e) => {
+  trigger?.addEventListener('click', (e) => {
     e.stopPropagation();
     const isVisible = dropdownMenu.style.display !== 'none';
-    dropdownMenu.style.display = isVisible ? 'none' : 'block';
+    syncExpandedState(!isVisible);
   });
+
+  dropdownMenu.addEventListener('click', (e) => e.stopPropagation());
   
   // Close dropdown when clicking outside
   document.addEventListener('click', () => {
-    dropdownMenu.style.display = 'none';
+    syncExpandedState(false);
   });
   
   // Style dropdown items on hover
@@ -2996,6 +2999,19 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   
   userMenu.appendChild(dropdownMenu);
   headerActions.appendChild(userMenu);
+
+  // If mobile controls container exists (mobile) move the userMenu into it
+  try {
+    const mobileControls = document.querySelector('.mobile-controls');
+    if (mobileControls && window.innerWidth <= 768) {
+      // hide any duplicate in headerActions
+      const orig = headerActions.querySelector('.user-menu');
+      if (orig && orig !== userMenu) orig.style.display = 'none';
+      mobileControls.appendChild(userMenu);
+    }
+  } catch (e) {
+    // noop
+  }
 }
 
 /**

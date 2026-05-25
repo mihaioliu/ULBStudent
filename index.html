@@ -21,13 +21,13 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 
     <title>ULBStudent - Comunitatea Studenților ULBS | Platformă Studiu</title>
-    <link rel="stylesheet" href="styles-global.css" />
-    <link rel="stylesheet" href="app-polish.css" />
-    <link rel="stylesheet" href="styles-professors.css" />
-    <link rel="stylesheet" href="toast-notifications.css" />
+    <link rel="stylesheet" href="src/css/styles-global.css" />
+    <link rel="stylesheet" href="src/css/app-polish.css" />
+    <link rel="stylesheet" href="src/css/styles-professors.css" />
+    <link rel="stylesheet" href="src/css/toast-notifications.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-client.js"></script>
+    <script src="src/js/supabase-client.js"></script>
   </head>
 
 
@@ -43,9 +43,9 @@
         <ul>
           <!-- Simplified navigation to match profesori.html -->
           <li><a href="index.html" class="nav-link active">Acasă</a></li>
-          <li><a href="profesori.html" class="nav-link">Profesori</a></li>
-          <li><a href="documente.html" class="nav-link">Documente</a></li>
-          <li><a href="comments.html" class="nav-link">Discuții</a></li>
+          <li><a href="src/pages/profesori.html" class="nav-link">Profesori</a></li>
+          <li><a href="src/pages/documente.html" class="nav-link">Documente</a></li>
+          <li><a href="src/pages/comments.html" class="nav-link">Discuții</a></li>
         </ul>
       </nav>
       <div class="header-actions">
@@ -63,17 +63,12 @@
 
       <section class="hero-section" id="top" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <div class="hero-awards" aria-label="Repere de calitate">
-            <span>Design premium</span>
-            <span>Mobile first</span>
-            <span>Dark mode</span>
-          </div>
           <span class="hero-kicker"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Platforma comunității ULBS</span>
           <h1 class="hero-title" id="hero-title">Campus digital pentru studenții ULBS.</h1>
           <p class="hero-subtitle">ULBStudent transformă experiența de facultate într-un produs digital elegant: recenzii utile, documente organizate, discuții relevante și instrumente rapide.</p>
           <div class="hero-actions">
-              <a href="profesori.html" class="hero-cta primary"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> Vezi profesorii</a>
-              <a href="documente.html" class="hero-cta secondary"><i class="fa-solid fa-folder-open" aria-hidden="true"></i> Caută documente</a>
+              <a href="src/pages/profesori.html" class="hero-cta primary"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> Vezi profesorii</a>
+              <a href="src/pages/documente.html" class="hero-cta secondary"><i class="fa-solid fa-folder-open" aria-hidden="true"></i> Caută documente</a>
           </div>
           <div class="hero-trust-row" aria-label="Indicatori comunitate">
             <span><strong>2.450+</strong> studenți activi</span>
@@ -122,17 +117,17 @@
       </section>
 
       <section class="value-props-section" aria-label="Zone principale ULBStudent">
-        <a class="value-card" href="profesori.html">
+        <a class="value-card" href="src/pages/profesori.html">
           <i class="fa-solid fa-user-check" aria-hidden="true"></i>
           <span>Decizii mai bune</span>
           <strong>Recenzii despre profesori, materii și dificultate.</strong>
         </a>
-        <a class="value-card" href="documente.html">
+        <a class="value-card" href="src/pages/documente.html">
           <i class="fa-solid fa-book-open-reader" aria-hidden="true"></i>
           <span>Pregătire mai rapidă</span>
           <strong>Materiale organizate pentru cursuri, laboratoare și examene.</strong>
         </a>
-        <a class="value-card" href="comments.html">
+        <a class="value-card" href="src/pages/comments.html">
           <i class="fa-solid fa-people-group" aria-hidden="true"></i>
           <span>Sprijin real</span>
           <strong>Întrebări, răspunsuri și conversații între colegi.</strong>
@@ -174,27 +169,27 @@
         </div>
 
         <div class="feature-showcase-grid">
-          <a class="feature-tile feature-tile-large" href="profesori.html">
+          <a class="feature-tile feature-tile-large" href="src/pages/profesori.html">
             <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
             <span>Review-uri profesori</span>
             <strong>Alegi informat înainte de cursuri, seminare și examene.</strong>
           </a>
-          <a class="feature-tile" href="documente.html">
+          <a class="feature-tile" href="src/pages/documente.html">
             <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
             <span>Bibliotecă academică</span>
             <strong>Materiale filtrate pe an, materie și utilitate.</strong>
           </a>
-          <a class="feature-tile" href="comments.html">
+          <a class="feature-tile" href="src/pages/comments.html">
             <i class="fa-solid fa-message" aria-hidden="true"></i>
             <span>Discuții</span>
             <strong>Întrebări rapide, răspunsuri relevante, comunitate activă.</strong>
           </a>
-          <a class="feature-tile" href="settings.html">
+          <a class="feature-tile" href="src/pages/settings.html">
             <i class="fa-solid fa-sliders" aria-hidden="true"></i>
             <span>Experiență personală</span>
             <strong>Setări, temă, profil și preferințe adaptate.</strong>
           </a>
-          <a class="feature-tile" href="raporteaza-problema.html">
+          <a class="feature-tile" href="src/pages/raporteaza-problema.html">
             <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
             <span>Suport și siguranță</span>
             <strong>Raportare clară pentru probleme și feedback.</strong>
@@ -577,19 +572,19 @@
         <div class="footer-section">
           <h4>Linkuri rapide</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="index.html">Acasă</a></li>
-            <li><a href="documente.html">Bibliotecă Documente</a></li>
-            <li><a href="comments.html">Discuții</a></li>
+            <li><a href="./index.html">Acasă</a></li>
+            <li><a href="./src/pages/documente.html">Bibliotecă Documente</a></li>
+            <li><a href="./src/pages/comments.html">Discuții</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
           <h4>Ajutor & Info</h4>
           <ul style="list-style: none; padding: 0;">
-            <li><a href="politica-confidentialitate.html">Politica de confidențialitate</a></li>
-            <li><a href="termeni-conditii.html">Termeni și Condiții</a></li>
-            <li><a href="contact.html">Contactează-ne</a></li>
-            <li><a href="raporteaza-problema.html">Raportează problemă</a></li>
+            <li><a href="./src/pages/politica-confidentialitate.html">Politica de confidențialitate</a></li>
+            <li><a href="./src/pages/termeni-conditii.html">Termeni și Condiții</a></li>
+            <li><a href="./src/pages/contact.html">Contactează-ne</a></li>
+            <li><a href="./src/pages/raporteaza-problema.html">Raportează problemă</a></li>
           </ul>
         </div>
 
@@ -602,9 +597,9 @@
       </div>
     </footer>
 
-    <script src="auth.js" defer></script>
-    <script src="professors-filtering.js" defer></script>
-    <script src="interactive.js" defer></script>
+    <script src="src/js/auth.js" defer></script>
+    <script src="src/js/professors-filtering.js" defer></script>
+    <script src="src/js/interactive.js" defer></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
