@@ -355,6 +355,58 @@
       .stat-meta {
         font-size: 0.85rem;
         color: var(--text-secondary);
+        /* Prevent odd wrapping/overflow: limit to 2 lines and hide overflow */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+        line-height: 1.25;
+      }
+
+      .stat-label {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .stat-card {
+        padding: 1rem;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-align: center;
+      }
+
+      /* Icon and large value stacked */
+      .stat-top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+      }
+
+      /* Hide the meta description; show only short title */
+      .stat-meta { display: none; }
+
+      .stat-label {
+        display: block;
+        font-weight: 700;
+        color: var(--text);
+        margin-top: 0.25rem;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 9.5rem;
       }
 
       .activity-panel {

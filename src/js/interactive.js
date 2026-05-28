@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeDocumentDownloadActions(); // ⬇️ Descărcare reală documente
   initializeDocumentFilters();      // Filtrare documente
   initializePostCreation();         // Sistem de postări
+  initializeDiscussionFilters();    // Filtre butoane Discuții (recent/popular/no-replies/polls)
   initializeQuestionsData();        // ❓ Întrebări din baza de date
   initializeSubredditData();        // Profil + postări din baza de date
   initializeCommentsData();         // Comentarii din baza de date
@@ -506,7 +507,7 @@ function initializeHomeSectionSliders() {
       const cards = Array.from(track.children || []);
       if (!cards.length) return;
 
-      const visibleIndex = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
+      const visibleIndex = getVisibleIndex(track, cards);
       const nextIndex = Math.max(0, Math.min(cards.length - 1, visibleIndex + direction));
       const nextCard = cards[nextIndex];
       if (!nextCard) return;
@@ -526,6 +527,7 @@ function initializeHomeSectionSliders() {
           track.classList.remove('is-sliding');
           track.scrollLeft = targetLeft; // snap exactly to center
           updateActiveCardState(track);
+          updateControls(track);
         } catch (e) {
           // noop
         }
@@ -1479,6 +1481,89 @@ function sortAndRenderPosts(postElements, sortType, container, user) {
       container.appendChild(postEl.cloneNode(true));
     }
   });
+}
+
+/**
+ * Initialize discussion filter buttons on comments.html
+ * Supports: recent, popular, no-replies, polls, trending
+ */
+function initializeDiscussionFilters() {
+  try {
+    const buttons = Array.from(document.querySelectorAll('.discussions-filter-pill'));
+    const postsFeed = document.getElementById('postsFeed');
+    if (!buttons.length || !postsFeed) return;
+
+    const applyFilter = async (filter) => {
+      postsFeed.innerHTML = '<div style="padding:2rem;text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+      try {
+        const loaded = await getPosts();
+        if (!loaded.success) {
+          postsFeed.innerHTML = '';
+          showToast('Nu s-au putut încărca postările.', 'error');
+          return;
+        }
+
+        let posts = Array.isArray(loaded.data) ? loaded.data.slice() : [];
+
+        if (filter === 'polls') {
+          posts = posts.filter((p) => {
+            const parsed = parsePostDisplay(p.title || '', p.content || '');
+            return !!parsePollDisplay(parsed.content || '');
+          });
+          posts = sortPostsByType(posts, 'recent');
+        } else if (filter === 'no-replies') {
+          // For performance, check comments in parallel
+          const checks = await Promise.all(posts.map(async (p) => {
+            try {
+              const res = await getComments(p.id);
+              const len = (res && res.success && Array.isArray(res.data)) ? res.data.length : 0;
+              return { post: p, commentsCount: len };
+            } catch (e) {
+              return { post: p, commentsCount: 0 };
+            }
+          }));
+          posts = checks.filter(ch => ch.commentsCount === 0).map(ch => ch.post);
+          posts = sortPostsByType(posts, 'recent');
+        } else if (['recent','popular','trending'].includes(filter)) {
+          const mapType = filter === 'trending' ? 'trending' : filter;
+          posts = sortPostsByType(posts, mapType);
+        }
+
+        postsFeed.innerHTML = '';
+        const currentUser = getCurrentUser();
+        if (!posts.length) {
+          const empty = document.createElement('div');
+          empty.className = 'discussions-empty-state';
+          empty.innerHTML = '<i class="fa-solid fa-inbox"></i><h3>Nu există postări pentru acest filtru</h3>';
+          postsFeed.appendChild(empty);
+          return;
+        }
+
+        posts.forEach(p => postsFeed.appendChild(renderPostCard(p, currentUser)));
+      } catch (err) {
+        console.error('Error applying discussion filter', err);
+        postsFeed.innerHTML = '';
+        showToast('Eroare la aplicarea filtrului.', 'error');
+      }
+    };
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        buttons.forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        const filter = (btn.dataset.sort || '').trim();
+        await applyFilter(filter);
+      });
+    });
+
+    // Trigger initial active filter
+    const active = buttons.find(b => b.classList.contains('is-active')) || buttons[0];
+    if (active) {
+      applyFilter(active.dataset.sort || 'recent');
+    }
+  } catch (e) {
+    console.warn('initializeDiscussionFilters failed', e?.message || e);
+  }
 }
 
 // ============================================
@@ -3720,6 +3805,80 @@ async function initializeSubredditData() {
     }
   }
 
+  // Attach admin-only delete button for posts/polls
+  (async () => {
+    try {
+      const role = localStorage.getItem('role');
+      let isAdmin = role === 'admin';
+      // Quick test hook: ?admin=1 in URL will show admin controls locally
+      const urlAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+      const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+      const emailIsAdmin = currentUser && String(currentUser.email || '').trim().toLowerCase() === 'admin@ulbstudent.ro';
+      if (!isAdmin && (urlAdmin || emailIsAdmin) && currentUser) {
+        isAdmin = true;
+        localStorage.setItem('role', 'admin');
+      }
+      if (!isAdmin && typeof getAuthenticatedUser === 'function' && typeof resolveAndCacheUserRole === 'function') {
+        const u = await getAuthenticatedUser(false);
+        const resolved = await resolveAndCacheUserRole(u);
+        isAdmin = resolved === 'admin';
+      }
+
+      if (!isAdmin) return;
+
+      const actions = card.querySelector('.post-actions');
+      if (!actions) return;
+
+      const adminWrapper = document.createElement('div');
+      adminWrapper.className = 'post-admin-actions';
+      adminWrapper.innerHTML = `<button class="btn btn-ghost btn-danger btn-small post-delete">Șterge (admin)</button>`;
+      actions.appendChild(adminWrapper);
+
+      const delBtn = adminWrapper.querySelector('.post-delete');
+      delBtn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        if (!confirm('Ești sigur că vrei să ștergi această postare și sondajul asociat (dacă există)?')) return;
+
+        delBtn.disabled = true;
+        delBtn.textContent = 'Ștergere...';
+
+        try {
+          const client = await initSupabaseClient();
+          // First try to find a poll associated with this post
+          const pollRes = await client.from('polls').select('id').eq('post_id', post.id).maybeSingle();
+          if (!pollRes.error && pollRes.data && pollRes.data.id) {
+            const pollId = pollRes.data.id;
+            // Delete poll options first
+            await client.from('poll_options').delete().eq('poll_id', pollId);
+            // Delete poll row
+            await client.from('polls').delete().eq('id', pollId);
+          }
+
+          // Try deleting from legacy posts table
+          const delLegacy = await client.from(TABLES.POSTS_LEGACY).delete().eq('id', post.id);
+          // Also attempt deletion from forum posts table (may be redundant)
+          const delForum = await client.from(TABLES.FORUM_POSTS).delete().eq('id', post.id);
+
+          if ((delLegacy.error && delForum.error) || (!delLegacy.data && !delForum.data)) {
+            // If both failed, try deleting by alternative column names
+            await client.from(TABLES.POSTS_LEGACY).delete().eq('post_id', post.id);
+            await client.from(TABLES.FORUM_POSTS).delete().eq('post_id', post.id);
+          }
+
+          if (typeof showToast === 'function') showToast('Postare și sondaj șterse.', 'success');
+          card.remove();
+        } catch (err) {
+          console.error('Error deleting post/poll:', err);
+          if (typeof showToast === 'function') showToast(err?.message || 'Eroare la ștergerea postării.', 'error');
+          delBtn.disabled = false;
+          delBtn.textContent = 'Șterge (admin)';
+        }
+      });
+    } catch (e) {
+      console.warn('Could not attach admin delete button for post', e?.message || e);
+    }
+  })();
+
   const loaded = await getPosts();
   postsFeed.innerHTML = '';
 
@@ -4216,8 +4375,49 @@ function renderCommentCard(comment) {
     <div class="comment-meta">
       ${email ? `<span class="comment-meta-pill"><i class="fa-regular fa-envelope"></i> ${escapeHtml(email)}</span>` : ''}
       <span class="comment-meta-pill"><i class="fa-solid fa-reply"></i> ${replyCount} răspunsuri</span>
+      <span class="comment-meta-pill comment-admin-actions" data-comment-id="${escapeHtml(String(comment.id || comment.comment_id || ''))}"></span>
     </div>
   `;
+
+  // Attach delete button for admins (async check)
+  (async () => {
+    try {
+      const role = localStorage.getItem('role');
+      let isAdmin = role === 'admin';
+      if (!isAdmin && typeof getAuthenticatedUser === 'function' && typeof resolveAndCacheUserRole === 'function') {
+        const u = await getAuthenticatedUser(false);
+        const resolved = await resolveAndCacheUserRole(u);
+        isAdmin = resolved === 'admin';
+      }
+
+      if (!isAdmin) return;
+
+      const actions = item.querySelector('.comment-admin-actions');
+      if (!actions) return;
+      const commentId = String(comment.id || comment.comment_id || '').trim();
+      if (!commentId) return;
+
+      actions.innerHTML = `<button class="btn btn-ghost btn-danger btn-small comment-delete">Șterge</button>`;
+      const del = actions.querySelector('.comment-delete');
+      del.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        if (!confirm('Ești sigur că vrei să ștergi acest comentariu?')) return;
+        try {
+          const client = await initSupabaseClient();
+          const res = await client.from('comentarii').delete().eq('id', commentId).select();
+          if (res.error) throw res.error;
+          if (typeof showToast === 'function') showToast('Comentariu șters.', 'success');
+          // remove element from DOM
+          item.remove();
+        } catch (err) {
+          console.error('Error deleting comment:', err?.message || err);
+          if (typeof showToast === 'function') showToast(err?.message || 'Eroare la ștergerea comentariului.', 'error');
+        }
+      });
+    } catch (e) {
+      console.warn('Could not attach admin delete button for comment', e.message || e);
+    }
+  })();
 
   return item;
 }

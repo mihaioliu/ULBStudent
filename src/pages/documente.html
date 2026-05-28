@@ -104,18 +104,64 @@
       .documents-layout {
         display: grid;
         grid-template-columns: 300px 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "sidebar header"
+          "sidebar main";
         gap: 2.5rem;
+        align-items: start;
       }
+
+      .docs-filters-sidebar { grid-area: sidebar; }
+      .docs-header-card { grid-area: header; }
+      .docs-main { grid-area: main; }
+
+      .docs-header-card {
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(148,163,184,0.18);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Sidebar stays at top; header card has a downward offset on wide screens */
+      .docs-filters-sidebar {
+        align-self: start;
+        margin-top: 0;
+      }
+
+      @media (min-width: 1025px) {
+        .docs-header-card {
+          align-self: start;
+          margin-top: 2rem; /* move header card lower */
+        }
+        .docs-filters-sidebar {
+          margin-top: 1.6rem; /* nudge search card down slightly on desktop */
+        }
+      }
+
+      body.dark-mode .docs-header-card,
+      html.dark-mode .docs-header-card {
+        background: rgba(15,23,42,0.66);
+        border-color: rgba(148,163,184,0.12);
+      }
+
+      .docs-grid-wrapper { margin-top: 1.5rem; }
 
       @media (max-width: 1024px) {
         .documents-layout {
           grid-template-columns: 1fr;
+          grid-template-areas:
+            "header"
+            "sidebar"
+            "main";
         }
 
         .docs-filters-sidebar {
           grid-column: 1;
-          grid-row: 1;
+          grid-row: 2;
         }
+        .docs-header-card { grid-row: 1; }
       }
 
       /* ========== SIDEBAR ========== */
@@ -577,26 +623,7 @@
       </div>
     </header>
 
-    <!-- DOCUMENTS HERO -->
-    <section class="documents-hero">
-      <div class="documents-hero-content">
-        <span class="documents-hero-badge"><i class="fa-solid fa-book"></i> Bibliotecă ULBS</span>
-        <div>
-          <h1>Documente</h1>
-          <p>Găsește cursuri, laboratoare, seminare și materiale utile pentru semestru complet.</p>
-        </div>
-        <div class="documents-hero-stats">
-          <div class="hero-doc-stat">
-            <strong id="heroDocCount">0</strong>
-            <span>documente</span>
-          </div>
-          <div class="hero-doc-stat">
-            <strong id="heroDownloadCount">0</strong>
-            <span>descărcări</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- DOCUMENTS HERO (moved into layout for new arrangement) -->
 
     <main class="documents-container">
       <div class="documents-layout">
@@ -670,13 +697,38 @@
           </div>
         </aside>
 
-        <!-- MAIN DOCUMENTS AREA -->
+        </aside>
+
+        <!-- HEADER CARD: Title + stats (to the right of the sidebar) -->
+        <div class="docs-header-card">
+          <div class="documents-hero-content">
+            <span class="documents-hero-badge"><i class="fa-solid fa-book"></i> Bibliotecă ULBS</span>
+            <div>
+              <h1>Documente</h1>
+              <p>Găsește cursuri, laboratoare, seminare și materiale utile pentru semestru complet.</p>
+            </div>
+            <div class="documents-hero-stats">
+              <div class="hero-doc-stat">
+                <strong id="heroDocCount">0</strong>
+                <span>documente</span>
+              </div>
+              <div class="hero-doc-stat">
+                <strong id="heroDownloadCount">0</strong>
+                <span>descărcări</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN DOCUMENTS AREA (documents appear under the header card) -->
         <div class="docs-main">
-          <div class="docs-grid" id="docsGrid">
+          <div class="docs-grid-wrapper">
+            <div class="docs-grid" id="docsGrid">
             <div class="empty-state-card">
               <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
               <h3>Se pregătește biblioteca</h3>
               <p>Documentele se vor încărca automat din baza de date imediat ce sunt disponibile.</p>
+            </div>
             </div>
           </div>
         </div>

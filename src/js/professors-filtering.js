@@ -42,6 +42,24 @@ window.OFFICIAL_PROFESSORS = OFFICIAL_PROFESSORS;
 let professorsData = [];
 let filteredProfessors = [];
 let activeReviewProfessor = null;
+// Keep reference to the element that opened the review modal so we can restore focus
+let _lastReviewTrigger = null;
+
+// Local helper to ensure notification is shown even if global helper is missing
+function localShowNotification(message, type = 'info') {
+  try {
+    if (typeof showNotification === 'function') return showNotification(message, type);
+  } catch (e) {
+    // ignore
+  }
+
+  try {
+    if (typeof showToast === 'function') return showToast(String(message || ''), type === 'info' ? 'info' : type === 'success' ? 'success' : type === 'error' ? 'error' : 'info');
+  } catch (e) {
+    // last resort: alert
+    try { alert(String(message || '')); } catch (e2) {}
+  }
+}
 
 function calculateProfessorRating(reviews) {
   const ratingRows = Array.isArray(reviews) ? reviews : [];
@@ -157,9 +175,24 @@ function ensureProfessorReviewModal() {
   document.body.appendChild(modal);
 
   const closeModal = () => {
+    // If a focused element is inside the modal, blur it first to avoid aria-hidden focus warning
+    try {
+      const active = document.activeElement;
+      if (active && modal.contains(active)) {
+        active.blur();
+      }
+    } catch (e) {}
+
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+    // restore focus to the element that opened the modal (if still in DOM)
+    try {
+      if (_lastReviewTrigger && typeof _lastReviewTrigger.focus === 'function') {
+        _lastReviewTrigger.focus();
+      }
+    } catch (e) {}
+
     activeReviewProfessor = null;
   };
 
@@ -179,9 +212,7 @@ function ensureProfessorReviewModal() {
     event.preventDefault();
 
     if (!activeReviewProfessor?.id) {
-      if (typeof showNotification === 'function') {
-        showNotification('Profesor invalid.');
-      }
+      localShowNotification('Profesor invalid.', 'error');
       return;
     }
 
@@ -189,31 +220,44 @@ function ensureProfessorReviewModal() {
     const comment = modal.querySelector('#professorReviewModalComment').value.trim();
 
     if (!rating || rating < 1 || rating > 5 || !comment) {
-      if (typeof showNotification === 'function') {
-        showNotification('Completează corect rating-ul și comentariul.');
-      }
+      localShowNotification('Completează corect rating-ul și comentariul.', 'warning');
       return;
     }
 
-    const saved = await saveProfessorReview(activeReviewProfessor.id, rating, comment, {
-      professorName: activeReviewProfessor.name,
-      professorSubject: activeReviewProfessor.specialization,
-      professorEmail: activeReviewProfessor.email
-    });
-    if (!saved.success) {
-      if (typeof showNotification === 'function') {
-        showNotification(saved.error || 'Nu s-a putut salva recenzia.');
+    // Show loading state on submit button while request is in progress
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    const _origBtnText = submitBtn ? submitBtn.textContent : null;
+    try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
+        submitBtn.setAttribute('aria-busy', 'true');
       }
-      return;
-    }
 
-    form.reset();
-    closeModal();
-    await loadProfessorsData();
-    fillProfessorSelect();
-    applyFilters();
-    if (typeof showNotification === 'function') {
-      showNotification('Recenzie salvată cu succes!');
+      const saved = await saveProfessorReview(activeReviewProfessor.id, rating, comment, {
+        professorName: activeReviewProfessor.name,
+        professorSubject: activeReviewProfessor.specialization,
+        professorEmail: activeReviewProfessor.email
+      });
+
+      if (!saved.success) {
+        localShowNotification(saved.error || 'Nu s-a putut salva recenzia.', 'error');
+        return;
+      }
+
+      form.reset();
+      closeModal();
+      await loadProfessorsData();
+      fillProfessorSelect();
+      applyFilters();
+      localShowNotification('Recenzie salvată cu succes!', 'success');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('is-loading');
+        submitBtn.removeAttribute('aria-busy');
+        if (_origBtnText !== null) submitBtn.textContent = _origBtnText;
+      }
     }
   });
 
@@ -454,9 +498,7 @@ function renderProfessors() {
 
 async function addProfessorReview(professorId) {
   if (typeof saveProfessorReview !== 'function') {
-    if (typeof showNotification === 'function') {
-      showNotification('Funcția de recenzii nu este disponibilă.');
-    }
+    localShowNotification('Funcția de recenzii nu este disponibilă.', 'error');
     return;
   }
 
@@ -486,9 +528,13 @@ async function addProfessorReview(professorId) {
   if (ratingInput) ratingInput.value = '';
   if (commentInput) commentInput.value = '';
 
+  // remember opener to restore focus later
+  try { _lastReviewTrigger = document.activeElement; } catch (e) { _lastReviewTrigger = null; }
+
   modal?.classList.add('is-open');
   modal?.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
+  // focus the rating input for keyboard users
   setTimeout(() => ratingInput?.focus(), 50);
 }
 

@@ -25,8 +25,9 @@
 
       .discussions-hero {
         margin: 3rem auto 2rem;
-        max-width: 1180px;
-        padding: 0 2rem;
+        max-width: 1400px;
+        width: calc(100% - 4rem);
+        padding: 0 1.5rem;
         text-align: left;
       }
 
@@ -95,7 +96,7 @@
       }
 
       .discussions-container {
-        max-width: 1180px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 0 2rem;
       }
@@ -838,18 +839,18 @@
               <div id="postAttachmentList" class="post-attachment-list"></div>
 
               <div class="discussions-form-actions">
-                <div class="discussions-media-buttons">
-                  <button type="button" class="discussions-action-btn" data-action="image" title="Adaugă imagine">
-                    <i class="fa-solid fa-image"></i>
-                  </button>
-                  <button type="button" class="discussions-action-btn" data-action="link" title="Adaugă link">
-                    <i class="fa-solid fa-link"></i>
-                  </button>
-                  <button type="button" class="discussions-action-btn" data-action="poll" title="Adaugă sondaj">
-                    <i class="fa-solid fa-square-poll-horizontal"></i>
-                  </button>
-                </div>
-                <button type="submit" class="discussions-post-btn">Postează</button>
+                <div class="discussions-media-buttons media-uploads">
+                    <button type="button" class="discussions-action-btn action-btn" data-action="image" title="Adaugă imagine">
+                      <i class="fa-solid fa-image"></i>
+                    </button>
+                    <button type="button" class="discussions-action-btn action-btn" data-action="link" title="Adaugă link">
+                      <i class="fa-solid fa-link"></i>
+                    </button>
+                    <button type="button" class="discussions-action-btn action-btn" data-action="poll" title="Adaugă sondaj">
+                      <i class="fa-solid fa-square-poll-horizontal"></i>
+                    </button>
+                  </div>
+                  <button type="submit" class="discussions-post-btn post-submit-btn">Postează</button>
               </div>
             </form>
           </div>
@@ -859,7 +860,7 @@
             <div class="discussions-filters">
               <button class="discussions-filter-pill is-active" data-sort="recent">Recente</button>
               <button class="discussions-filter-pill" data-sort="popular">Populare</button>
-              <button class="discussions-filter-pill" data-sort="trending">Fără răspuns</button>
+              <button class="discussions-filter-pill" data-sort="no-replies">Fără răspuns</button>
               <button class="discussions-filter-pill" data-sort="polls">Sondaje</button>
             </div>
             <button id="refreshPostsBtn" class="discussions-refresh-btn" title="Reîncarcă postări">

@@ -1083,6 +1083,26 @@ body:not(.dark-mode) :is(button, a[class*="btn"], .btn-secondary, .btn-action, .
   transform: translateY(-2px) !important;
 }
 
+/* Contact form submit button: ensure consistent theme coloring
+   placed here to override earlier styles loaded from styles-global.css */
+body:not(.dark-mode) .contact-page-shell #contactForm .btn-primary,
+html:not(.dark-mode) .contact-page-shell #contactForm .btn-primary {
+  background: linear-gradient(135deg, #D4AF37 0%, #b8860b 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(212,175,55,0.35) !important;
+  box-shadow: 0 12px 24px rgba(212,175,55,0.22) !important;
+}
+
+body.dark-mode .contact-page-shell #contactForm .btn-primary,
+html.dark-mode .contact-page-shell #contactForm .btn-primary,
+body.dark-mode #contactForm .btn-primary,
+html.dark-mode #contactForm .btn-primary {
+  background: linear-gradient(135deg, #e63946 0%, #c81e3d 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(230,57,70,0.22) !important;
+  box-shadow: 0 10px 22px rgba(230,57,70,0.12) !important;
+}
+
 /* Remove external glow for buttons in dark mode */
 html.dark-mode :is(button, a[class*="btn"], .btn-secondary, .btn-action, .btn-primary, .btn-danger, .btn-signin, .btn-signup, .view-profile-btn, .view-reviews-btn, .hero-cta, .search-submit-btn) {
   box-shadow: none !important;
