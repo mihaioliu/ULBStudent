@@ -860,6 +860,12 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
           specialization: profileUpdates.specialization || user.user_metadata?.specialization,
           taught_subject: profileUpdates.taught_subject || user.user_metadata?.taught_subject,
           teaching_years: profileUpdates.teaching_years || user.user_metadata?.teaching_years || [],
+          about_me: profileUpdates.about_me !== undefined
+            ? profileUpdates.about_me
+            : (user.user_metadata?.about_me || user.user_metadata?.bio || user.user_metadata?.description || ''),
+          profile_picture_url: profileUpdates.profile_picture_url !== undefined
+            ? profileUpdates.profile_picture_url
+            : (user.user_metadata?.profile_picture_url || user.user_metadata?.avatar_url || ''),
           account_type: accountType === 'profesor' ? 'professor' : 'student'
         }
       });
@@ -900,7 +906,13 @@ async function updateCurrentUserProfileData(profileUpdates = {}) {
         ...user.user_metadata,
         full_name: profileUpdates.full_name || user.user_metadata?.full_name,
         year: profileUpdates.year || user.user_metadata?.year,
-        specialization: profileUpdates.specialization || user.user_metadata?.specialization
+        specialization: profileUpdates.specialization || user.user_metadata?.specialization,
+        about_me: profileUpdates.about_me !== undefined
+          ? profileUpdates.about_me
+          : (user.user_metadata?.about_me || user.user_metadata?.bio || user.user_metadata?.description || ''),
+        profile_picture_url: profileUpdates.profile_picture_url !== undefined
+          ? profileUpdates.profile_picture_url
+          : (user.user_metadata?.profile_picture_url || user.user_metadata?.avatar_url || '')
       }
     });
 
