@@ -36,6 +36,12 @@
   }
 })();
 
+try {
+  document.documentElement.setAttribute('lang', getStoredSiteLanguage());
+} catch {
+  // noop
+}
+
 // Sync theme across tabs/windows and respond to external changes
 window.addEventListener('storage', (ev) => {
   if (!ev) return;
@@ -63,6 +69,7 @@ window.addEventListener('storage', (ev) => {
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize core interactions FIRST (non-blocking)
   initializeShellPolish();
+  initializeLanguageSupport();
   initializeUnifiedFooter();       // 🧩 Footer unificat pe toate paginile
   initializeAppSettings();         // ⚙️ Preferinte persistente (tema/font/animații)
   initializeThemeToggle();          // Tema (Light/Dark/Night)
@@ -186,6 +193,37 @@ function initializeAppSettings() {
 
   const animationsEnabled = appearance.animations !== false;
   document.documentElement.setAttribute('data-animations', animationsEnabled ? 'on' : 'off');
+
+  const preferredLanguage = normalizeSiteLanguage(localStorage.getItem(SITE_LANGUAGE_KEY) || settings.language || 'ro');
+  persistSiteLanguage(preferredLanguage);
+}
+
+function initializeLanguageSupport() {
+  const currentLanguage = getStoredSiteLanguage();
+  persistSiteLanguage(currentLanguage);
+  createLanguageSwitcher();
+  updateLanguageSwitcherValue(currentLanguage);
+  updatePostCategoryOptions(currentLanguage);
+
+  const languageSetting = document.getElementById('languageSetting');
+  if (languageSetting) {
+    languageSetting.value = currentLanguage;
+    languageSetting.addEventListener('change', async () => {
+      const nextLang = normalizeSiteLanguage(languageSetting.value);
+      persistSiteLanguage(nextLang);
+      updateLanguageSwitcherValue(nextLang);
+      updatePostCategoryOptions(nextLang);
+      await translatePageContent(nextLang);
+    });
+  }
+
+  if (currentLanguage === 'en') {
+    window.setTimeout(() => {
+      translatePageContent(currentLanguage).catch((error) => {
+        console.warn('Initial page translation failed:', error?.message || error);
+      });
+    }, 0);
+  }
 }
 
 /**
@@ -339,6 +377,386 @@ function getAssetUrl(assetName) {
     return '../../assets/Logos%20and%20icons/' + assetName;
   }
   return 'assets/Logos%20and%20icons/' + assetName;
+}
+
+const SITE_LANGUAGE_KEY = 'site_language';
+const TRANSLATION_CACHE = new Map();
+const SUPPORTED_SITE_LANGUAGES = new Set(['ro', 'en']);
+
+function normalizeSiteLanguage(value) {
+  return value === 'en' ? 'en' : 'ro';
+}
+
+function getStoredSiteLanguage() {
+  const direct = normalizeSiteLanguage(localStorage.getItem(SITE_LANGUAGE_KEY));
+  if (SUPPORTED_SITE_LANGUAGES.has(direct)) return direct;
+
+  try {
+    const settings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+    const cached = normalizeSiteLanguage(settings?.language);
+    if (SUPPORTED_SITE_LANGUAGES.has(cached)) return cached;
+  } catch {
+    // noop
+  }
+
+  return 'ro';
+}
+
+function persistSiteLanguage(lang) {
+  const nextLang = normalizeSiteLanguage(lang);
+  localStorage.setItem(SITE_LANGUAGE_KEY, nextLang);
+
+  try {
+    const settings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+    const merged = {
+      ...settings,
+      language: nextLang
+    };
+    localStorage.setItem('app_settings_cache', JSON.stringify(merged));
+  } catch {
+    // noop
+  }
+
+  const languageSetting = document.getElementById('languageSetting');
+  if (languageSetting && languageSetting.value !== nextLang) {
+    languageSetting.value = nextLang;
+  }
+
+  document.documentElement.setAttribute('lang', nextLang);
+  document.documentElement.dataset.siteLanguage = nextLang;
+}
+
+function getSiteLanguage() {
+  return normalizeSiteLanguage(localStorage.getItem(SITE_LANGUAGE_KEY) || getStoredSiteLanguage());
+}
+
+function isTranslatableText(value) {
+  return /[A-Za-zĂÂÎȘȚăâîșț]/.test(String(value || ''));
+}
+
+function shouldSkipTranslationNode(node) {
+  const parent = node?.parentElement;
+  if (!parent) return true;
+  return Boolean(parent.closest('[data-no-translate], script, style, noscript, svg, code, pre, textarea, input, select, option'));
+}
+
+async function translateText(text, targetLang) {
+  const normalizedText = String(text || '');
+  const normalizedLang = normalizeSiteLanguage(targetLang);
+  const cacheKey = `${normalizedLang}::${normalizedText}`;
+  if (TRANSLATION_CACHE.has(cacheKey)) {
+    return TRANSLATION_CACHE.get(cacheKey);
+  }
+
+  if (!normalizedText.trim() || !isTranslatableText(normalizedText)) {
+    TRANSLATION_CACHE.set(cacheKey, normalizedText);
+    return normalizedText;
+  }
+
+  try {
+    const endpoint = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(normalizedLang)}&dt=t&dj=1&ie=UTF-8&oe=UTF-8&q=${encodeURIComponent(normalizedText)}`;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(endpoint, { signal: controller.signal });
+    window.clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Translation request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const translated = Array.isArray(data?.sentences)
+      ? data.sentences.map((sentence) => sentence?.trans || '').join('').trim()
+      : normalizedText;
+
+    const value = translated || normalizedText;
+    TRANSLATION_CACHE.set(cacheKey, value);
+    return value;
+  } catch (error) {
+    console.warn('Text translation failed:', error?.message || error);
+    TRANSLATION_CACHE.set(cacheKey, normalizedText);
+    return normalizedText;
+  }
+}
+
+async function translateElementText(root, targetLang) {
+  if (!root) return;
+
+  const normalizedLang = normalizeSiteLanguage(targetLang);
+  const textNodes = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node || shouldSkipTranslationNode(node)) continue;
+    const rawText = String(node.nodeValue || '');
+    if (!rawText.trim() || !isTranslatableText(rawText)) continue;
+    textNodes.push(node);
+  }
+
+  const uniqueTexts = [...new Set(textNodes.map((node) => String(node.nodeValue || '').trim()))];
+  const translations = new Map();
+
+  await Promise.all(uniqueTexts.map(async (text) => {
+    translations.set(text, await translateText(text, normalizedLang));
+  }));
+
+  textNodes.forEach((node) => {
+    const rawText = String(node.nodeValue || '');
+    const trimmed = rawText.trim();
+    const translated = translations.get(trimmed);
+    if (!translated || translated === trimmed) return;
+
+    const leadingWhitespace = rawText.match(/^\s*/)?.[0] || '';
+    const trailingWhitespace = rawText.match(/\s*$/)?.[0] || '';
+    node.nodeValue = `${leadingWhitespace}${translated}${trailingWhitespace}`;
+  });
+
+  root.querySelectorAll('[placeholder]').forEach((element) => {
+    const placeholder = element.getAttribute('placeholder') || '';
+    if (!placeholder.trim() || !isTranslatableText(placeholder)) return;
+    translateText(placeholder, normalizedLang).then((translated) => {
+      if (translated && translated !== placeholder) {
+        element.setAttribute('placeholder', translated);
+      }
+    });
+  });
+
+  root.querySelectorAll('[title]:not([data-no-translate])').forEach((element) => {
+    const title = element.getAttribute('title') || '';
+    if (!title.trim() || !isTranslatableText(title)) return;
+    translateText(title, normalizedLang).then((translated) => {
+      if (translated && translated !== title) {
+        element.setAttribute('title', translated);
+      }
+    });
+  });
+}
+
+function updateLanguageSwitcherValue(lang) {
+  document.querySelectorAll('.site-language-switcher').forEach((switcher) => {
+    if (switcher.value !== lang) {
+      switcher.value = lang;
+    }
+  });
+
+  const languageSetting = document.getElementById('languageSetting');
+  if (languageSetting && languageSetting.value !== lang) {
+    languageSetting.value = lang;
+  }
+}
+
+function applyDocumentLanguageMeta(lang) {
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.dataset.siteLanguage = lang;
+}
+
+function getPageTitleForLanguage(lang) {
+  const normalizedLang = normalizeSiteLanguage(lang);
+  const path = window.location.pathname.toLowerCase();
+
+  if (path.endsWith('/index.html') || path === '/' || path.endsWith('/proiect-web/')) {
+    return normalizedLang === 'en'
+      ? 'ULBStudent - ULBS Student Community | Study Platform'
+      : 'ULBStudent - Comunitatea Studenților ULBS | Platformă Studiu';
+  }
+
+  if (path.includes('/comments.html')) {
+    return normalizedLang === 'en'
+      ? 'Discussions - ULBStudent | Student community'
+      : 'Discuții - ULBStudent | Comunitate studenți';
+  }
+
+  if (path.includes('/discutie.html')) {
+    return normalizedLang === 'en'
+      ? 'Discussion - ULBStudent'
+      : 'Discuție - ULBStudent';
+  }
+
+  if (path.includes('/settings.html')) {
+    return normalizedLang === 'en'
+      ? 'Settings - ULBStudent'
+      : 'Setări - ULBStudent';
+  }
+
+  return document.title;
+}
+
+function getPostCategoryLabels(lang) {
+  const normalizedLang = normalizeSiteLanguage(lang);
+  return normalizedLang === 'en'
+    ? {
+        general: 'General',
+        intrebare: 'Question',
+        resursa: 'Resource',
+        anunt: 'Announcement'
+      }
+    : {
+        general: 'General',
+        intrebare: 'Întrebare',
+        resursa: 'Resursă',
+        anunt: 'Anunț'
+      };
+}
+
+function translatePostCategoryLabel(categoryKey, lang) {
+  const labels = getPostCategoryLabels(lang);
+  return labels[String(categoryKey || '').trim().toLowerCase()] || labels.general;
+}
+
+function updatePostCategoryOptions(lang) {
+  const select = document.getElementById('postCategoryInput');
+  if (!select) return;
+
+  const labels = getPostCategoryLabels(lang);
+  const labelMap = {
+    general: labels.general,
+    intrebare: labels.intrebare,
+    resursa: labels.resursa,
+    anunt: labels.anunt
+  };
+
+  Array.from(select.options).forEach((option) => {
+    const value = String(option.value || '').trim().toLowerCase();
+    if (labelMap[value]) {
+      option.textContent = labelMap[value];
+    }
+  });
+
+  const label = document.querySelector('label[for="postCategoryInput"]');
+  if (label) {
+    label.textContent = normalizeSiteLanguage(lang) === 'en' ? 'Category' : 'Categorie';
+  }
+}
+
+function createLanguageSwitcher() {
+  const headerActions = document.querySelector('header .header-actions');
+  if (!headerActions || headerActions.querySelector('.site-language-switcher')) return null;
+
+  const wrapper = document.createElement('label');
+  wrapper.className = 'site-language-switcher-wrap';
+  wrapper.setAttribute('data-no-translate', 'true');
+  wrapper.style.display = 'inline-flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.gap = '0.4rem';
+  wrapper.style.padding = '0.45rem 0.55rem';
+  wrapper.style.border = '1px solid rgba(148, 163, 184, 0.22)';
+  wrapper.style.borderRadius = '999px';
+  wrapper.style.background = 'rgba(255, 255, 255, 0.72)';
+
+  const icon = document.createElement('i');
+  icon.className = 'fa-solid fa-language';
+  icon.style.color = 'var(--accent)';
+
+  const select = document.createElement('select');
+  select.className = 'site-language-switcher';
+  select.setAttribute('aria-label', 'Site language');
+  select.style.border = 'none';
+  select.style.background = 'transparent';
+  select.style.color = 'var(--text)';
+  select.style.font = 'inherit';
+  select.style.fontWeight = '700';
+  select.style.cursor = 'pointer';
+  select.innerHTML = `
+    <option value="ro">RO</option>
+    <option value="en">EN</option>
+  `;
+
+  wrapper.appendChild(icon);
+  wrapper.appendChild(select);
+  headerActions.insertBefore(wrapper, headerActions.firstChild);
+
+  select.addEventListener('change', async () => {
+    const nextLang = normalizeSiteLanguage(select.value);
+    persistSiteLanguage(nextLang);
+    updateLanguageSwitcherValue(nextLang);
+    applyDocumentLanguageMeta(nextLang);
+    await translatePageContent(nextLang);
+  });
+
+  return select;
+}
+
+async function translatePageContent(targetLang) {
+  const normalizedLang = normalizeSiteLanguage(targetLang);
+  document.title = getPageTitleForLanguage(normalizedLang);
+  updatePostCategoryOptions(normalizedLang);
+  if (typeof updateDocumentFilterLabels === 'function') {
+    updateDocumentFilterLabels(normalizedLang);
+  }
+  if (typeof updateContactPageLabels === 'function') {
+    updateContactPageLabels(normalizedLang);
+  }
+  if (typeof updateBugReportPageLabels === 'function') {
+    updateBugReportPageLabels(normalizedLang);
+  }
+
+  const body = document.body;
+  if (body) {
+    await translateElementText(body, normalizedLang);
+  }
+
+  updateLanguageSwitcherValue(normalizedLang);
+}
+
+async function translateIfNeeded(root, targetLang) {
+  if (!root) return;
+  await translateElementText(root, targetLang);
+}
+
+function updateDocumentFilterLabels(lang = getSiteLanguage()) {
+  const normalizedLang = normalizeSiteLanguage(lang);
+  const text = (roText, enText) => (normalizedLang === 'en' ? enText : roText);
+
+  const searchLabel = document.querySelector('label[for="docSearch"]');
+  const resetButton = document.getElementById('resetDocsFiltersBtn');
+  const specializationLabels = Array.from(document.querySelectorAll('.faculties-list .faculty-item label'));
+  const typeLabel = document.querySelector('label[for="docTypeFilter"]');
+  const disciplineLabel = document.querySelector('label[for="discipleFilter"]');
+  const yearLabel = document.querySelector('label[for="yearFilter"]');
+  const searchInput = document.getElementById('docSearch');
+  const typeFilter = document.getElementById('docTypeFilter');
+  const disciplineFilter = document.getElementById('discipleFilter');
+  const yearFilter = document.getElementById('yearFilter');
+
+  if (searchLabel) searchLabel.textContent = text('Căutare', 'Search');
+  if (resetButton) resetButton.innerHTML = `<i class="fa-solid fa-rotate-left"></i> ${text('Resetare filtru', 'Reset filter')}`;
+  if (typeLabel) typeLabel.innerHTML = `<i class="fa-solid fa-folder"></i> ${text('Tip material', 'Material type')}`;
+  if (disciplineLabel) disciplineLabel.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> ${text('Disciplina', 'Discipline')}`;
+  if (yearLabel) yearLabel.innerHTML = `<i class="fa-solid fa-calendar"></i> ${text('Anul', 'Year')}`;
+  if (searchInput) searchInput.placeholder = text('Caută documente...', 'Search documents...');
+
+  if (typeFilter) {
+    const typeOptions = Array.from(typeFilter.options);
+    if (typeOptions[0]) typeOptions[0].textContent = text('Toate tipurile', 'All types');
+    if (typeOptions[1]) typeOptions[1].textContent = text('Curs', 'Course');
+    if (typeOptions[2]) typeOptions[2].textContent = text('Seminar', 'Seminar');
+    if (typeOptions[3]) typeOptions[3].textContent = text('Laborator', 'Laboratory');
+    if (typeOptions[4]) typeOptions[4].textContent = text('Proiect', 'Project');
+    if (typeOptions[5]) typeOptions[5].textContent = text('Examen', 'Exam');
+    if (typeOptions[6]) typeOptions[6].textContent = text('Referat', 'Report');
+  }
+
+  if (disciplineFilter) {
+    const disciplineOptions = Array.from(disciplineFilter.options);
+    if (disciplineOptions[0]) disciplineOptions[0].textContent = text('Toate disciplinele', 'All disciplines');
+  }
+
+  if (yearFilter) {
+    const yearOptions = Array.from(yearFilter.options);
+    if (yearOptions[0]) yearOptions[0].textContent = text('Toți anii', 'All years');
+    if (yearOptions[1]) yearOptions[1].textContent = text('Anul I', 'Year 1');
+    if (yearOptions[2]) yearOptions[2].textContent = text('Anul II', 'Year 2');
+    if (yearOptions[3]) yearOptions[3].textContent = text('Anul III', 'Year 3');
+    if (yearOptions[4]) yearOptions[4].textContent = text('Anul IV', 'Year 4');
+  }
+
+  specializationLabels.forEach((label) => {
+    const value = normalizeSiteLanguage(label.textContent || '').replace(/\s+/g, ' ');
+    if (value.includes('calculatoare')) label.textContent = text('Calculatoare', 'Computer Science');
+    if (value.includes('tehnologia informației') || value.includes('tehnologia informatiei')) label.textContent = text('Tehnologia Informației', 'Information Technology');
+    if (value.includes('ingineria sistemelor multimedia')) label.textContent = text('Ingineria Sistemelor Multimedia', 'Multimedia Systems Engineering');
+  });
 }
 
 function initializeAuthButtons() {
@@ -2747,10 +3165,10 @@ function initializeDocumentFilters() {
     if (selectedSort && docsGrid) {
       const visibleCards = Array.from(docsGrid.querySelectorAll('.doc-card')).filter((card) => card.style.display !== 'none');
       visibleCards.sort((a, b) => {
-        if (selectedSort === 'Cele mai noi') return 0;
+        if (selectedSort === (normalizeSiteLanguage(getSiteLanguage()) === 'en' ? 'Newest' : 'Cele mai noi')) return 0;
         const aStats = (a.querySelector('.doc-stats')?.textContent || '').match(/\d+/g) || ['0', '0'];
         const bStats = (b.querySelector('.doc-stats')?.textContent || '').match(/\d+/g) || ['0', '0'];
-        if (selectedSort.toLowerCase().includes('descar')) {
+        if (selectedSort.toLowerCase().includes(normalizeSiteLanguage(getSiteLanguage()) === 'en' ? 'download' : 'descar')) {
           return Number(bStats[0]) - Number(aStats[0]);
         }
         return Number(bStats[1]) - Number(aStats[1]);
@@ -2758,6 +3176,8 @@ function initializeDocumentFilters() {
       visibleCards.forEach((card) => docsGrid.appendChild(card));
     }
   }
+
+  updateDocumentFilterLabels(getSiteLanguage());
   
   yearFilter?.addEventListener('change', filterDocuments);
   categoryFilter?.addEventListener('change', filterDocuments);
@@ -2775,15 +3195,17 @@ function initializeDocumentFilters() {
 function renderDynamicDocumentCard(documentRow) {
   const card = document.createElement('div');
   card.className = 'doc-card';
+  const docsLanguage = getSiteLanguage();
+  const docsText = (roText, enText) => (docsLanguage === 'en' ? enText : roText);
 
-  const title = escapeHtml(documentRow.titlu || documentRow.title || 'Document');
-  const specialization = escapeHtml(documentRow.specializare || documentRow.specialization || 'General');
-  const subject = escapeHtml(documentRow.materie || documentRow.subject || documentRow.taught_subject || specialization || 'General');
+  const title = escapeHtml(documentRow.titlu || documentRow.title || docsText('Document', 'Document'));
+  const specialization = escapeHtml(documentRow.specializare || documentRow.specialization || docsText('General', 'General'));
+  const subject = escapeHtml(documentRow.materie || documentRow.subject || documentRow.taught_subject || specialization || docsText('General', 'General'));
   const year = String(documentRow.an_studiu || documentRow.year || '-');
-  const type = escapeHtml(documentRow.tip || documentRow.type || 'Material');
-  const department = escapeHtml(documentRow.departament || documentRow.department || 'Departament ULB');
-  const professorName = escapeHtml(documentRow.nume_profesor || documentRow.professor_name || documentRow.full_name || documentRow.author_name || 'Profesor');
-  const description = escapeHtml(documentRow.descriere || documentRow.description || 'Fără descriere');
+  const type = escapeHtml(documentRow.tip || documentRow.type || docsText('Material', 'Material'));
+  const department = escapeHtml(documentRow.departament || documentRow.department || docsText('Departament ULB', 'ULB Department'));
+  const professorName = escapeHtml(documentRow.nume_profesor || documentRow.professor_name || documentRow.full_name || documentRow.author_name || docsText('Profesor', 'Professor'));
+  const description = escapeHtml(documentRow.descriere || documentRow.description || docsText('Fără descriere', 'No description'));
   const downloads = Number(documentRow.downloads || documentRow.numar_descarcari || 0);
   const rating = Number(documentRow.rating || 0);
   const fileUrl = documentRow.file_url || documentRow.url_fisier || '#';
@@ -2808,17 +3230,17 @@ function renderDynamicDocumentCard(documentRow) {
       <i class="fa-solid fa-file-pdf"></i>
       <h3>${title}</h3>
     </div>
-    <p class="doc-meta">${subject} | Anul ${year} | ${type}</p>
+    <p class="doc-meta">${subject} | ${docsText('Anul', 'Year')} ${year} | ${type}</p>
     <p class="doc-faculty">${department}</p>
     <p class="doc-author"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> ${professorName}</p>
     <p class="doc-description">${description}</p>
     <div class="doc-stats">
-      <span class="doc-stat"><i class="fa-solid fa-download" aria-hidden="true"></i> ${downloads} descărcări</span>
+      <span class="doc-stat"><i class="fa-solid fa-download" aria-hidden="true"></i> ${downloads} ${docsText('descărcări', 'downloads')}</span>
       <span class="doc-stat"><i class="fa-solid fa-star" aria-hidden="true"></i> ${rating || '-'}/5</span>
     </div>
     <div class="doc-actions">
-      <button type="button" class="btn-download" data-file-url="${escapeHtml(fileUrl)}" data-file-name="${fileName}"><i class="fa-solid fa-download"></i> Descarcă</button>
-      <a class="btn-preview" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-eye"></i> Previzualizare</a>
+      <button type="button" class="btn-download" data-file-url="${escapeHtml(fileUrl)}" data-file-name="${fileName}"><i class="fa-solid fa-download"></i> ${docsText('Descarcă', 'Download')}</button>
+      <a class="btn-preview" href="${fileUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-eye"></i> ${docsText('Previzualizare', 'Preview')}</a>
     </div>
   `;
 
@@ -2886,6 +3308,8 @@ async function initializeDocumentsData() {
   const docsGrid = document.getElementById('docsGrid');
   const disciplineFilter = document.getElementById('discipleFilter');
   if (!docsGrid || typeof getDocuments !== 'function') return;
+  const docsLanguage = getSiteLanguage();
+  const docsText = (roText, enText) => (docsLanguage === 'en' ? enText : roText);
 
   try {
     const result = await getDocuments();
@@ -2898,8 +3322,8 @@ async function initializeDocumentsData() {
       empty.className = 'empty-state-card';
       empty.innerHTML = `
         <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-        <h3>Biblioteca este pregatita</h3>
-        <p>Nu există documente publicate încă. După conectarea conținutului din Supabase, materialele vor apărea automat aici.</p>
+        <h3>${docsText('Biblioteca este pregătită', 'The library is ready')}</h3>
+        <p>${docsText('Nu există documente publicate încă. După conectarea conținutului din Supabase, materialele vor apărea automat aici.', 'No documents have been published yet. Once Supabase content is connected, the materials will appear here automatically.')}</p>
       `;
       docsGrid.appendChild(empty);
       return;
@@ -2920,11 +3344,12 @@ async function initializeDocumentsData() {
 
       disciplines.sort((a, b) => a.localeCompare(b));
 
-      const options = ['<option value="">Toate disciplinele</option>'];
+      const options = [`<option value="">${docsText('Toate disciplinele', 'All disciplines')}</option>`];
       disciplines.forEach((name) => {
         options.push(`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`);
       });
       disciplineFilter.innerHTML = options.join('');
+      updateDocumentFilterLabels(getSiteLanguage());
     }
 
     sanitizedDocuments.forEach((row) => docsGrid.appendChild(renderDynamicDocumentCard(row)));
@@ -2933,8 +3358,8 @@ async function initializeDocumentsData() {
     docsGrid.innerHTML = `
       <div class="empty-state-card">
         <i class="fa-solid fa-cloud" aria-hidden="true"></i>
-        <h3>Nu am putut încărca documentele</h3>
-        <p>Verifică setările Supabase sau conexiunea și reîncarcă pagina.</p>
+        <h3>${docsText('Nu am putut încărca documentele', 'Could not load the documents')}</h3>
+        <p>${docsText('Verifică setările Supabase sau conexiunea și reîncarcă pagina.', 'Check the Supabase settings or connection and reload the page.')}</p>
       </div>
     `;
   }
@@ -2943,18 +3368,31 @@ async function initializeDocumentsData() {
 // ============================================
 // 12. DATABASE-DRIVEN QUESTIONS / POSTS / COMMENTS
 // ============================================
-function formatTimeAgo(isoDate) {
-  if (!isoDate) return 'acum câteva secunde';
+function formatTimeAgo(isoDate, lang = getSiteLanguage()) {
+  const isEnglish = normalizeSiteLanguage(lang) === 'en';
+  if (!isoDate) return isEnglish ? 'a few seconds ago' : 'acum câteva secunde';
   const date = new Date(isoDate);
   const diffMs = Date.now() - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (minutes < 1) return 'acum câteva secunde';
-  if (minutes < 60) return `acum ${minutes} min`;
-  if (hours < 24) return `acum ${hours} ore`;
-  return `acum ${days} zile`;
+  if (minutes < 1) return isEnglish ? 'a few seconds ago' : 'acum câteva secunde';
+  if (minutes < 60) return isEnglish ? `${minutes} min ago` : `acum ${minutes} min`;
+  if (hours < 24) return isEnglish ? `${hours} hours ago` : `acum ${hours} ore`;
+  return isEnglish ? `${days} days ago` : `acum ${days} zile`;
+}
+
+function getAnonymousAuthorLabel(lang = getSiteLanguage()) {
+  return normalizeSiteLanguage(lang) === 'en' ? 'Anonymous' : 'Autor anonim';
+}
+
+function getPostMetaAuthorLabel(lang = getSiteLanguage()) {
+  return normalizeSiteLanguage(lang) === 'en' ? 'Posted by u/' : 'Postat de u/';
+}
+
+function getCommentBodyFallbackLabel(lang = getSiteLanguage()) {
+  return normalizeSiteLanguage(lang) === 'en' ? 'Review without comment' : 'Recenzie fără comentariu';
 }
 
 function renderQuestionCard(question) {
@@ -2974,9 +3412,9 @@ function renderQuestionCard(question) {
       </div>
       <p class="question-excerpt">${escapeHtml(question.description || 'Fără descriere')}</p>
       <div class="question-meta">
-        <span class="meta-item"><i class="fa-solid fa-user"></i> de Student</span>
-        <span class="meta-item"><i class="fa-solid fa-calendar"></i> ${formatTimeAgo(question.created_at)}</span>
-        <span class="meta-item"><i class="fa-solid fa-comment"></i> 0 comentarii</span>
+        <span class="meta-item"><i class="fa-solid fa-user"></i> ${getSiteLanguage() === 'en' ? 'by Student' : 'de Student'}</span>
+        <span class="meta-item"><i class="fa-solid fa-calendar"></i> ${formatTimeAgo(question.created_at, getSiteLanguage())}</span>
+        <span class="meta-item"><i class="fa-solid fa-comment"></i> ${getSiteLanguage() === 'en' ? '0 comments' : '0 comentarii'}</span>
       </div>
     </div>
   `;
@@ -3376,18 +3814,13 @@ function parsePostDisplay(title = '', content = '') {
   const categoryMatch = safeTitle.match(/^\s*\[([^\]]+)\]\s*/i);
   const rawCategory = categoryMatch ? categoryMatch[1].trim().toLowerCase() : '';
 
-  const categoryLabels = {
-    general: 'General',
-    intrebare: 'Întrebare',
-    resursa: 'Resursă',
-    anunt: 'Anunț'
-  };
-
-  const categoryLabel = categoryLabels[rawCategory] || 'General';
+  const categoryKey = rawCategory || 'general';
+  const categoryLabel = translatePostCategoryLabel(categoryKey, getSiteLanguage());
   const cleanedTitle = safeTitle.replace(/^\s*\[[^\]]+\]\s*/i, '').trim();
   const cleanedContent = safeContent.replace(/\n\n#taguri:.*$/is, '').trim();
 
   return {
+    categoryKey,
     categoryLabel,
     title: cleanedTitle,
     content: cleanedContent
@@ -3485,11 +3918,14 @@ function savePollState(postId, state) {
   localStorage.setItem(getPollStorageKey(postId), JSON.stringify(state));
 }
 
-function buildPollMarkup(post, poll) {
+function buildPollMarkup(post, poll, lang = getSiteLanguage()) {
   const state = loadPollState(post.id, poll.options.length);
   const totalVotes = state.counts.reduce((sum, value) => sum + Number(value || 0), 0);
   const inputType = poll.mode === 'multiple' ? 'checkbox' : 'radio';
-  const modeLabel = poll.mode === 'multiple' ? 'Mai multe răspunsuri' : 'Un singur răspuns';
+  const isEnglish = normalizeSiteLanguage(lang) === 'en';
+  const modeLabel = poll.mode === 'multiple'
+    ? (isEnglish ? 'Multiple answers' : 'Mai multe răspunsuri')
+    : (isEnglish ? 'Single answer' : 'Un singur răspuns');
 
   const optionsMarkup = poll.options.map((option, index) => {
     const votes = Number(state.counts[index] || 0);
@@ -3509,7 +3945,7 @@ function buildPollMarkup(post, poll) {
     <div class="post-poll-card" data-poll-state="${state.voted ? 'voted' : 'fresh'}">
       <div class="post-poll-head">
         <div>
-          <span class="post-category-label">Sondaj</span>
+          <span class="post-category-label">${isEnglish ? 'Poll' : 'Sondaj'}</span>
           <p class="post-poll-question">${escapeHtml(poll.question)}</p>
         </div>
         <span class="poll-mode-badge">${escapeHtml(modeLabel)}</span>
@@ -3518,8 +3954,8 @@ function buildPollMarkup(post, poll) {
         ${optionsMarkup}
       </div>
       <div class="post-poll-footer">
-        <span>${totalVotes} voturi</span>
-        <button type="button" class="poll-submit-btn" data-poll-submit ${state.voted ? 'disabled' : ''}>${state.voted ? 'Ai votat' : 'Trimite votul'}</button>
+        <span>${totalVotes} ${isEnglish ? 'votes' : 'voturi'}</span>
+        <button type="button" class="poll-submit-btn" data-poll-submit ${state.voted ? 'disabled' : ''}>${state.voted ? (isEnglish ? 'Voted' : 'Ai votat') : (isEnglish ? 'Submit vote' : 'Trimite votul')}</button>
       </div>
     </div>
   `;
@@ -3592,7 +4028,14 @@ function renderPostCard(post, currentUser) {
   const author = currentUser?.email ? currentUser.email.split('@')[0] : 'student';
   const parsed = parsePostDisplay(post.title, post.content);
   const poll = parsePollDisplay(parsed.content);
-  const displayText = poll ? 'Sondaj publicat' : (parsed.title || parsed.content || 'Postare fără conținut');
+  const displayTitle = parsed.title || (poll?.question ? poll.question : 'Postare fără titlu');
+  const compactContent = String(parsed.content || '').replace(/\s+/g, ' ').trim();
+  const compactQuestion = String(poll?.question || compactContent).replace(/\s+/g, ' ').trim();
+  const previewText = poll
+    ? (compactQuestion ? `Întrebare: ${compactQuestion.slice(0, 120)}${compactQuestion.length > 120 ? '…' : ''}` : '')
+    : (compactContent ? `${compactContent.slice(0, 180)}${compactContent.length > 180 ? '…' : ''}` : '');
+  const siteLanguage = getSiteLanguage();
+  const translationBadgeText = siteLanguage === 'en' ? 'automatic translation' : 'traducere automata';
   card.innerHTML = `
     <div class="post-votes">
       <i class="fa-solid fa-arrow-up"></i>
@@ -3600,15 +4043,20 @@ function renderPostCard(post, currentUser) {
       <i class="fa-solid fa-arrow-down"></i>
     </div>
     <div class="post-body">
-      <span class="post-meta">Postat de u/${escapeHtml(author)} • ${formatTimeAgo(post.created_at)}</span>
-      <h4><span class="post-category-label">${escapeHtml(parsed.categoryLabel)}</span> ${escapeHtml(displayText)}</h4>
-      ${poll ? buildPollMarkup(post, poll) : ''}
+      <span class="post-meta">${escapeHtml(getPostMetaAuthorLabel(siteLanguage))}${escapeHtml(author)} • ${escapeHtml(formatTimeAgo(post.created_at, siteLanguage))}</span>
+      <h4><span class="post-category-label">${escapeHtml(translatePostCategoryLabel(parsed.categoryKey, siteLanguage))}</span> ${escapeHtml(displayTitle)}</h4>
+      ${previewText ? `<p class="post-preview">${escapeHtml(previewText)}</p>` : ''}
+      <span class="post-translation-badge" data-no-translate="true" style="display:inline-flex; align-self:flex-start; padding:0.28rem 0.55rem; border-radius:999px; background:rgba(230,57,70,0.08); color:var(--accent); font-size:0.74rem; font-weight:700; letter-spacing:0.02em; text-transform:uppercase;">${escapeHtml(translationBadgeText)}</span>
       <div class="post-actions">
-        <button class="action-btn" data-action="comments"><i class="fa-solid fa-comment" aria-hidden="true"></i> Comentează</button>
+        <button class="action-btn" data-action="comments"><i class="fa-regular fa-eye" aria-hidden="true"></i> Vezi postarea</button>
         <button class="action-btn" data-action="share"><i class="fa-solid fa-share" aria-hidden="true"></i> Distribuie</button>
       </div>
     </div>
   `;
+
+  translateIfNeeded(card, siteLanguage).catch((error) => {
+    console.warn('Post card translation failed:', error?.message || error);
+  });
 
   if (poll) {
     const submitBtn = card.querySelector('[data-poll-submit]');
@@ -3923,6 +4371,9 @@ function initializePostCreation() {
   const postAttachmentInput = document.getElementById('postAttachmentInput');
   const postAttachmentList = document.getElementById('postAttachmentList');
   const postSubmitBtn = document.querySelector('.post-submit-btn');
+  const postModal = document.getElementById('postComposerModal');
+  const openPostModalBtn = document.getElementById('openCreatePostModalBtn');
+  const postCloseButtons = postModal ? Array.from(postModal.querySelectorAll('[data-post-close]')) : [];
   const postsFeed = document.getElementById('postsFeed');
   const emptyState = document.getElementById('postsEmptyState');
   const pollModal = document.getElementById('pollComposerModal');
@@ -3936,6 +4387,38 @@ function initializePostCreation() {
   let activePollMode = 'single';
 
   if (!postForm) return;
+
+  const openPostModal = () => {
+    if (!postModal) return;
+    postModal.classList.add('is-open');
+    postModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    postTitleInput?.focus();
+  };
+
+  const closePostModal = () => {
+    if (!postModal) return;
+    postModal.classList.remove('is-open');
+    postModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    if (postAttachmentInput) postAttachmentInput.value = '';
+    if (postAttachmentList) postAttachmentList.textContent = '';
+  };
+
+  openPostModalBtn?.addEventListener('click', openPostModal);
+  postCloseButtons.forEach((button) => {
+    button.addEventListener('click', closePostModal);
+  });
+  postModal?.addEventListener('click', (event) => {
+    if (event.target === postModal) {
+      closePostModal();
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && postModal?.classList.contains('is-open')) {
+      closePostModal();
+    }
+  });
 
   const clearPollError = () => {
     if (pollComposerError) pollComposerError.textContent = '';
@@ -4262,6 +4745,8 @@ function initializePostCreation() {
       if (saved?.poll?.attempted && !saved?.poll?.saved && saved?.poll?.warning) {
         showToast(saved.poll.warning, 'warning');
       }
+
+      closePostModal();
       
       // Update posts count
       const postsCount = document.getElementById('subredditPostsCount');
@@ -4355,7 +4840,8 @@ function renderCommentCard(comment) {
   const item = document.createElement('article');
   item.className = 'comment-card';
 
-  const authorName = String(comment.name || comment.nume || comment.author || comment.created_by_name || 'Anonim').trim() || 'Anonim';
+  const siteLanguage = getSiteLanguage();
+  const authorName = String(comment.name || comment.nume || comment.author || comment.created_by_name || getAnonymousAuthorLabel(siteLanguage)).trim() || getAnonymousAuthorLabel(siteLanguage);
   const commentText = String(comment.content || comment.comentariu || comment.comment || '').trim();
   const initials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'AN';
   const email = String(comment.email || comment.notification_email || '').trim();
@@ -4367,17 +4853,21 @@ function renderCommentCard(comment) {
         <div class="comment-avatar" aria-hidden="true">${escapeHtml(initials)}</div>
         <div>
           <h4>${escapeHtml(authorName)}</h4>
-          <div class="comment-time">${formatTimeAgo(comment.created_at)}</div>
+          <div class="comment-time">${escapeHtml(formatTimeAgo(comment.created_at, siteLanguage))}</div>
         </div>
       </div>
     </div>
-    <p class="comment-body">${commentText ? escapeHtml(commentText) : '<span style="color: var(--text-secondary); font-style: italic;">Recenzie fără comentariu</span>'}</p>
+    <p class="comment-body">${commentText ? escapeHtml(commentText) : `<span style="color: var(--text-secondary); font-style: italic;">${escapeHtml(getCommentBodyFallbackLabel(siteLanguage))}</span>`}</p>
     <div class="comment-meta">
       ${email ? `<span class="comment-meta-pill"><i class="fa-regular fa-envelope"></i> ${escapeHtml(email)}</span>` : ''}
-      <span class="comment-meta-pill"><i class="fa-solid fa-reply"></i> ${replyCount} răspunsuri</span>
+      <span class="comment-meta-pill"><i class="fa-solid fa-reply"></i> ${replyCount} ${siteLanguage === 'en' ? 'replies' : 'răspunsuri'}</span>
       <span class="comment-meta-pill comment-admin-actions" data-comment-id="${escapeHtml(String(comment.id || comment.comment_id || ''))}"></span>
     </div>
   `;
+
+  translateIfNeeded(item, getSiteLanguage()).catch((error) => {
+    console.warn('Comment translation failed:', error?.message || error);
+  });
 
   // Attach delete button for admins (async check)
   (async () => {
@@ -4434,6 +4924,7 @@ async function initializeCommentsData() {
   const postId = String(params.get('post') || '').trim();
 
   const setLoadingState = () => {
+    const currentLanguage = getSiteLanguage();
     if (postContainer) {
       postContainer.classList.add('is-loading');
       postContainer.innerHTML = `
@@ -4463,19 +4954,20 @@ async function initializeCommentsData() {
       `;
     }
 
-    if (commentsTitle) commentsTitle.textContent = 'Se încarcă comentariile...';
+    if (commentsTitle) commentsTitle.textContent = currentLanguage === 'en' ? 'Loading comments...' : 'Se încarcă comentariile...';
     if (emptyState) emptyState.style.display = 'none';
   };
 
   const setErrorState = (message) => {
+    const currentLanguage = getSiteLanguage();
     if (postContainer) {
       postContainer.classList.remove('is-loading');
       postContainer.innerHTML = `
         <div class="thread-error-state">
           <i class="fa-solid fa-triangle-exclamation"></i>
-          <strong>Postarea nu a putut fi încărcată</strong>
-          <span>${escapeHtml(message || 'Reîncearcă sau revino la lista de discuții.')}</span>
-          <a href="comments.html" class="discussion-back-link" style="margin-top:0.25rem;"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
+          <strong>${currentLanguage === 'en' ? 'The post could not be loaded' : 'Postarea nu a putut fi încărcată'}</strong>
+          <span>${escapeHtml(message || (currentLanguage === 'en' ? 'Try again or return to the discussions list.' : 'Reîncearcă sau revino la lista de discuții.'))}</span>
+          <a href="comments.html" class="discussion-back-link" style="margin-top:0.25rem;"><i class="fa-solid fa-arrow-left"></i> ${currentLanguage === 'en' ? 'Back to discussions' : 'Înapoi la discuții'}</a>
         </div>
       `;
     }
@@ -4503,7 +4995,7 @@ async function initializeCommentsData() {
 
   if (!postId) {
     if (emptyState) emptyState.style.display = 'block';
-    if (commentsTitle) commentsTitle.textContent = '0 comentarii';
+    if (commentsTitle) commentsTitle.textContent = getSiteLanguage() === 'en' ? '0 comments' : '0 comentarii';
     if (form) {
       const submitButton = form.querySelector('button[type="submit"]');
       if (submitButton) submitButton.disabled = true;
@@ -4526,42 +5018,104 @@ async function initializeCommentsData() {
     .replace(/\[SONDAJ\][\s\S]*?(?:\[\/SONDAJ\]|$)/i, '')
     .trim();
   const tags = splitTags(postResult.data.content || '');
-  const authorName = String(postResult.data.author_name || postResult.data.nume || postResult.data.user_name || postResult.data.created_by_name || 'Autor anonim').trim();
+  const authorName = String(postResult.data.author_name || postResult.data.nume || postResult.data.user_name || postResult.data.created_by_name || getAnonymousAuthorLabel(siteLanguage)).trim() || getAnonymousAuthorLabel(siteLanguage);
   const authorInitials = authorName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2) || 'UA';
-  const statusLabel = rows.length > 0 ? 'Conversație activă' : 'Așteaptă răspunsuri';
+  const siteLanguage = getSiteLanguage();
+  const statusLabel = rows.length > 0
+    ? (siteLanguage === 'en' ? 'Active conversation' : 'Conversație activă')
+    : (siteLanguage === 'en' ? 'Waiting for replies' : 'Așteaptă răspunsuri');
   const postCommentsCount = rows.length;
   const postVotes = Number(postResult.data.votes || postResult.data.vote_count || 0);
 
-  if (commentsTitle) commentsTitle.textContent = `${rows.length} comentarii`;
-  if (postContainer) {
+  if (commentsTitle) commentsTitle.textContent = siteLanguage === 'en' ? `${rows.length} comments` : `${rows.length} comentarii`;
+  let threadDisplayLanguage = siteLanguage;
+
+  const getThreadActionLabel = (displayLanguage) => {
+    if (displayLanguage === siteLanguage) {
+      return siteLanguage === 'en' ? 'Translate' : 'Tradu';
+    }
+
+    return siteLanguage === 'en' ? 'Back to English' : 'Înapoi la română';
+  };
+
+  const getThreadActionLoadingLabel = (displayLanguage) => {
+    return displayLanguage === siteLanguage
+      ? (siteLanguage === 'en' ? 'Translating...' : 'Se traduce...')
+      : (siteLanguage === 'en' ? 'Restoring...' : 'Se revine...');
+  };
+
+  const getThreadStatusLabel = (displayLanguage) => {
+    const isEnglish = normalizeSiteLanguage(displayLanguage) === 'en';
+    return rows.length > 0
+      ? (isEnglish ? 'Active conversation' : 'Conversație activă')
+      : (isEnglish ? 'Waiting for replies' : 'Așteaptă răspunsuri');
+  };
+
+  const renderThread = async (displayLanguage) => {
+    if (!postContainer) return;
+
+    threadDisplayLanguage = normalizeSiteLanguage(displayLanguage);
+    const titleText = await translateText(parsed.title || postResult.data.title || 'Postare', threadDisplayLanguage);
+    const pollData = poll
+      ? {
+          ...poll,
+          question: await translateText(poll.question || '', threadDisplayLanguage),
+          options: await Promise.all((poll.options || []).map((option) => translateText(option, threadDisplayLanguage)))
+        }
+      : null;
+
+    const titleToShow = titleText || parsed.title || postResult.data.title || 'Postare';
+    const contentToShow = contentWithoutPoll || '';
+    const statusLabelToShow = getThreadStatusLabel(threadDisplayLanguage);
+    const threadCategoryLabel = translatePostCategoryLabel(parsed.categoryKey, threadDisplayLanguage);
+    const votesLabel = siteLanguage === 'en' ? 'votes' : 'voturi';
+    const commentsLabel = siteLanguage === 'en' ? 'comments' : 'comentarii';
+    const fallbackContentLabel = threadDisplayLanguage === 'en'
+      ? 'Post without additional content.'
+      : 'Postare fără conținut suplimentar.';
+
     postContainer.classList.remove('is-loading');
-    const displayTitle = parsed.title || postResult.data.title || 'Postare';
-    const sanitizedContent = contentWithoutPoll || '';
     postContainer.innerHTML = `
       <div class="discussion-thread-head">
         <div class="thread-title-row">
           <div class="discussion-hero-meta" style="margin-top:0;">
-            <span class="discussion-status-pill"><i class="fa-solid fa-signal"></i> ${escapeHtml(statusLabel)}</span>
-            <span class="discussion-pill"><i class="fa-solid fa-tag"></i> ${escapeHtml(parsed.categoryLabel || 'General')}</span>
+            <span class="discussion-status-pill"><i class="fa-solid fa-signal"></i> ${escapeHtml(statusLabelToShow)}</span>
+            <span class="discussion-pill"><i class="fa-solid fa-tag"></i> ${escapeHtml(threadCategoryLabel)}</span>
           </div>
-          <h2 class="thread-title">${escapeHtml(displayTitle)}</h2>
+          <h2 class="thread-title">${escapeHtml(titleToShow)}</h2>
           <div class="thread-meta-row">
             <span><i class="fa-solid fa-user"></i> ${escapeHtml(authorName)}</span>
-            <span><i class="fa-regular fa-clock"></i> ${escapeHtml(formatTimeAgo(postResult.data.created_at))}</span>
+            <span><i class="fa-regular fa-clock"></i> ${escapeHtml(formatTimeAgo(postResult.data.created_at, siteLanguage))}</span>
           </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; flex-shrink:0;">
+          <button type="button" class="thread-translate-btn" data-thread-translate data-no-translate="true" style="padding:0.55rem 0.85rem; border-radius:999px; border:1px solid rgba(148,163,184,0.2); background:rgba(255,255,255,0.8); color:var(--text); font-weight:700; cursor:pointer; white-space:nowrap;">${escapeHtml(getThreadActionLabel(threadDisplayLanguage))}</button>
         </div>
       </div>
       ${tags.length ? `<div class="thread-tags">${tags.map((tag) => `<span class="thread-tag">#${escapeHtml(tag.replace(/^#/, ''))}</span>`).join('')}</div>` : ''}
-      ${sanitizedContent ? `<div class="thread-content">${escapeHtml(sanitizedContent).replace(/\n/g, '<br>')}</div>` : '<div class="thread-content" style="color: var(--text-secondary); font-style: italic;">Postare fără conținut suplimentar.</div>'}
-      ${poll ? buildPollMarkup(postResult.data, poll) : ''}
+      ${contentToShow ? `<div class="thread-content">${escapeHtml(contentToShow).replace(/\n/g, '<br>')}</div>` : `<div class="thread-content" style="color: var(--text-secondary); font-style: italic;">${escapeHtml(fallbackContentLabel)}</div>`}
+      ${pollData ? buildPollMarkup(postResult.data, pollData, threadDisplayLanguage) : ''}
       <div class="thread-stats">
-        <span class="thread-stat"><i class="fa-solid fa-arrow-up"></i> ${postVotes} voturi</span>
-        <span class="thread-stat"><i class="fa-solid fa-message"></i> ${postCommentsCount} comentarii</span>
+        <span class="thread-stat"><i class="fa-solid fa-arrow-up"></i> ${postVotes} ${votesLabel}</span>
+        <span class="thread-stat"><i class="fa-solid fa-message"></i> ${postCommentsCount} ${commentsLabel}</span>
         <span class="thread-stat"><i class="fa-solid fa-circle-info"></i> ID ${escapeHtml(String(postResult.data.id || postId))}</span>
       </div>
     `;
 
-    if (poll) {
+    const translateBtn = postContainer.querySelector('[data-thread-translate]');
+    if (translateBtn) {
+      translateBtn.addEventListener('click', async () => {
+        const nextLanguage = threadDisplayLanguage === siteLanguage
+          ? (siteLanguage === 'en' ? 'ro' : 'en')
+          : siteLanguage;
+
+        translateBtn.disabled = true;
+        translateBtn.textContent = getThreadActionLoadingLabel(threadDisplayLanguage);
+        await renderThread(nextLanguage);
+      });
+    }
+
+    if (pollData) {
       const pollCard = postContainer.querySelector('.post-poll-card');
       if (pollCard) {
         const submitBtn = pollCard.querySelector('[data-poll-submit]');
@@ -4575,20 +5129,20 @@ async function initializeCommentsData() {
               .filter((value) => Number.isInteger(value));
 
             if (selectedIndexes.length === 0) {
-              showToast('Alege cel puțin o opțiune înainte de vot.', 'warning');
+              showToast(siteLanguage === 'en' ? 'Choose at least one option before voting.' : 'Alege cel puțin o opțiune înainte de vot.', 'warning');
               return;
             }
 
-            if (poll.mode !== 'multiple' && selectedIndexes.length > 1) {
-              showToast('Acest sondaj permite un singur răspuns.', 'warning');
+            if (pollData.mode !== 'multiple' && selectedIndexes.length > 1) {
+                showToast(siteLanguage === 'en' ? 'This poll allows only one answer.' : 'Acest sondaj permite un singur răspuns.', 'warning');
               return;
             }
 
             let persistedInDatabase = false;
-            const originalLabel = submitBtn.textContent || 'Trimite votul';
+              const originalLabel = submitBtn.textContent || (siteLanguage === 'en' ? 'Submit vote' : 'Trimite votul');
             submitBtn.disabled = true;
             submitBtn.classList.add('is-loading');
-            submitBtn.textContent = 'Se trimite...';
+              submitBtn.textContent = siteLanguage === 'en' ? 'Sending...' : 'Se trimite...';
 
             try {
               const client = await initSupabaseClient();
@@ -4620,7 +5174,7 @@ async function initializeCommentsData() {
                     .maybeSingle();
 
                   if (existingVote.data?.id) {
-                    showToast('Ai votat deja acest sondaj.', 'warning');
+                    showToast(siteLanguage === 'en' ? 'You already voted on this poll.' : 'Ai votat deja acest sondaj.', 'warning');
                     return;
                   }
 
@@ -4629,16 +5183,16 @@ async function initializeCommentsData() {
                     .filter(Boolean);
 
                   if (!selectedOptionIds.length) {
-                    showToast('Nu s-au găsit opțiunile sondajului.', 'error');
+                    showToast(siteLanguage === 'en' ? 'Could not find the poll options.' : 'Nu s-au găsit opțiunile sondajului.', 'error');
                     return;
                   }
 
                   if (!pollRow.allow_multiple_answers && selectedOptionIds.length > 1) {
-                    showToast('Acest sondaj permite un singur răspuns.', 'warning');
+                    showToast(siteLanguage === 'en' ? 'This poll allows only one answer.' : 'Acest sondaj permite un singur răspuns.', 'warning');
                     return;
                   }
 
-                  const { error: voteError } = await client.from('poll_votes').insert([{ 
+                  const { error: voteError } = await client.from('poll_votes').insert([{
                     poll_id: pollRow.id,
                     voter_id: user.id,
                     selected_option_ids: selectedOptionIds
@@ -4658,7 +5212,7 @@ async function initializeCommentsData() {
               }
             }
 
-            const nextState = loadPollState(postResult.data.id, poll.options.length);
+            const nextState = loadPollState(postResult.data.id, pollData.options.length);
             selectedIndexes.forEach((index) => {
               nextState.counts[index] = Number(nextState.counts[index] || 0) + 1;
             });
@@ -4668,20 +5222,24 @@ async function initializeCommentsData() {
 
             showToast(
               persistedInDatabase
-                ? 'Votul a fost salvat în Supabase.'
-                : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.',
+                ? (siteLanguage === 'en' ? 'Vote saved in Supabase.' : 'Votul a fost salvat în Supabase.')
+                : (siteLanguage === 'en' ? 'Vote saved locally. Run the poll migration for full sync.' : 'Votul a fost salvat local. Rulează migrația de sondaje pentru sincronizare completă.'),
               persistedInDatabase ? 'success' : 'info'
             );
 
             const refreshedLoaded = await getComments(postId);
             const refreshedRows = refreshedLoaded.success ? refreshedLoaded.data : rows;
-            commentsTitle.textContent = `${refreshedRows.length} comentarii`;
+            commentsTitle.textContent = siteLanguage === 'en' ? `${refreshedRows.length} comments` : `${refreshedRows.length} comentarii`;
           });
         }
 
         hydratePollCard(pollCard, postResult.data);
       }
     }
+  };
+
+  if (postContainer) {
+    await renderThread(siteLanguage);
   }
 
   commentsList.innerHTML = '';
@@ -4691,6 +5249,10 @@ async function initializeCommentsData() {
     if (emptyState) emptyState.style.display = 'none';
     rows.forEach((row) => commentsList.appendChild(renderCommentCard(row)));
   }
+
+  translateIfNeeded(commentsList, siteLanguage).catch((error) => {
+    console.warn('Comments translation failed:', error?.message || error);
+  });
 
   await setupRealtimeComments(postId, commentsList, commentsTitle, emptyState);
 

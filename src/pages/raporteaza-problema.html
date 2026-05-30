@@ -489,12 +489,109 @@
     </footer>
 
     <script>
+      function getBugReportLanguage() {
+        return typeof getSiteLanguage === 'function' ? getSiteLanguage() : 'ro';
+      }
+
+      function bugReportText(roText, enText, lang = getBugReportLanguage()) {
+        return normalizeSiteLanguage(lang) === 'en' ? enText : roText;
+      }
+
+      function updateBugReportPageLabels(lang = getBugReportLanguage()) {
+        const normalizedLang = normalizeSiteLanguage(lang);
+        const text = (roText, enText) => (normalizedLang === 'en' ? enText : roText);
+
+        const heroTitle = document.querySelector('.report-hero h1');
+        const heroText = document.querySelector('.report-hero p');
+        const helpTitle = document.querySelector('.report-help-card h4');
+        const helpText = document.querySelector('.report-help-card p');
+        const formLabels = Array.from(document.querySelectorAll('.report-form .report-label'));
+        const subLabels = Array.from(document.querySelectorAll('.report-form .report-sub-label'));
+        const submitBtn = document.querySelector('.report-submit-btn');
+        const resetBtn = document.querySelector('.report-reset-btn');
+        const faqTitle = document.querySelector('.report-faq h3');
+        const faqItems = Array.from(document.querySelectorAll('.report-faq .report-faq-item h4'));
+        const faqParagraphs = Array.from(document.querySelectorAll('.report-faq .report-faq-item p'));
+        const bugType = document.getElementById('bugType');
+        const severity = document.getElementById('severity');
+        const affectedPage = document.getElementById('affectedPage');
+        const description = document.getElementById('description');
+        const steps = document.getElementById('steps');
+        const expected = document.getElementById('expected');
+        const actual = document.getElementById('actual');
+        const browser = document.getElementById('browser');
+        const device = document.getElementById('device');
+        const reporterEmail = document.getElementById('reporterEmail');
+
+        if (heroTitle) heroTitle.textContent = text('Raportează o problemă', 'Report a problem');
+        if (heroText) heroText.textContent = text('Ajută-ne să îmbunătățim ULBStudent printr-un raport clar, util și ușor de investigat.', 'Help us improve ULBStudent with a clear, useful, and easy-to-investigate report.');
+        if (helpTitle) helpTitle.textContent = text('Ce ne ajută cel mai mult', 'What helps us most');
+        if (helpText) helpText.textContent = text('Cu cât avem mai multe detalii despre problemă, cu atât o putem repara mai repede. Te rog descrie pașii ca să reproduci problema.', 'The more details we have about the issue, the faster we can fix it. Please describe the steps to reproduce the problem.');
+
+        if (formLabels[0]) formLabels[0].textContent = text('Tip problemă *', 'Type of problem *');
+        if (formLabels[1]) formLabels[1].textContent = text('Pagina / secțiunea afectată *', 'Affected page / section *');
+        if (formLabels[2]) formLabels[2].textContent = text('Severitate *', 'Severity *');
+        if (formLabels[3]) formLabels[3].textContent = text('Descriere detaliată a problemei *', 'Detailed problem description *');
+        if (formLabels[4]) formLabels[4].textContent = text('Pași pentru reproducerea problemei', 'Steps to reproduce the issue');
+        if (formLabels[5]) formLabels[5].textContent = text('Comportament așteptat vs actual', 'Expected vs actual behavior');
+        if (formLabels[6]) formLabels[6].textContent = text('Browser (ex: Chrome, Firefox)', 'Browser (e.g. Chrome, Firefox)');
+        if (formLabels[7]) formLabels[7].textContent = text('Dispozitiv (ex: Windows, iPhone)', 'Device (e.g. Windows, iPhone)');
+        if (formLabels[8]) formLabels[8].textContent = text('Email de contact (opțional)', 'Contact email (optional)');
+
+        if (subLabels[0]) subLabels[0].textContent = text('Ce ar fi trebuit să se întâmple?', 'What should have happened?');
+        if (subLabels[1]) subLabels[1].textContent = text('Ce s-a întâmplat de fapt?', 'What actually happened?');
+
+        if (submitBtn) submitBtn.textContent = text('Trimite raport', 'Send report');
+        if (resetBtn) resetBtn.textContent = text('Șterge', 'Clear');
+        if (faqTitle) faqTitle.textContent = text('❓ Întrebări Frecvente', '❓ Frequently Asked Questions');
+        if (faqItems[0]) faqItems[0].textContent = text('Ce se întâmplă după ce trimit raportul?', 'What happens after I submit the report?');
+        if (faqItems[1]) faqItems[1].textContent = text('Cât timp durează repararea?', 'How long does the fix take?');
+        if (faqItems[2]) faqItems[2].textContent = text('Pot raporta probleme de securitate?', 'Can I report security issues?');
+        if (faqParagraphs[0]) faqParagraphs[0].textContent = text('Rapoartele sunt trimise direct echipei de dezvoltare. Te vom contacta dacă ai furnizat email-ul și avem nevoie de mai multe detalii.', 'Reports are sent directly to the development team. We will contact you if you provided an email and we need more details.');
+        if (faqParagraphs[1]) faqParagraphs[1].textContent = text('Bug-urile critice: 24-48 ore. Probleme medii: 1-2 săptămâni. Cereri de funcții: variabil, depinde de complexitate.', 'Critical bugs: 24-48 hours. Medium issues: 1-2 weeks. Feature requests: variable, depending on complexity.');
+        if (faqParagraphs[2]) faqParagraphs[2].textContent = text('Da! Te rog contactează direct security@ulbstudent.ro pentru probleme sensibile.', 'Yes! Please contact security@ulbstudent.ro directly for sensitive issues.');
+
+        if (bugType) {
+          const options = Array.from(bugType.options);
+          if (options[0]) options[0].textContent = text('Alege tipul problemei', 'Choose the problem type');
+          if (options[1]) options[1].textContent = text('Bug / eroare', 'Bug / error');
+          if (options[2]) options[2].textContent = text('Aplicația se blochează', 'The application freezes');
+          if (options[3]) options[3].textContent = text('Problemă de performanță', 'Performance issue');
+          if (options[4]) options[4].textContent = text('Problemă de interfață', 'UI issue');
+          if (options[5]) options[5].textContent = text('Cerere de funcție', 'Feature request');
+          if (options[6]) options[6].textContent = text('Problemă de securitate', 'Security issue');
+          if (options[7]) options[7].textContent = text('Altele', 'Other');
+        }
+
+        if (severity) {
+          const options = Array.from(severity.options);
+          if (options[0]) options[0].textContent = text('Alege severitatea', 'Choose severity');
+          if (options[1]) options[1].textContent = text('Joasă - Nu afectează utilizarea', 'Low - Does not affect usage');
+          if (options[2]) options[2].textContent = text('Medie - Ușor de ocolit', 'Medium - Easy to work around');
+          if (options[3]) options[3].textContent = text('Înaltă - Afectează serios utilizarea', 'High - Seriously affects usage');
+          if (options[4]) options[4].textContent = text('Critică - Aplicația nu funcționează', 'Critical - The application does not work');
+        }
+
+        if (affectedPage) affectedPage.placeholder = text('ex: Pagina Documente, Discuții, Profil etc.', 'e.g. Documents page, Discussions, Profile, etc.');
+        if (description) description.placeholder = text('Ce se întâmplă? Ce nu funcționează? Cum ai descoperit că nu funcționează?', 'What happens? What does not work? How did you discover it?');
+        if (steps) steps.placeholder = text('1. Click pe Documente\n2. Selectează filtrul...\n3. Problema apare când...', '1. Click Documents\n2. Select the filter...\n3. The issue appears when...');
+        if (expected) expected.placeholder = text('Descrie comportamentul așteptat', 'Describe the expected behavior');
+        if (actual) actual.placeholder = text('Descrie ce se întâmplă în realitate', 'Describe what actually happens');
+        if (browser) browser.placeholder = text('ex: Google Chrome 120', 'e.g. Google Chrome 120');
+        if (device) device.placeholder = text('ex: Windows 11, iPhone 14', 'e.g. Windows 11, iPhone 14');
+        if (reporterEmail) reporterEmail.placeholder = text('email@exemplu.ro - Dacă vrei actualizări', 'email@example.com - if you want updates');
+      }
+
+      window.updateBugReportPageLabels = updateBugReportPageLabels;
+      document.addEventListener('DOMContentLoaded', () => updateBugReportPageLabels(getBugReportLanguage()));
+
       document.getElementById('bugReportForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const form = this;
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn ? submitBtn.textContent : '';
+        const language = getBugReportLanguage();
         const notify = (message, type = 'info') => {
           if (typeof showToast === 'function') {
             showToast(message, type);
@@ -521,24 +618,24 @@
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.classList.add('is-loading');
-          submitBtn.textContent = 'Se trimite...';
+          submitBtn.textContent = bugReportText('Se trimite...', 'Sending...', language);
         }
 
         try {
           const result = await saveBugReport(payload);
           if (!result.success) {
-            throw new Error(result.error || 'Nu s-a putut salva raportul.');
+            throw new Error(result.error || bugReportText('Nu s-a putut salva raportul.', 'The report could not be saved.', language));
           }
 
-          notify('Raport trimis și salvat în baza de date.', 'success');
+          notify(bugReportText('Raport trimis și salvat în baza de date.', 'Report sent and saved in the database.', language), 'success');
           form.reset();
         } catch (error) {
-          notify(error.message || 'Nu s-a putut trimite raportul.', 'error');
+          notify(error.message || bugReportText('Nu s-a putut trimite raportul.', 'The report could not be sent.', language), 'error');
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('is-loading');
-            submitBtn.textContent = originalLabel || 'Trimite raport';
+            submitBtn.textContent = originalLabel || bugReportText('Trimite raport', 'Send report', language);
           }
         }
       });

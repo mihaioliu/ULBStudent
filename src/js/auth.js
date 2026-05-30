@@ -32,6 +32,34 @@ function getAuthPageUrl(pageName) {
   return 'src/pages/' + pageName;
 }
 
+function normalizeAuthLanguage(value) {
+  return value === 'en' ? 'en' : 'ro';
+}
+
+function getAuthLanguage() {
+  try {
+    if (typeof window.getSiteLanguage === 'function') {
+      return normalizeAuthLanguage(window.getSiteLanguage());
+    }
+  } catch {
+    // noop
+  }
+
+  const storedLanguage = normalizeAuthLanguage(localStorage.getItem('site_language'));
+  if (storedLanguage === 'en') return 'en';
+
+  try {
+    const cachedSettings = JSON.parse(localStorage.getItem('app_settings_cache') || '{}');
+    return normalizeAuthLanguage(cachedSettings?.language);
+  } catch {
+    return 'ro';
+  }
+}
+
+function authText(roText, enText) {
+  return getAuthLanguage() === 'en' ? enText : roText;
+}
+
 /**
  * Wait for Supabase to load from CDN
  */
@@ -2867,12 +2895,12 @@ function showLoginButtonsInHeader(headerActions) {
   // Add new buttons
   const signIn = document.createElement('button');
   signIn.className = 'btn-signin';
-  signIn.textContent = 'Conectare';
+  signIn.textContent = authText('Conectare', 'Sign in');
   signIn.addEventListener('click', () => window.location.href = getAuthPageUrl('login.html'));
   
   const signUp = document.createElement('button');
   signUp.className = 'btn-signup';
-  signUp.textContent = 'Înregistrare';
+  signUp.textContent = authText('Înregistrare', 'Sign up');
   signUp.addEventListener('click', () => window.location.href = getAuthPageUrl('register.html'));
   
   headerActions.appendChild(signIn);
@@ -2901,7 +2929,9 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const userName = user.user_metadata?.full_name || userEmail.split('@')[0];
   const accountIsAdmin = resolvedRole === 'admin' || String(user.user_metadata?.role || '').toLowerCase() === 'admin' || String(userEmail).toLowerCase() === 'admin@ulbstudent.ro';
   const accountIsProfessor = resolvedRole === 'profesor' || resolvedRole === 'professor' || user.user_metadata?.account_type === 'professor';
-  const accountType = accountIsAdmin ? 'ADMIN' : (accountIsProfessor ? 'Profesor' : 'Student');
+  const accountType = accountIsAdmin
+    ? 'ADMIN'
+    : (accountIsProfessor ? authText('Profesor', 'Professor') : authText('Student', 'Student'));
   const userInitials = String(userName || 'UL')
     .split(/\s+/)
     .filter(Boolean)
@@ -2911,7 +2941,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
     .slice(0, 2) || 'UL';
 
   userMenu.innerHTML = `
-    <button type="button" class="user-menu-trigger" aria-label="Deschide meniul contului" aria-expanded="false">
+    <button type="button" class="user-menu-trigger" aria-label="${escapeHtml(authText('Deschide meniul contului', 'Open account menu'))}" aria-expanded="false">
       <span class="user-menu-avatar" aria-hidden="true">${escapeHtml(userInitials)}</span>
       <span class="user-menu-copy">
         <span class="user-menu-name">${escapeHtml(userName)}</span>
@@ -2941,7 +2971,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const adminMenuItem = accountIsAdmin
     ? `
     <a href="${getAuthPageUrl('admin.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fa-solid fa-user-shield"></i> Admin Panel
+      <i class="fa-solid fa-user-shield"></i> ${authText('Admin Panel', 'Admin Panel')}
     </a>
     `
     : '';
@@ -2949,7 +2979,7 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   const professorMenuItem = accountIsProfessor
     ? `
     <a href="${getAuthPageUrl('professor-panel.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fa-solid fa-chalkboard-user"></i> Panou profesor
+      <i class="fa-solid fa-chalkboard-user"></i> ${authText('Panou profesor', 'Professor panel')}
     </a>
     `
     : '';
@@ -2957,16 +2987,16 @@ function showUserMenuInHeader(headerActions, user, resolvedRole = null) {
   dropdownMenu.innerHTML = `
     ${accountSummary}
     <a href="${getAuthPageUrl('profile.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fa-solid fa-user"></i> Profilul Meu
+      <i class="fa-solid fa-user"></i> ${authText('Profilul Meu', 'My Profile')}
     </a>
     <a href="${getAuthPageUrl('settings.html')}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; color: inherit; text-decoration: none; transition: background 0.2s;" class="dropdown-item">
-      <i class="fa-solid fa-gear"></i> Setări
+      <i class="fa-solid fa-gear"></i> ${authText('Setări', 'Settings')}
     </a>
     ${professorMenuItem}
     ${adminMenuItem}
     <hr style="margin: 0; border: none; border-top: 1px solid var(--border-color);">
     <button id="logoutBtn" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; background: transparent; border: none; color: #e63946; font-weight: 600; cursor: pointer; transition: background 0.2s;" class="dropdown-item">
-      <i class="fa-solid fa-right-from-bracket"></i> Deconectare
+      <i class="fa-solid fa-right-from-bracket"></i> ${authText('Deconectare', 'Sign out')}
     </button>
   `;
 

@@ -490,6 +490,7 @@
         color: var(--text-secondary);
         /* Prevent odd wrapping/overflow: limit to 2 lines and hide overflow */
         display: -webkit-box;
+        line-clamp: 2;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
@@ -1295,11 +1296,11 @@
     <script src="../js/auth.js"></script>
     <script src="../js/interactive.js"></script>
     <script>
-      function formatProfileDateTime(value) {
+      function formatProfileDateTime(value, lang = getProfileLanguage()) {
         if (!value) return '-';
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return '-';
-        return new Intl.DateTimeFormat('ro-RO', {
+        return new Intl.DateTimeFormat(normalizeSiteLanguage(lang) === 'en' ? 'en-GB' : 'ro-RO', {
           day: '2-digit',
           month: 'short',
           year: 'numeric',
@@ -1310,6 +1311,14 @@
 
       function normalizeProfileValue(value) {
         return String(value ?? '').trim().toLowerCase();
+      }
+
+      function getProfileLanguage() {
+        return typeof getSiteLanguage === 'function' ? getSiteLanguage() : 'ro';
+      }
+
+      function profileText(roText, enText, lang = getProfileLanguage()) {
+        return normalizeSiteLanguage(lang) === 'en' ? enText : roText;
       }
 
       function getProfilePictureUrl(user) {
@@ -1376,12 +1385,13 @@
       }
 
       function buildRecentActivityLink(type, record) {
+        const lang = getProfileLanguage();
         const links = {
-          post: { href: 'comments.html#postsFeed', label: 'Deschide forumul' },
-          question: { href: 'discutie.html#commentsList', label: 'Deschide discuția' },
-          comment: { href: 'discutie.html#commentsList', label: 'Vezi comentariile' },
-          document: { href: 'documente.html', label: 'Vezi documentele' },
-          review: { href: 'professor-profile.html', label: 'Vezi profilul profesorului' }
+          post: { href: 'comments.html#postsFeed', label: profileText('Deschide forumul', 'Open the forum', lang) },
+          question: { href: 'discutie.html#commentsList', label: profileText('Deschide discuția', 'Open the discussion', lang) },
+          comment: { href: 'discutie.html#commentsList', label: profileText('Vezi comentariile', 'View comments', lang) },
+          document: { href: 'documente.html', label: profileText('Vezi documentele', 'View documents', lang) },
+          review: { href: 'professor-profile.html', label: profileText('Vezi profilul profesorului', 'View professor profile', lang) }
         };
 
         const fallback = links[type] || links.post;
@@ -1436,18 +1446,19 @@
       }
 
       function buildActivityEmptyState() {
+        const lang = getProfileLanguage();
         const empty = document.createElement('div');
         empty.className = 'activity-empty';
         empty.innerHTML = `
           <div class="activity-empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-          <h3>Nu există activitate recentă</h3>
-          <p>Când vei publica postări, comentarii sau recenzii, acestea vor apărea aici.</p>
+          <h3>${profileText('Nu există activitate recentă', 'No recent activity', lang)}</h3>
+          <p>${profileText('Când vei publica postări, comentarii sau recenzii, acestea vor apărea aici.', 'When you publish posts, comments, or reviews, they will appear here.', lang)}</p>
         `;
 
         const cta = document.createElement('a');
         cta.className = 'btn-secondary';
         cta.href = 'comments.html';
-        cta.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Explorează forumul';
+        cta.innerHTML = `<i class="fa-solid fa-arrow-right"></i> ${profileText('Explorează forumul', 'Explore the forum', lang)}`;
         empty.appendChild(cta);
         return empty;
       }
@@ -1478,9 +1489,12 @@
           const faculty = profileData.data?.faculty || user.user_metadata?.faculty || '-';
           const subject = profileData.data?.taught_subject || user.user_metadata?.taught_subject || '-';
           const teachingYears = Array.isArray(profileData.data?.teaching_years) ? profileData.data.teaching_years.join(', ') : (user.user_metadata?.teaching_years || []).join(', ');
-          const createdAt = formatProfileDateTime(user.created_at);
-          const lastLogin = formatProfileDateTime(user.last_sign_in_at);
-          const roleLabel = isAdmin ? 'Administrator' : (isProfessor ? 'Profesor' : 'Student');
+          const profileLanguage = getProfileLanguage();
+          const createdAt = formatProfileDateTime(user.created_at, profileLanguage);
+          const lastLogin = formatProfileDateTime(user.last_sign_in_at, profileLanguage);
+          const roleLabel = isAdmin
+            ? profileText('Administrator', 'Administrator', profileLanguage)
+            : (isProfessor ? profileText('Profesor', 'Professor', profileLanguage) : profileText('Student', 'Student', profileLanguage));
           const profilePictureUrl = getProfilePictureUrl(user);
           const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
           const profileAboutMe = getProfileAboutMe(user);
@@ -1488,7 +1502,7 @@
           // Update header
           document.getElementById('profileFullName').textContent = fullName;
           document.getElementById('profileEmail').textContent = user.email;
-          document.getElementById('profileRole').textContent = `Cont ${roleLabel} conectat`;
+          document.getElementById('profileRole').textContent = profileText(`Cont ${roleLabel} conectat`, `${roleLabel} account connected`, profileLanguage);
           const profileRoleBadge = document.getElementById('profileRoleBadge');
           const profileSummaryRole = document.getElementById('profileSummaryRole');
           const profileSummaryCreatedAt = document.getElementById('profileSummaryCreatedAt');
@@ -1502,38 +1516,38 @@
           const editProfileBtn = document.getElementById('editProfileBtn');
 
           if (isAdmin) {
-            if (yearLabel) yearLabel.textContent = 'Nivel acces';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Administrativ';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Platformă';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Evenimente recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-user-shield"></i> Editează profil admin';
+            if (yearLabel) yearLabel.textContent = profileText('Nivel acces', 'Access level', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Profil Administrativ', 'Admin Profile', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate Platformă', 'Platform Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Evenimente recente', 'Recent events', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${profileText('Editează profil admin', 'Edit admin profile', profileLanguage)}`;
           } else if (isProfessor) {
-            if (yearLabel) yearLabel.textContent = 'Ani de predare';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Academic';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Comunitate';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Interacțiuni recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-chalkboard-user"></i> Editează profil profesor';
+            if (yearLabel) yearLabel.textContent = profileText('Ani de predare', 'Teaching years', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Profil Academic', 'Academic Profile', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate Comunitate', 'Community Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Interacțiuni recente', 'Recent interactions', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-chalkboard-user"></i> ${profileText('Editează profil profesor', 'Edit professor profile', profileLanguage)}`;
           } else {
-            if (yearLabel) yearLabel.textContent = 'An de Studiu';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Informații Personale';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Activitate recentă';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editează profil';
+            if (yearLabel) yearLabel.textContent = profileText('An de Studiu', 'Study year', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Informații Personale', 'Personal Information', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate', 'Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Activitate recentă', 'Recent activity', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ${profileText('Editează profil', 'Edit profile', profileLanguage)}`;
           }
 
           if (profileRoleBadge) profileRoleBadge.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${roleLabel}`;
           if (profileSummaryRole) profileSummaryRole.textContent = roleLabel;
           if (profileSummaryCreatedAt) profileSummaryCreatedAt.textContent = createdAt;
-          if (profileSummaryStatus) profileSummaryStatus.textContent = 'Activ';
-          if (profileStatusBadge) profileStatusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Cont activ';
-          if (profileLoginBadge) profileLoginBadge.innerHTML = `<i class="fa-solid fa-clock"></i> Ultima autentificare: ${lastLogin}`;
+          if (profileSummaryStatus) profileSummaryStatus.textContent = profileText('Activ', 'Active', profileLanguage);
+          if (profileStatusBadge) profileStatusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${profileText('Cont activ', 'Active account', profileLanguage)}`;
+          if (profileLoginBadge) profileLoginBadge.innerHTML = `<i class="fa-solid fa-clock"></i> ${profileText('Ultima autentificare', 'Last login', profileLanguage)}: ${lastLogin}`;
           const profileAboutMeEl = document.getElementById('profileAboutMe');
-          if (profileAboutMeEl) profileAboutMeEl.textContent = profileAboutMe || 'Nu a fost adăugată încă o descriere.';
+          if (profileAboutMeEl) profileAboutMeEl.textContent = profileAboutMe || profileText('Nu a fost adăugată încă o descriere.', 'No description has been added yet.', profileLanguage);
         
           // Update info section
           document.getElementById('infoFullName').textContent = fullName;
           document.getElementById('infoEmail').textContent = user.email;
-          document.getElementById('infoYear').textContent = isAdmin ? 'Administrator' : (isProfessor ? (teachingYears || '-') : (year || '-'));
+          document.getElementById('infoYear').textContent = isAdmin ? profileText('Administrator', 'Administrator', profileLanguage) : (isProfessor ? (teachingYears || '-') : (year || '-'));
           document.getElementById('infoSpecialization').textContent = specialization || '-';
           document.getElementById('infoCreatedAt').textContent = createdAt;
           document.getElementById('infoLastLogin').textContent = lastLogin;
@@ -1672,6 +1686,53 @@
           const profilePicturePreviewInitials = document.getElementById('profilePicturePreviewInitials');
           let selectedProfilePictureUrl = profilePictureUrl;
 
+          const localizeEditProfileModal = () => {
+            if (!modal) return;
+            const modalTitle = modal.querySelector('.modal-header h2');
+            const labels = modal.querySelectorAll('.form-group > label');
+            const pictureHelp = modal.querySelector('.avatar-upload-help');
+            const primaryButton = modal.querySelector('.form-actions .btn-primary');
+            const secondaryButton = modal.querySelector('.form-actions .btn-secondary');
+            const clearButton = modal.querySelector('#clearProfilePictureBtn');
+            const yearOptions = Array.from(modal.querySelectorAll('#studentEditYear option'));
+            const studentName = modal.querySelector('#studentEditFullName');
+            const studentSpecialization = modal.querySelector('#studentEditSpecialization');
+            const professorName = modal.querySelector('#professorEditFullName');
+            const professorFaculty = modal.querySelector('#professorEditFaculty');
+            const professorSpecialization = modal.querySelector('#professorEditSpecialization');
+            const professorSubject = modal.querySelector('#professorEditSubject');
+            const professorTeachingYears = modal.querySelector('#professorEditTeachingYears');
+
+            if (modalTitle) modalTitle.textContent = profileText('Editează Profil', 'Edit Profile', profileLanguage);
+            if (labels[0]) labels[0].textContent = profileText('Poză de profil', 'Profile picture', profileLanguage);
+            if (pictureHelp) pictureHelp.textContent = profileText('Alege o imagine JPG, PNG sau WEBP. Poza va fi salvată împreună cu profilul.', 'Choose a JPG, PNG, or WEBP image. The picture will be saved with your profile.', profileLanguage);
+            if (labels[1]) labels[1].textContent = profileText('Despre mine', 'About me', profileLanguage);
+            if (labels[2]) labels[2].textContent = profileText('Nume Complet (Student)', 'Full Name (Student)', profileLanguage);
+            if (labels[3]) labels[3].textContent = profileText('An de Studiu', 'Study Year', profileLanguage);
+            if (labels[4]) labels[4].textContent = profileText('Specializare', 'Specialization', profileLanguage);
+            if (labels[5]) labels[5].textContent = profileText('Nume Complet (Profesor)', 'Full Name (Professor)', profileLanguage);
+            if (labels[6]) labels[6].textContent = profileText('Facultate / Departament', 'Faculty / Department', profileLanguage);
+            if (labels[7]) labels[7].textContent = profileText('Specializare', 'Specialization', profileLanguage);
+            if (labels[8]) labels[8].textContent = profileText('Materie predată', 'Taught subject', profileLanguage);
+            if (labels[9]) labels[9].textContent = profileText('Anii de predare', 'Teaching years', profileLanguage);
+            if (primaryButton) primaryButton.textContent = profileText('Salvează', 'Save', profileLanguage);
+            if (secondaryButton) secondaryButton.textContent = profileText('Anulează', 'Cancel', profileLanguage);
+            if (clearButton) clearButton.textContent = profileText('Elimină poza', 'Remove picture', profileLanguage);
+            if (yearOptions[0]) yearOptions[0].textContent = profileText('Selectează anul', 'Select year', profileLanguage);
+            if (yearOptions[1]) yearOptions[1].textContent = profileText('Anul I', 'Year 1', profileLanguage);
+            if (yearOptions[2]) yearOptions[2].textContent = profileText('Anul II', 'Year 2', profileLanguage);
+            if (yearOptions[3]) yearOptions[3].textContent = profileText('Anul III', 'Year 3', profileLanguage);
+            if (yearOptions[4]) yearOptions[4].textContent = profileText('Anul IV', 'Year 4', profileLanguage);
+            if (yearOptions[5]) yearOptions[5].textContent = profileText('Masterat', 'Master', profileLanguage);
+            if (studentName) studentName.placeholder = profileText('Introdu numele tău complet', 'Enter your full name', profileLanguage);
+            if (studentSpecialization) studentSpecialization.placeholder = profileText('Ex: Calculatoare, Tehnologia Informației, Ingineria Sistemelor Multimedia', 'E.g. Computer Science, Information Technology, Multimedia Systems Engineering', profileLanguage);
+            if (professorName) professorName.placeholder = profileText('Nume profesor', 'Professor name', profileLanguage);
+            if (professorFaculty) professorFaculty.placeholder = profileText('Facultatea de Inginerie', 'Faculty of Engineering', profileLanguage);
+            if (professorSpecialization) professorSpecialization.placeholder = profileText('Calculatoare', 'Computer Science', profileLanguage);
+            if (professorSubject) professorSubject.placeholder = profileText('Programare Web', 'Web Programming', profileLanguage);
+            if (professorTeachingYears) professorTeachingYears.placeholder = profileText('1,2,3,4,master', '1,2,3,4,master', profileLanguage);
+          };
+
           const refreshPreviewAvatar = () => {
             renderAvatarFrame(
               profilePicturePreview,
@@ -1688,13 +1749,13 @@
               if (!file) return;
 
               if (!file.type.startsWith('image/')) {
-                showNotification('Alege doar un fișier imagine.', 'error');
+                showNotification(profileText('Alege doar un fișier imagine.', 'Choose an image file only.', profileLanguage), 'error');
                 profilePictureInput.value = '';
                 return;
               }
 
               if (file.size > 2 * 1024 * 1024) {
-                showNotification('Imaginea trebuie să aibă cel mult 2 MB.', 'error');
+                showNotification(profileText('Imaginea trebuie să aibă cel mult 2 MB.', 'The image must be at most 2 MB.', profileLanguage), 'error');
                 profilePictureInput.value = '';
                 return;
               }
@@ -1703,7 +1764,7 @@
                 selectedProfilePictureUrl = await fileToDataUrl(file);
                 refreshPreviewAvatar();
               } catch (error) {
-                showNotification(error.message || 'Nu s-a putut încărca imaginea.', 'error');
+                showNotification(error.message || profileText('Nu s-a putut încărca imaginea.', 'The image could not be uploaded.', profileLanguage), 'error');
                 profilePictureInput.value = '';
               }
             });
@@ -1718,6 +1779,7 @@
           }
         
           editBtn.addEventListener('click', () => {
+          localizeEditProfileModal();
           if (editProfilePictureGroup) editProfilePictureGroup.style.display = isAdmin ? 'block' : 'none';
           if (editAboutMeGroup) editAboutMeGroup.style.display = isAdmin ? 'block' : 'none';
           selectedProfilePictureUrl = profilePictureUrl;
@@ -1784,15 +1846,15 @@
           if (updateResult.success) {
             const freshUser = await getAuthenticatedUser(false);
             if (!freshUser) {
-              showNotification('Nu s-a putut actualiza sesiunea utilizatorului.', 'error');
+              showNotification(profileText('Nu s-a putut actualiza sesiunea utilizatorului.', 'User session could not be refreshed.', profileLanguage), 'error');
               return;
             }
 
-            showNotification('Profil actualizat!', 'success');
+            showNotification(profileText('Profil actualizat!', 'Profile updated!', profileLanguage), 'success');
             modal.style.display = 'none';
             setTimeout(() => window.location.reload(), 1000);
           } else {
-            showNotification(updateResult.error || 'Nu s-au putut salva datele.', 'error');
+            showNotification(updateResult.error || profileText('Nu s-au putut salva datele.', 'Data could not be saved.', profileLanguage), 'error');
           }
           });
         
@@ -1800,28 +1862,28 @@
           const twoFactorBtn = document.getElementById('twoFactorBtn');
           if (twoFactorBtn) {
             twoFactorBtn.disabled = true;
-            twoFactorBtn.title = '2FA este dezactivat în configurația curentă.';
+            twoFactorBtn.title = profileText('2FA este dezactivat în configurația curentă.', '2FA is disabled in the current configuration.', profileLanguage);
             twoFactorBtn.addEventListener('click', () => {
-              showNotification('2FA este dezactivat în prezent.');
+              showNotification(profileText('2FA este dezactivat în prezent.', '2FA is currently disabled.', profileLanguage));
             });
           }
 
           document.getElementById('changePasswordBtn').addEventListener('click', () => {
-            showNotification('Pentru schimbarea parolei, folosește fluxul de recuperare din pagina de conectare.', 'info');
+            showNotification(profileText('Pentru schimbarea parolei, folosește fluxul de recuperare din pagina de conectare.', 'To change your password, use the recovery flow on the login page.', profileLanguage), 'info');
           });
         
           document.getElementById('deleteAccountBtn').addEventListener('click', () => {
-            if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
-              showNotification('Pentru ștergerea contului, trimite o solicitare prin pagina de contact.', 'info');
+            if (confirm(profileText('Ești sigur? Această acțiune nu poate fi anulată!', 'Are you sure? This action cannot be undone!', profileLanguage))) {
+              showNotification(profileText('Pentru ștergerea contului, trimite o solicitare prin pagina de contact.', 'To delete your account, send a request through the contact page.', profileLanguage), 'info');
             }
           });
         } catch (error) {
           console.error('Profile initialization failed:', error);
           const infoEmail = document.getElementById('infoEmail');
           if (infoEmail) {
-            infoEmail.textContent = 'Sesiune invalidă sau conexiune Supabase indisponibilă';
+            infoEmail.textContent = profileText('Sesiune invalidă sau conexiune Supabase indisponibilă', 'Invalid session or unavailable Supabase connection', getProfileLanguage());
           }
-          showNotification('Nu am putut încărca profilul din baza de date. Reîncarcă pagina.', 'error');
+          showNotification(profileText('Nu am putut încărca profilul din baza de date. Reîncarcă pagina.', 'Could not load the profile from the database. Reload the page.', getProfileLanguage()), 'error');
         }
       }
       
