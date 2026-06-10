@@ -2290,15 +2290,22 @@ footer {
 }
 
 .activity-avatar {
-  font-size: 2rem;
+  font-size: 0.85rem;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: rgba(230, 57, 70, 0.1);
+  width: 40px;
+  height: 40px;
+  background: rgba(230, 57, 70, 0.08);
   border-radius: 50%;
   flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 4px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .activity-content {
@@ -3845,7 +3852,8 @@ main#home {
   border-radius: 14px;
   display: grid;
   place-items: center;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .activity-avatar,

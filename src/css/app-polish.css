@@ -326,6 +326,16 @@ textarea {
   box-shadow: var(--app-shadow) !important;
 }
 
+body.dark-mode .admin-stat:hover,
+html.dark-mode .admin-stat:hover {
+  border-color: rgba(230, 57, 70, 0.5) !important;
+}
+
+body:not(.dark-mode) .admin-stat:hover,
+html:not(.dark-mode) .admin-stat:hover {
+  border-color: var(--app-border-strong) !important;
+}
+
 body.dark-mode .feature-tile:hover,
 body.dark-mode .value-card:hover,
 body.dark-mode .studio-board-card:hover,
