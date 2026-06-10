@@ -250,10 +250,203 @@
         position: relative;
         z-index: 1;
         display: flex;
-        align-items: flex-end;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+        justify-content: flex-start;
+        max-width: 38rem;
+        margin-left: auto;
+      }
+
+      .profile-achievement-button {
+        border-color: rgba(214, 160, 0, 0.35);
+        background: linear-gradient(135deg, rgba(214, 160, 0, 0.16), rgba(230, 57, 70, 0.08));
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .profile-achievement-button:hover {
+        border-color: rgba(214, 160, 0, 0.55);
+        box-shadow: 0 14px 32px rgba(214, 160, 0, 0.18);
+      }
+
+      .profile-achievement-spotlight {
+        width: 100%;
+        display: flex;
+        align-items: center;
         gap: 0.75rem;
+        padding: 0.8rem 0.95rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .profile-achievement-spotlight,
+      html.dark-mode .profile-achievement-spotlight {
+        background: rgba(15, 23, 42, 0.58);
+      }
+
+      .profile-achievement-spotlight img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        padding: 0.25rem;
+        flex-shrink: 0;
+      }
+
+      .profile-achievement-empty-icon {
+        width: 60px;
+        height: 60px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(214, 160, 0, 0.16), rgba(230, 57, 70, 0.1));
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .profile-achievement-spotlight strong {
+        display: block;
+        color: var(--text);
+        font-size: 0.96rem;
+      }
+
+      .profile-achievement-spotlight span {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+      }
+
+      .profile-achievement-spotlight .btn-secondary {
+        white-space: nowrap;
+      }
+
+      .profile-actions-row {
+        display: flex;
         flex-wrap: wrap;
+        gap: 0.75rem;
         justify-content: flex-end;
+      }
+
+      .profile-achievements-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .profile-achievements-modal.is-open {
+        display: flex;
+      }
+
+      .profile-achievements-card {
+        width: min(1120px, 100%);
+        max-height: min(86vh, 920px);
+        overflow: auto;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.32);
+      }
+
+      body.dark-mode .profile-achievements-card,
+      html.dark-mode .profile-achievements-card {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
+      }
+
+      .profile-achievements-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.2rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        background: inherit;
+      }
+
+      .profile-achievements-title {
+        margin: 0;
+        font-size: clamp(1.35rem, 2vw, 1.7rem);
+      }
+
+      .profile-achievements-subtitle {
+        margin: 0.35rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .profile-achievements-close {
+        border: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      }
+
+      .profile-achievements-close:hover {
+        background: rgba(230, 57, 70, 0.12);
+        color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .profile-achievements-body {
+        padding: 1.2rem;
+      }
+
+      .profile-achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.9rem;
+      }
+
+      .profile-achievement-card {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(255, 255, 255, 0.7);
+        text-align: center;
+      }
+
+      body.dark-mode .profile-achievement-card,
+      html.dark-mode .profile-achievement-card {
+        background: rgba(15, 23, 42, 0.48);
+      }
+
+      .profile-achievement-card img {
+        width: 100%;
+        max-width: 140px;
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
+        justify-self: center;
+      }
+
+      .profile-achievement-card strong {
+        color: var(--text);
+        font-size: 0.98rem;
+      }
+
+      .profile-achievement-card span {
+        color: var(--text-secondary);
+        font-size: 0.84rem;
       }
 
       .profile-summary-grid {
@@ -866,9 +1059,20 @@
         }
 
         .profile-actions {
+          max-width: none;
+          margin-left: 0;
+        }
+
+        .profile-achievement-spotlight {
+          width: 100%;
+        }
+
+        .profile-actions-row {
           justify-content: stretch;
         }
 
+        .profile-actions .profile-achievement-button,
+        .profile-actions .btn-secondary,
         .profile-actions .btn-edit-profile {
           width: 100%;
         }
@@ -929,9 +1133,15 @@
               </div>
             </div>
             <div class="profile-actions">
-              <button id="editProfileBtn" class="btn-edit-profile">
-                <i class="fa-solid fa-pen-to-square"></i> Editează profil
-              </button>
+              <div class="profile-achievement-spotlight" id="profileAchievementSpotlight" aria-live="polite"></div>
+              <div class="profile-actions-row">
+                <button type="button" class="btn-secondary profile-achievement-button" id="viewAchievementsBtn">
+                  <i class="fa-solid fa-medal"></i> vezi achivment-uri
+                </button>
+                <button id="editProfileBtn" class="btn-edit-profile">
+                  <i class="fa-solid fa-pen-to-square"></i> Editează profil
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1185,6 +1395,23 @@
       </div>
     </main>
 
+    <div class="profile-achievements-modal" id="profileAchievementsModal" aria-hidden="true">
+      <div class="profile-achievements-card" role="dialog" aria-modal="true" aria-labelledby="profileAchievementsModalTitle">
+        <div class="profile-achievements-head">
+          <div>
+            <h2 class="profile-achievements-title" id="profileAchievementsModalTitle">Toate achivment-urile</h2>
+            <p class="profile-achievements-subtitle">Galerie de prezentare pentru sistemul de gamification.</p>
+          </div>
+          <button class="profile-achievements-close" type="button" id="closeProfileAchievementsModalBtn" aria-label="Închide fereastra">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="profile-achievements-body">
+          <div class="profile-achievements-grid" id="profileAchievementsGrid"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal" style="display: none;">
       <div class="modal-content">
@@ -1335,6 +1562,146 @@
           || user?.user_metadata?.description
           || ''
         ).trim();
+      }
+
+      function profileEscapeHtml(value) {
+        const text = String(value || '');
+        if (typeof escapeHtml === 'function') return escapeHtml(text);
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      const profileAchievements = [
+        { file: 'achivment_amabasador.png', title: 'Ambasador', description: 'Badge de prezentare pentru profil.' },
+        { file: 'achivment_ambulanta_academica.png', title: 'Ambulanță academică', description: 'Ajutor rapid pentru comunitate.' },
+        { file: 'achivment_arhitect_de_platforma.png', title: 'Arhitect de platformă', description: 'Construiești și organizezi ecosistemul.' },
+        { file: 'achivment_asistent_de_laborator.png', title: 'Asistent de laborator', description: 'Sprijin practic pentru colegi.' },
+        { file: 'achivment_baronul_de_bursa.png', title: 'Baronul de bursă', description: 'Performanță și implicare susținute.' },
+        { file: 'achivment_beta_tester.png', title: 'Beta Tester', description: 'Testează funcționalitățile noi.' },
+        { file: 'achivment_bitmaster.png', title: 'Bitmaster', description: 'Stăpân peste detaliile tehnice.' },
+        { file: 'achivment_biblioteca.png', title: 'Biblioteca', description: 'Resurse, documente și cunoaștere.' },
+        { file: 'achivment_bug_bounty_hunter.png', title: 'Bug Bounty Hunter', description: 'Vânează erori și probleme.' },
+        { file: 'achivment_comunity_hero.png', title: 'Community Hero', description: 'Erou al comunității.' },
+        { file: 'achivment_curcubelul_ulbs.png', title: 'Curcubeul ULBS', description: 'Diversitate și vizibilitate.' },
+        { file: 'achivment_detectiv.png', title: 'Detectiv', description: 'Descoperă rapid informațiile importante.' },
+        { file: 'achivment_globetrotter_academic.png', title: 'Globetrotter Academic', description: 'Orizonturi largi, idei multe.' },
+        { file: 'achivment_ghid_universitar.png', title: 'Ghid Universitar', description: 'Îndrumare pentru ceilalți.' },
+        { file: 'achivment_leul_de_aur.png', title: 'Leul de Aur', description: 'Prestigiu și forță în platformă.' },
+        { file: 'achivment_like_magnet.png', title: 'Like Magnet', description: 'Atragere naturală de aprecieri.' },
+        { file: 'achivment_literat.png', title: 'Literat', description: 'Comunicare bună și conținut clar.' },
+        { file: 'achivment_matematician.png', title: 'Matematician', description: 'Logică și precizie.' },
+        { file: 'achivment_membru_de_onoare.png', title: 'Membru de onoare', description: 'Recunoaștere oficială în comunitate.' },
+        { file: 'achivment_poliglot.png', title: 'Poliglot', description: 'Se descurcă în mai multe contexte.' },
+        { file: 'achivment_trender.png', title: 'Trender', description: 'În pas cu ce contează acum.' },
+        { file: 'achivment_viralul_sesiunii.png', title: 'Viralul sesiunii', description: 'A prins tracțiune în comunitate.' },
+        { file: 'achviment_trender.png', title: 'Trender - variantă', description: 'Fișierul existent cu numele alternativ.' }
+      ];
+
+      const profileAchievementEnCopyByFile = {
+        'achivment_amabasador.png': { title: 'Ambassador', description: 'Profile showcase badge.' },
+        'achivment_ambulanta_academica.png': { title: 'Academic Ambulance', description: 'Quick help for the community.' },
+        'achivment_arhitect_de_platforma.png': { title: 'Platform Architect', description: 'You build and organize the ecosystem.' },
+        'achivment_asistent_de_laborator.png': { title: 'Lab Assistant', description: 'Hands-on support for colleagues.' },
+        'achivment_baronul_de_bursa.png': { title: 'Scholarship Baron', description: 'Sustained performance and involvement.' },
+        'achivment_beta_tester.png': { title: 'Beta Tester', description: 'Tests new platform features.' },
+        'achivment_bitmaster.png': { title: 'Bitmaster', description: 'Master of technical details.' },
+        'achivment_biblioteca.png': { title: 'Library', description: 'Resources, documents, and knowledge.' },
+        'achivment_bug_bounty_hunter.png': { title: 'Bug Bounty Hunter', description: 'Hunts errors and issues.' },
+        'achivment_comunity_hero.png': { title: 'Community Hero', description: 'A true community hero.' },
+        'achivment_curcubelul_ulbs.png': { title: 'ULBS Rainbow', description: 'Diversity and visibility.' },
+        'achivment_detectiv.png': { title: 'Detective', description: 'Finds key information quickly.' },
+        'achivment_globetrotter_academic.png': { title: 'Academic Globetrotter', description: 'Wide horizons, plenty of ideas.' },
+        'achivment_ghid_universitar.png': { title: 'University Guide', description: 'Guidance for others.' },
+        'achivment_leul_de_aur.png': { title: 'Golden Lion', description: 'Prestige and strength on the platform.' },
+        'achivment_like_magnet.png': { title: 'Like Magnet', description: 'Naturally attracts appreciation.' },
+        'achivment_literat.png': { title: 'Literate', description: 'Clear communication and solid content.' },
+        'achivment_matematician.png': { title: 'Mathematician', description: 'Logic and precision.' },
+        'achivment_membru_de_onoare.png': { title: 'Honorary Member', description: 'Official recognition in the community.' },
+        'achivment_poliglot.png': { title: 'Polyglot', description: 'Handles multiple contexts with ease.' },
+        'achivment_trender.png': { title: 'Trendsetter', description: 'In sync with what matters now.' },
+        'achivment_viralul_sesiunii.png': { title: 'Session Viral', description: 'Gained strong traction in the community.' },
+        'achviment_trender.png': { title: 'Trendsetter - variant', description: 'Existing file with alternate filename.' }
+      };
+
+      function getProfileAchievementPath(fileName) {
+        return `../../assets/Logos%20and%20icons/Achivments/${fileName}`;
+      }
+
+      function resolveProfileAchievementCopy(achievement, profileLanguage) {
+        const isEnglish = normalizeSiteLanguage(profileLanguage) === 'en';
+        if (!isEnglish) {
+          return {
+            title: achievement.title,
+            description: achievement.description
+          };
+        }
+
+        const translated = profileAchievementEnCopyByFile[achievement.file];
+        return {
+          title: translated?.title || achievement.title,
+          description: translated?.description || achievement.description
+        };
+      }
+
+      function renderProfileAchievementsGrid(profileLanguage = getProfileLanguage()) {
+        const grid = document.getElementById('profileAchievementsGrid');
+        if (!grid) return;
+
+        grid.innerHTML = profileAchievements.map((achievement) => {
+          const copy = resolveProfileAchievementCopy(achievement, profileLanguage);
+          return `
+          <article class="profile-achievement-card">
+            <img src="${getProfileAchievementPath(achievement.file)}" alt="${profileEscapeHtml(copy.title)}" loading="lazy">
+            <strong>${profileEscapeHtml(copy.title)}</strong>
+            <span>${profileEscapeHtml(copy.description)}</span>
+          </article>
+        `;
+        }).join('');
+      }
+
+      function renderProfileAchievementSpotlight(isAdmin, profileLanguage) {
+        const spotlight = document.getElementById('profileAchievementSpotlight');
+        if (!spotlight) return;
+
+        const highlightedAchievement = isAdmin
+          ? {
+              file: 'achivment_amabasador.png',
+              title: profileText('Achivment Ambasador', 'Ambassador achievement', profileLanguage)
+            }
+          : {
+              file: '',
+              title: profileText('Niciun achivment încă', 'No achievement yet', profileLanguage)
+            };
+
+        spotlight.innerHTML = highlightedAchievement.file ? `
+          <img src="${getProfileAchievementPath(highlightedAchievement.file)}" alt="${profileEscapeHtml(highlightedAchievement.title)}" loading="lazy">
+          <div>
+            <strong>${profileEscapeHtml(highlightedAchievement.title)}</strong>
+          </div>
+        ` : `
+          <div class="profile-achievement-empty-icon" aria-hidden="true"><i class="fa-solid fa-medal"></i></div>
+          <div>
+            <strong>${profileEscapeHtml(highlightedAchievement.title)}</strong>
+          </div>
+        `;
+      }
+
+      function openProfileAchievementsModal() {
+        const modal = document.getElementById('profileAchievementsModal');
+        if (!modal) return;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeProfileAchievementsModal() {
+        const modal = document.getElementById('profileAchievementsModal');
+        if (!modal) return;
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
       }
 
       function renderAvatarFrame(frameEl, imageEl, initialsEl, imageUrl, initials) {
@@ -1513,7 +1880,37 @@
           const personalSectionTitle = document.getElementById('personalSectionTitle');
           const activitySectionTitle = document.getElementById('activitySectionTitle');
           const recentSectionTitle = document.getElementById('recentSectionTitle');
+          const profileKicker = document.querySelector('.profile-kicker');
+          const viewAchievementsBtn = document.getElementById('viewAchievementsBtn');
+          const closeProfileAchievementsModalBtn = document.getElementById('closeProfileAchievementsModalBtn');
+          const profileAchievementsModal = document.getElementById('profileAchievementsModal');
+          const profileAchievementsModalTitle = document.getElementById('profileAchievementsModalTitle');
+          const profileAchievementsModalSubtitle = document.querySelector('.profile-achievements-subtitle');
           const editProfileBtn = document.getElementById('editProfileBtn');
+
+          if (profileKicker) {
+            profileKicker.innerHTML = `<i class="fa-solid fa-sparkles"></i> ${profileText('Cont personal premium', 'Premium personal account', profileLanguage)}`;
+          }
+
+          if (viewAchievementsBtn) {
+            viewAchievementsBtn.innerHTML = `<i class="fa-solid fa-medal"></i> ${profileText('Vezi achivment-uri', 'View achievements', profileLanguage)}`;
+          }
+
+          if (profileAchievementsModalTitle) {
+            profileAchievementsModalTitle.textContent = profileText('Toate achivment-urile', 'All achievements', profileLanguage);
+          }
+
+          if (profileAchievementsModalSubtitle) {
+            profileAchievementsModalSubtitle.textContent = profileText(
+              'Galerie de prezentare pentru sistemul de gamification.',
+              'Showcase gallery for the gamification system.',
+              profileLanguage
+            );
+          }
+
+          if (closeProfileAchievementsModalBtn) {
+            closeProfileAchievementsModalBtn.setAttribute('aria-label', profileText('Închide fereastra', 'Close dialog', profileLanguage));
+          }
 
           if (isAdmin) {
             if (yearLabel) yearLabel.textContent = profileText('Nivel acces', 'Access level', profileLanguage);
@@ -1543,6 +1940,31 @@
           if (profileLoginBadge) profileLoginBadge.innerHTML = `<i class="fa-solid fa-clock"></i> ${profileText('Ultima autentificare', 'Last login', profileLanguage)}: ${lastLogin}`;
           const profileAboutMeEl = document.getElementById('profileAboutMe');
           if (profileAboutMeEl) profileAboutMeEl.textContent = profileAboutMe || profileText('Nu a fost adăugată încă o descriere.', 'No description has been added yet.', profileLanguage);
+
+          renderProfileAchievementSpotlight(isAdmin, profileLanguage);
+          renderProfileAchievementsGrid(profileLanguage);
+
+          if (viewAchievementsBtn) {
+            viewAchievementsBtn.addEventListener('click', openProfileAchievementsModal);
+          }
+
+          if (closeProfileAchievementsModalBtn) {
+            closeProfileAchievementsModalBtn.addEventListener('click', closeProfileAchievementsModal);
+          }
+
+          if (profileAchievementsModal) {
+            profileAchievementsModal.addEventListener('click', (event) => {
+              if (event.target === profileAchievementsModal) {
+                closeProfileAchievementsModal();
+              }
+            });
+          }
+
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+              closeProfileAchievementsModal();
+            }
+          });
         
           // Update info section
           document.getElementById('infoFullName').textContent = fullName;
