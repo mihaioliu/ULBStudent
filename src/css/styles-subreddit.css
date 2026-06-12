@@ -201,6 +201,17 @@
   line-height: 1.5;
 }
 
+.post-preview {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  line-clamp: 3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .post-actions {
   margin-top: auto;
   display: flex;

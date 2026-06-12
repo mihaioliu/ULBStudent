@@ -917,6 +917,22 @@
         `;
       }
 
+      function getAdminLanguage() {
+        try {
+          if (typeof window.getSiteLanguage === 'function') {
+            return window.getSiteLanguage() === 'en' ? 'en' : 'ro';
+          }
+        } catch {
+          // noop
+        }
+
+        return localStorage.getItem('site_language') === 'en' ? 'en' : 'ro';
+      }
+
+      function adminText(roText, enText) {
+        return getAdminLanguage() === 'en' ? enText : roText;
+      }
+
       async function ensureAdminAccess() {
         await protectPage();
         const user = await getAuthenticatedUser(false);
@@ -977,7 +993,15 @@
         tableBody.innerHTML = '';
 
         if (!adminState.reports.length) {
-          renderEmptyState(empty, 'fa-inbox', 'Nu există raportări momentan', 'Când utilizatorii trimit probleme, acestea vor apărea aici pentru revizuire și rezolvare.');
+          renderEmptyState(
+            empty,
+            'fa-inbox',
+            adminText('Nu există raportări momentan', 'There are no reports yet'),
+            adminText(
+              'Când utilizatorii trimit probleme, acestea vor apărea aici pentru revizuire și rezolvare.',
+              'When users submit issues, they will appear here for review and resolution.'
+            )
+          );
           return;
         }
 
@@ -1240,6 +1264,7 @@
 
         wireTabs();
         wireTableActions();
+
         const goNotificationsBtn = document.getElementById('adminGoNotificationsBtn');
         if (goNotificationsBtn) {
           goNotificationsBtn.addEventListener('click', () => {

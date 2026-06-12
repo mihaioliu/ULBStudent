@@ -306,7 +306,18 @@ async function loadProfessorProfile() {
         const difficulty = row.dificultate ?? row.difficulty;
         const utility = row.utilitate ?? row.utility;
         const clarity = row.claritate ?? row.clarity;
-        const comment = String(row.comentariu || row.comment || '').trim();
+        const comment = String(
+          row.comentariu ||
+          row.comment ||
+          row.review_text ||
+          row.body ||
+          row.text ||
+          row.content ||
+          row.comment_text ||
+          row.comentariu_text ||
+          row.comentariu_html ||
+          ''
+        ).trim();
         const metaItems = [];
         if (difficulty !== undefined && difficulty !== null && difficulty !== '') metaItems.push(`<span class="prof-review-meta-pill">Dificultate: ${escapeHtml(difficulty)}</span>`);
         if (utility !== undefined && utility !== null && utility !== '') metaItems.push(`<span class="prof-review-meta-pill">Utilitate: ${escapeHtml(utility)}</span>`);
@@ -318,11 +329,51 @@ async function loadProfessorProfile() {
               <span class="prof-review-date">${formatDate(row.created_at)}</span>
             </div>
             <div class="prof-rating-stars" aria-hidden="true">${starMarkup(Number(row.rating || 0))}</div>
+            <div class="prof-review-actions" data-review-id="${escapeHtml(String(row.id || row.review_id || ''))}"></div>
           </div>
           ${comment ? `<p class="prof-review-text">${escapeHtml(comment)}</p>` : '<p class="prof-review-text prof-review-empty-text">Recenzie fără comentariu</p>'}
           ${metaItems.length ? `<div class="prof-review-meta">${metaItems.join('')}</div>` : ''}
         `;
         reviewsListEl.appendChild(card);
+
+        // Attach delete handler for admins
+        (async () => {
+          try {
+            const role = localStorage.getItem('role');
+            let isAdmin = role === 'admin';
+            if (!isAdmin && typeof getAuthenticatedUser === 'function' && typeof resolveAndCacheUserRole === 'function') {
+              const u = await getAuthenticatedUser(false);
+              const resolved = await resolveAndCacheUserRole(u);
+              isAdmin = resolved === 'admin';
+            }
+
+            if (!isAdmin) return;
+
+            const actionsEl = card.querySelector('.prof-review-actions');
+            if (!actionsEl) return;
+            const reviewId = String(row.id || row.review_id || '').trim();
+            if (!reviewId) return;
+
+            actionsEl.innerHTML = `<button class="btn btn-ghost btn-danger btn-small prof-review-delete">Șterge</button>`;
+            const delBtn = actionsEl.querySelector('.prof-review-delete');
+            delBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              if (!confirm('Ești sigur că vrei să ștergi această recenzie? Această acțiune nu se poate anula.')) return;
+              try {
+                const client = await initSupabaseClient();
+                const res = await client.from('recenzii_profesori').delete().eq('id', reviewId).select();
+                if (res.error) throw res.error;
+                if (typeof showNotification === 'function') showNotification('Recenzie ștearsă.', 'success');
+                await renderReviews();
+              } catch (err) {
+                console.error('Error deleting review:', err?.message || err);
+                if (typeof showNotification === 'function') showNotification(err?.message || 'Eroare la ștergerea recenziei.', 'error');
+              }
+            });
+          } catch (e) {
+            console.warn('Could not attach admin delete button for reviews', e.message || e);
+          }
+        })();
       });
     }
 
@@ -415,6 +466,24 @@ async function loadProfessorProfile() {
 
     if (openReviewModalBtn) {
       openReviewModalBtn.addEventListener('click', openModal);
+    }
+
+    // Ensure 'Vezi recenziile' anchor scrolls to the reviews list with header offset
+    try {
+      const seeReviewsLink = document.querySelector('a[href="#reviewsList"]');
+      if (seeReviewsLink) {
+        seeReviewsLink.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          const target = document.getElementById('reviewsList');
+          if (!target) return;
+          const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+          const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerHeight - 8);
+          window.scrollTo({ top, behavior: 'smooth' });
+          try { window.history.pushState(null, '', '#reviewsList'); } catch (e) {}
+        });
+      }
+    } catch (e) {
+      // noop
     }
 
     if (closeReviewModalBtn) {

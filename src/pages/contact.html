@@ -167,12 +167,7 @@
               ></textarea>
             </div>
 
-            <button 
-              type="submit"
-              style="background: var(--accent); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;"
-              onmouseover="this.style.background='var(--accent-hover)'"
-              onmouseout="this.style.background='var(--accent)'"
-            >
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem;">
               Trimite mesaj
             </button>
           </form>
@@ -224,12 +219,62 @@
     </footer>
 
     <script>
+      function getContactLanguage() {
+        return typeof getSiteLanguage === 'function' ? getSiteLanguage() : 'ro';
+      }
+
+      function contactText(roText, enText, lang = getContactLanguage()) {
+        return normalizeSiteLanguage(lang) === 'en' ? enText : roText;
+      }
+
+      function updateContactPageLabels(lang = getContactLanguage()) {
+        const normalizedLang = normalizeSiteLanguage(lang);
+        const text = (roText, enText) => (normalizedLang === 'en' ? enText : roText);
+
+        const subjectLabel = document.querySelector('label[for="contactSubject"]');
+        const subjectSelect = document.getElementById('contactSubject');
+        const nameLabel = document.querySelector('label[for="contactName"]');
+        const emailLabel = document.querySelector('label[for="contactEmail"]');
+        const messageLabel = document.querySelector('label[for="contactMessage"]');
+        const submitBtn = document.querySelector('#contactForm button[type="submit"]');
+        const heroTitle = document.querySelector('.contact-hero h1');
+        const heroText = document.querySelector('.contact-hero p');
+        const supportTitle = document.querySelector('.contact-grid > div:first-child h2');
+        const formTitle = document.querySelector('.contact-grid > div:last-child h2');
+        const timeTitle = document.querySelector('.contact-page-shell > div[style*="background"] h3');
+
+        if (subjectLabel) subjectLabel.textContent = text('Subiect *', 'Subject *');
+        if (nameLabel) nameLabel.textContent = text('Nume *', 'Name *');
+        if (emailLabel) emailLabel.textContent = text('Email *', 'Email *');
+        if (messageLabel) messageLabel.textContent = text('Mesaj *', 'Message *');
+        if (submitBtn) submitBtn.textContent = text('Trimite mesaj', 'Send message');
+        if (heroTitle) heroTitle.textContent = text('Contact', 'Contact');
+        if (heroText) heroText.textContent = text('Trimite-ne întrebări, sugestii sau semnale despre platformă. Răspundem cât mai rapid.', 'Send us questions, suggestions, or reports about the platform. We will respond as quickly as possible.');
+        if (supportTitle) supportTitle.textContent = text('Informații contact', 'Contact information');
+        if (formTitle) formTitle.textContent = text('Trimite-ne un mesaj', 'Send us a message');
+        if (timeTitle) timeTitle.textContent = text('Timp de Răspuns', 'Response Time');
+
+        if (subjectSelect) {
+          const options = Array.from(subjectSelect.options);
+          if (options[0]) options[0].textContent = text('Alege un subiect', 'Choose a subject');
+          if (options[1]) options[1].textContent = text('Suport tehnic', 'Technical support');
+          if (options[2]) options[2].textContent = text('Sugestie', 'Suggestion');
+          if (options[3]) options[3].textContent = text('Reclamație', 'Complaint');
+          if (options[4]) options[4].textContent = text('Parteneriat', 'Partnership');
+          if (options[5]) options[5].textContent = text('Altele', 'Other');
+        }
+      }
+
+      window.updateContactPageLabels = updateContactPageLabels;
+      document.addEventListener('DOMContentLoaded', () => updateContactPageLabels(getContactLanguage()));
+
       document.getElementById('contactForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const form = this;
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn ? submitBtn.textContent : '';
+        const language = getContactLanguage();
         const notify = (message, type = 'info') => {
           if (typeof showToast === 'function') {
             showToast(message, type);
@@ -250,24 +295,24 @@
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.classList.add('is-loading');
-          submitBtn.textContent = 'Se trimite...';
+          submitBtn.textContent = contactText('Se trimite...', 'Sending...', language);
         }
 
         try {
           const result = await saveSupportContactMessage(payload);
           if (!result.success) {
-            throw new Error(result.error || 'Nu s-a putut salva mesajul.');
+            throw new Error(result.error || contactText('Nu s-a putut salva mesajul.', 'The message could not be saved.', language));
           }
 
-          notify('Mesaj trimis și salvat în baza de date.', 'success');
+          notify(contactText('Mesaj trimis și salvat în baza de date.', 'Message sent and saved in the database.', language), 'success');
           form.reset();
         } catch (error) {
-          notify(error.message || 'Nu s-a putut trimite mesajul.', 'error');
+          notify(error.message || contactText('Nu s-a putut trimite mesajul.', 'The message could not be sent.', language), 'error');
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('is-loading');
-            submitBtn.textContent = originalLabel || 'Trimite Mesaj';
+            submitBtn.textContent = originalLabel || contactText('Trimite Mesaj', 'Send Message', language);
           }
         }
       });

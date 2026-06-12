@@ -102,7 +102,6 @@
               <select id="languageSetting" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface); color: var(--text);">
                 <option value="ro" selected>Română</option>
                 <option value="en">English</option>
-                <option value="fr">Français</option>
               </select>
             </div>
 
@@ -365,6 +364,7 @@
 
         // Keep a local cache for immediate UX fallback.
         localStorage.setItem('app_settings_cache', JSON.stringify(settingsPayload));
+        localStorage.setItem('site_language', settingsPayload.language);
         localStorage.setItem('theme', normalizedTheme);
         document.documentElement.setAttribute('data-font-size', selectedFontSize);
         document.documentElement.setAttribute('data-animations', animationsEnabled ? 'on' : 'off');
@@ -406,6 +406,7 @@
         }
 
         localStorage.setItem('app_settings_cache', JSON.stringify(defaults));
+        localStorage.setItem('site_language', 'ro');
         localStorage.setItem('theme', 'light');
         document.documentElement.setAttribute('data-font-size', 'normal');
         document.documentElement.setAttribute('data-animations', 'on');
@@ -422,6 +423,8 @@
         const currentTheme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
 
         if (settings.language) document.getElementById('languageSetting').value = settings.language;
+        const storedLanguage = localStorage.getItem('site_language');
+        if (storedLanguage) document.getElementById('languageSetting').value = storedLanguage;
 
         if (settings.notifications) {
           if (typeof settings.notifications.email === 'boolean') document.getElementById('emailNotifSetting').checked = settings.notifications.email;

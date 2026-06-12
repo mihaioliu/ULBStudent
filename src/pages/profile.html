@@ -62,6 +62,8 @@
       }
 
       .profile-avatar-large {
+        position: relative;
+        overflow: hidden;
         width: 92px;
         height: 92px;
         border-radius: 28px;
@@ -76,6 +78,110 @@
         box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
         border: 1px solid rgba(255, 255, 255, 0.18);
         flex-shrink: 0;
+      }
+
+      .profile-avatar-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+
+      .profile-avatar-large.has-image .profile-avatar-image {
+        display: block;
+      }
+
+      .profile-avatar-initials {
+        position: relative;
+        z-index: 1;
+      }
+
+      .avatar-upload-row {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+      }
+
+      .avatar-upload-preview {
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: linear-gradient(145deg, #0f172a 0%, #334155 46%, #e63946 100%);
+        color: #fff;
+        flex-shrink: 0;
+      }
+
+      .avatar-upload-preview img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+
+      .avatar-upload-preview.has-image img {
+        display: block;
+      }
+
+      .avatar-upload-initials {
+        position: relative;
+        z-index: 1;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .avatar-upload-preview.has-image .avatar-upload-initials {
+        display: none;
+      }
+
+      .avatar-upload-actions {
+        display: grid;
+        gap: 0.55rem;
+        flex: 1;
+        min-width: 220px;
+      }
+
+      .avatar-upload-help {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--text-secondary);
+      }
+
+      .modal-body .form-group textarea {
+        width: 100%;
+        min-height: 150px;
+        box-sizing: border-box;
+        display: block;
+        resize: vertical;
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.84);
+        color: var(--text);
+        font: inherit;
+        line-height: 1.6;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+
+      body.dark-mode .modal-body .form-group textarea,
+      html.dark-mode .modal-body .form-group textarea {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(148, 163, 184, 0.22);
+      }
+
+      .modal-body .form-group textarea:focus {
+        outline: none;
+        border-color: rgba(230, 57, 70, 0.45);
+        box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
       }
 
       .hero-copy {
@@ -144,10 +250,203 @@
         position: relative;
         z-index: 1;
         display: flex;
-        align-items: flex-end;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+        justify-content: flex-start;
+        max-width: 38rem;
+        margin-left: auto;
+      }
+
+      .profile-achievement-button {
+        border-color: rgba(214, 160, 0, 0.35);
+        background: linear-gradient(135deg, rgba(214, 160, 0, 0.16), rgba(230, 57, 70, 0.08));
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .profile-achievement-button:hover {
+        border-color: rgba(214, 160, 0, 0.55);
+        box-shadow: 0 14px 32px rgba(214, 160, 0, 0.18);
+      }
+
+      .profile-achievement-spotlight {
+        width: 100%;
+        display: flex;
+        align-items: center;
         gap: 0.75rem;
+        padding: 0.8rem 0.95rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .profile-achievement-spotlight,
+      html.dark-mode .profile-achievement-spotlight {
+        background: rgba(15, 23, 42, 0.58);
+      }
+
+      .profile-achievement-spotlight img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        padding: 0.25rem;
+        flex-shrink: 0;
+      }
+
+      .profile-achievement-empty-icon {
+        width: 60px;
+        height: 60px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(214, 160, 0, 0.16), rgba(230, 57, 70, 0.1));
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .profile-achievement-spotlight strong {
+        display: block;
+        color: var(--text);
+        font-size: 0.96rem;
+      }
+
+      .profile-achievement-spotlight span {
+        display: block;
+        margin-top: 0.2rem;
+        color: var(--text-secondary);
+        font-size: 0.84rem;
+      }
+
+      .profile-achievement-spotlight .btn-secondary {
+        white-space: nowrap;
+      }
+
+      .profile-actions-row {
+        display: flex;
         flex-wrap: wrap;
+        gap: 0.75rem;
         justify-content: flex-end;
+      }
+
+      .profile-achievements-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(15, 23, 42, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .profile-achievements-modal.is-open {
+        display: flex;
+      }
+
+      .profile-achievements-card {
+        width: min(1120px, 100%);
+        max-height: min(86vh, 920px);
+        overflow: auto;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.32);
+      }
+
+      body.dark-mode .profile-achievements-card,
+      html.dark-mode .profile-achievements-card {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
+      }
+
+      .profile-achievements-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.2rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        background: inherit;
+      }
+
+      .profile-achievements-title {
+        margin: 0;
+        font-size: clamp(1.35rem, 2vw, 1.7rem);
+      }
+
+      .profile-achievements-subtitle {
+        margin: 0.35rem 0 0;
+        color: var(--text-secondary);
+      }
+
+      .profile-achievements-close {
+        border: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      }
+
+      .profile-achievements-close:hover {
+        background: rgba(230, 57, 70, 0.12);
+        color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .profile-achievements-body {
+        padding: 1.2rem;
+      }
+
+      .profile-achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.9rem;
+      }
+
+      .profile-achievement-card {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(255, 255, 255, 0.7);
+        text-align: center;
+      }
+
+      body.dark-mode .profile-achievement-card,
+      html.dark-mode .profile-achievement-card {
+        background: rgba(15, 23, 42, 0.48);
+      }
+
+      .profile-achievement-card img {
+        width: 100%;
+        max-width: 140px;
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
+        justify-self: center;
+      }
+
+      .profile-achievement-card strong {
+        color: var(--text);
+        font-size: 0.98rem;
+      }
+
+      .profile-achievement-card span {
+        color: var(--text-secondary);
+        font-size: 0.84rem;
       }
 
       .profile-summary-grid {
@@ -156,6 +455,33 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.85rem;
+      }
+
+      .profile-about-card {
+        position: relative;
+        z-index: 1;
+        margin-top: 0.85rem;
+        padding: 1rem 1.05rem;
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: var(--shadow-sm);
+      }
+
+      body.dark-mode .profile-about-card,
+      html.dark-mode .profile-about-card {
+        background: rgba(15, 23, 42, 0.58);
+      }
+
+      .profile-about-card .section-kicker {
+        margin-bottom: 0.3rem;
+      }
+
+      .profile-about-text {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        white-space: pre-wrap;
       }
 
       .summary-card {
@@ -355,6 +681,59 @@
       .stat-meta {
         font-size: 0.85rem;
         color: var(--text-secondary);
+        /* Prevent odd wrapping/overflow: limit to 2 lines and hide overflow */
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+        line-height: 1.25;
+      }
+
+      .stat-label {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .stat-card {
+        padding: 1rem;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-align: center;
+      }
+
+      /* Icon and large value stacked */
+      .stat-top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+      }
+
+      /* Hide the meta description; show only short title */
+      .stat-meta { display: none; }
+
+      .stat-label {
+        display: block;
+        font-weight: 700;
+        color: var(--text);
+        margin-top: 0.25rem;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 9.5rem;
       }
 
       .activity-panel {
@@ -680,9 +1059,20 @@
         }
 
         .profile-actions {
+          max-width: none;
+          margin-left: 0;
+        }
+
+        .profile-achievement-spotlight {
+          width: 100%;
+        }
+
+        .profile-actions-row {
           justify-content: stretch;
         }
 
+        .profile-actions .profile-achievement-button,
+        .profile-actions .btn-secondary,
         .profile-actions .btn-edit-profile {
           width: 100%;
         }
@@ -726,7 +1116,10 @@
         <section class="profile-hero dashboard-card" aria-labelledby="profileFullName">
           <div class="hero-grid">
             <div class="hero-profile">
-              <div class="profile-avatar-large" id="profileAvatarLarge">UL</div>
+              <div class="profile-avatar-large" id="profileAvatarLarge">
+                <img id="profileAvatarLargeImage" class="profile-avatar-image" alt="Poza de profil">
+                <span id="profileAvatarLargeInitials" class="profile-avatar-initials">UL</span>
+              </div>
               <div class="hero-copy">
                 <div class="profile-kicker"><i class="fa-solid fa-sparkles"></i> Cont personal premium</div>
                 <h1 id="profileFullName">Nume Student</h1>
@@ -740,9 +1133,15 @@
               </div>
             </div>
             <div class="profile-actions">
-              <button id="editProfileBtn" class="btn-edit-profile">
-                <i class="fa-solid fa-pen-to-square"></i> Editează profil
-              </button>
+              <div class="profile-achievement-spotlight" id="profileAchievementSpotlight" aria-live="polite"></div>
+              <div class="profile-actions-row">
+                <button type="button" class="btn-secondary profile-achievement-button" id="viewAchievementsBtn">
+                  <i class="fa-solid fa-medal"></i> vezi achivment-uri
+                </button>
+                <button id="editProfileBtn" class="btn-edit-profile">
+                  <i class="fa-solid fa-pen-to-square"></i> Editează profil
+                </button>
+              </div>
             </div>
           </div>
 
@@ -759,6 +1158,11 @@
               <span>Stare sesiune</span>
               <strong id="profileSummaryStatus">Activ</strong>
             </div>
+          </div>
+
+          <div class="profile-about-card">
+            <div class="section-kicker"><i class="fa-solid fa-pen-nib"></i> Despre mine</div>
+            <p class="profile-about-text" id="profileAboutMe">Nu a fost adăugată încă o descriere.</p>
           </div>
         </section>
 
@@ -991,6 +1395,23 @@
       </div>
     </main>
 
+    <div class="profile-achievements-modal" id="profileAchievementsModal" aria-hidden="true">
+      <div class="profile-achievements-card" role="dialog" aria-modal="true" aria-labelledby="profileAchievementsModalTitle">
+        <div class="profile-achievements-head">
+          <div>
+            <h2 class="profile-achievements-title" id="profileAchievementsModalTitle">Toate achivment-urile</h2>
+            <p class="profile-achievements-subtitle">Galerie de prezentare pentru sistemul de gamification.</p>
+          </div>
+          <button class="profile-achievements-close" type="button" id="closeProfileAchievementsModalBtn" aria-label="Închide fereastra">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="profile-achievements-body">
+          <div class="profile-achievements-grid" id="profileAchievementsGrid"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal" style="display: none;">
       <div class="modal-content">
@@ -999,6 +1420,26 @@
           <button class="modal-close" id="closeEditModal">&times;</button>
         </div>
         <form id="editProfileForm" class="modal-body">
+          <div class="form-group" id="editProfilePictureGroup" style="display: none;">
+            <label>Poză de profil</label>
+            <div class="avatar-upload-row">
+              <div class="avatar-upload-preview" id="profilePicturePreview">
+                <img id="profilePicturePreviewImage" alt="Previzualizare poză de profil">
+                <span id="profilePicturePreviewInitials" class="avatar-upload-initials">UL</span>
+              </div>
+              <div class="avatar-upload-actions">
+                <input type="file" id="profilePictureInput" accept="image/*">
+                <p class="avatar-upload-help">Alege o imagine JPG, PNG sau WEBP. Poza va fi salvată împreună cu profilul.</p>
+                <button type="button" class="btn-secondary" id="clearProfilePictureBtn">Elimină poza</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="editAboutMeGroup" style="display: none;">
+            <label>Despre mine</label>
+            <textarea id="adminEditAboutMe" rows="5" placeholder="Scrie aici o prezentare scurtă sau orice vrei să afișezi pe profil"></textarea>
+          </div>
+
           <div id="studentEditFields" style="display: none;">
             <div class="form-group">
               <label>Nume Complet (Student)</label>
@@ -1082,11 +1523,11 @@
     <script src="../js/auth.js"></script>
     <script src="../js/interactive.js"></script>
     <script>
-      function formatProfileDateTime(value) {
+      function formatProfileDateTime(value, lang = getProfileLanguage()) {
         if (!value) return '-';
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return '-';
-        return new Intl.DateTimeFormat('ro-RO', {
+        return new Intl.DateTimeFormat(normalizeSiteLanguage(lang) === 'en' ? 'en-GB' : 'ro-RO', {
           day: '2-digit',
           month: 'short',
           year: 'numeric',
@@ -1097,6 +1538,199 @@
 
       function normalizeProfileValue(value) {
         return String(value ?? '').trim().toLowerCase();
+      }
+
+      function getProfileLanguage() {
+        return typeof getSiteLanguage === 'function' ? getSiteLanguage() : 'ro';
+      }
+
+      function profileText(roText, enText, lang = getProfileLanguage()) {
+        return normalizeSiteLanguage(lang) === 'en' ? enText : roText;
+      }
+
+      function getProfilePictureUrl(user) {
+        return user?.user_metadata?.profile_picture_url
+          || user?.user_metadata?.profile_image_url
+          || user?.user_metadata?.avatar_url
+          || '';
+      }
+
+      function getProfileAboutMe(user) {
+        return String(
+          user?.user_metadata?.about_me
+          || user?.user_metadata?.bio
+          || user?.user_metadata?.description
+          || ''
+        ).trim();
+      }
+
+      function profileEscapeHtml(value) {
+        const text = String(value || '');
+        if (typeof escapeHtml === 'function') return escapeHtml(text);
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      const profileAchievements = [
+        { file: 'achivment_amabasador.png', title: 'Ambasador', description: 'Badge de prezentare pentru profil.' },
+        { file: 'achivment_ambulanta_academica.png', title: 'Ambulanță academică', description: 'Ajutor rapid pentru comunitate.' },
+        { file: 'achivment_arhitect_de_platforma.png', title: 'Arhitect de platformă', description: 'Construiești și organizezi ecosistemul.' },
+        { file: 'achivment_asistent_de_laborator.png', title: 'Asistent de laborator', description: 'Sprijin practic pentru colegi.' },
+        { file: 'achivment_baronul_de_bursa.png', title: 'Baronul de bursă', description: 'Performanță și implicare susținute.' },
+        { file: 'achivment_beta_tester.png', title: 'Beta Tester', description: 'Testează funcționalitățile noi.' },
+        { file: 'achivment_bitmaster.png', title: 'Bitmaster', description: 'Stăpân peste detaliile tehnice.' },
+        { file: 'achivment_biblioteca.png', title: 'Biblioteca', description: 'Resurse, documente și cunoaștere.' },
+        { file: 'achivment_bug_bounty_hunter.png', title: 'Bug Bounty Hunter', description: 'Vânează erori și probleme.' },
+        { file: 'achivment_comunity_hero.png', title: 'Community Hero', description: 'Erou al comunității.' },
+        { file: 'achivment_curcubelul_ulbs.png', title: 'Curcubeul ULBS', description: 'Diversitate și vizibilitate.' },
+        { file: 'achivment_detectiv.png', title: 'Detectiv', description: 'Descoperă rapid informațiile importante.' },
+        { file: 'achivment_globetrotter_academic.png', title: 'Globetrotter Academic', description: 'Orizonturi largi, idei multe.' },
+        { file: 'achivment_ghid_universitar.png', title: 'Ghid Universitar', description: 'Îndrumare pentru ceilalți.' },
+        { file: 'achivment_leul_de_aur.png', title: 'Leul de Aur', description: 'Prestigiu și forță în platformă.' },
+        { file: 'achivment_like_magnet.png', title: 'Like Magnet', description: 'Atragere naturală de aprecieri.' },
+        { file: 'achivment_literat.png', title: 'Literat', description: 'Comunicare bună și conținut clar.' },
+        { file: 'achivment_matematician.png', title: 'Matematician', description: 'Logică și precizie.' },
+        { file: 'achivment_membru_de_onoare.png', title: 'Membru de onoare', description: 'Recunoaștere oficială în comunitate.' },
+        { file: 'achivment_poliglot.png', title: 'Poliglot', description: 'Se descurcă în mai multe contexte.' },
+        { file: 'achivment_trender.png', title: 'Trender', description: 'În pas cu ce contează acum.' },
+        { file: 'achivment_viralul_sesiunii.png', title: 'Viralul sesiunii', description: 'A prins tracțiune în comunitate.' },
+        { file: 'achviment_trender.png', title: 'Trender - variantă', description: 'Fișierul existent cu numele alternativ.' }
+      ];
+
+      const profileAchievementEnCopyByFile = {
+        'achivment_amabasador.png': { title: 'Ambassador', description: 'Profile showcase badge.' },
+        'achivment_ambulanta_academica.png': { title: 'Academic Ambulance', description: 'Quick help for the community.' },
+        'achivment_arhitect_de_platforma.png': { title: 'Platform Architect', description: 'You build and organize the ecosystem.' },
+        'achivment_asistent_de_laborator.png': { title: 'Lab Assistant', description: 'Hands-on support for colleagues.' },
+        'achivment_baronul_de_bursa.png': { title: 'Scholarship Baron', description: 'Sustained performance and involvement.' },
+        'achivment_beta_tester.png': { title: 'Beta Tester', description: 'Tests new platform features.' },
+        'achivment_bitmaster.png': { title: 'Bitmaster', description: 'Master of technical details.' },
+        'achivment_biblioteca.png': { title: 'Library', description: 'Resources, documents, and knowledge.' },
+        'achivment_bug_bounty_hunter.png': { title: 'Bug Bounty Hunter', description: 'Hunts errors and issues.' },
+        'achivment_comunity_hero.png': { title: 'Community Hero', description: 'A true community hero.' },
+        'achivment_curcubelul_ulbs.png': { title: 'ULBS Rainbow', description: 'Diversity and visibility.' },
+        'achivment_detectiv.png': { title: 'Detective', description: 'Finds key information quickly.' },
+        'achivment_globetrotter_academic.png': { title: 'Academic Globetrotter', description: 'Wide horizons, plenty of ideas.' },
+        'achivment_ghid_universitar.png': { title: 'University Guide', description: 'Guidance for others.' },
+        'achivment_leul_de_aur.png': { title: 'Golden Lion', description: 'Prestige and strength on the platform.' },
+        'achivment_like_magnet.png': { title: 'Like Magnet', description: 'Naturally attracts appreciation.' },
+        'achivment_literat.png': { title: 'Literate', description: 'Clear communication and solid content.' },
+        'achivment_matematician.png': { title: 'Mathematician', description: 'Logic and precision.' },
+        'achivment_membru_de_onoare.png': { title: 'Honorary Member', description: 'Official recognition in the community.' },
+        'achivment_poliglot.png': { title: 'Polyglot', description: 'Handles multiple contexts with ease.' },
+        'achivment_trender.png': { title: 'Trendsetter', description: 'In sync with what matters now.' },
+        'achivment_viralul_sesiunii.png': { title: 'Session Viral', description: 'Gained strong traction in the community.' },
+        'achviment_trender.png': { title: 'Trendsetter - variant', description: 'Existing file with alternate filename.' }
+      };
+
+      function getProfileAchievementPath(fileName) {
+        return `../../assets/Logos%20and%20icons/Achivments/${fileName}`;
+      }
+
+      function resolveProfileAchievementCopy(achievement, profileLanguage) {
+        const isEnglish = normalizeSiteLanguage(profileLanguage) === 'en';
+        if (!isEnglish) {
+          return {
+            title: achievement.title,
+            description: achievement.description
+          };
+        }
+
+        const translated = profileAchievementEnCopyByFile[achievement.file];
+        return {
+          title: translated?.title || achievement.title,
+          description: translated?.description || achievement.description
+        };
+      }
+
+      function renderProfileAchievementsGrid(profileLanguage = getProfileLanguage()) {
+        const grid = document.getElementById('profileAchievementsGrid');
+        if (!grid) return;
+
+        grid.innerHTML = profileAchievements.map((achievement) => {
+          const copy = resolveProfileAchievementCopy(achievement, profileLanguage);
+          return `
+          <article class="profile-achievement-card">
+            <img src="${getProfileAchievementPath(achievement.file)}" alt="${profileEscapeHtml(copy.title)}" loading="lazy">
+            <strong>${profileEscapeHtml(copy.title)}</strong>
+            <span>${profileEscapeHtml(copy.description)}</span>
+          </article>
+        `;
+        }).join('');
+      }
+
+      function renderProfileAchievementSpotlight(isAdmin, profileLanguage) {
+        const spotlight = document.getElementById('profileAchievementSpotlight');
+        if (!spotlight) return;
+
+        const highlightedAchievement = isAdmin
+          ? {
+              file: 'achivment_amabasador.png',
+              title: profileText('Achivment Ambasador', 'Ambassador achievement', profileLanguage)
+            }
+          : {
+              file: '',
+              title: profileText('Niciun achivment încă', 'No achievement yet', profileLanguage)
+            };
+
+        spotlight.innerHTML = highlightedAchievement.file ? `
+          <img src="${getProfileAchievementPath(highlightedAchievement.file)}" alt="${profileEscapeHtml(highlightedAchievement.title)}" loading="lazy">
+          <div>
+            <strong>${profileEscapeHtml(highlightedAchievement.title)}</strong>
+          </div>
+        ` : `
+          <div class="profile-achievement-empty-icon" aria-hidden="true"><i class="fa-solid fa-medal"></i></div>
+          <div>
+            <strong>${profileEscapeHtml(highlightedAchievement.title)}</strong>
+          </div>
+        `;
+      }
+
+      function openProfileAchievementsModal() {
+        const modal = document.getElementById('profileAchievementsModal');
+        if (!modal) return;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeProfileAchievementsModal() {
+        const modal = document.getElementById('profileAchievementsModal');
+        if (!modal) return;
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      function renderAvatarFrame(frameEl, imageEl, initialsEl, imageUrl, initials) {
+        if (!frameEl || !imageEl || !initialsEl) return;
+
+        const safeInitials = initials || 'ST';
+        initialsEl.textContent = safeInitials;
+
+        if (imageUrl) {
+          imageEl.src = imageUrl;
+          imageEl.hidden = false;
+          frameEl.classList.add('has-image');
+          initialsEl.hidden = true;
+          return;
+        }
+
+        imageEl.removeAttribute('src');
+        imageEl.hidden = true;
+        frameEl.classList.remove('has-image');
+        initialsEl.hidden = false;
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = () => reject(new Error('Nu s-a putut citi imaginea selectată.'));
+          reader.readAsDataURL(file);
+        });
       }
 
       function isCurrentUserRecord(record, user) {
@@ -1118,12 +1752,13 @@
       }
 
       function buildRecentActivityLink(type, record) {
+        const lang = getProfileLanguage();
         const links = {
-          post: { href: 'comments.html#postsFeed', label: 'Deschide forumul' },
-          question: { href: 'discutie.html#commentsList', label: 'Deschide discuția' },
-          comment: { href: 'discutie.html#commentsList', label: 'Vezi comentariile' },
-          document: { href: 'documente.html', label: 'Vezi documentele' },
-          review: { href: 'professor-profile.html', label: 'Vezi profilul profesorului' }
+          post: { href: 'comments.html#postsFeed', label: profileText('Deschide forumul', 'Open the forum', lang) },
+          question: { href: 'discutie.html#commentsList', label: profileText('Deschide discuția', 'Open the discussion', lang) },
+          comment: { href: 'discutie.html#commentsList', label: profileText('Vezi comentariile', 'View comments', lang) },
+          document: { href: 'documente.html', label: profileText('Vezi documentele', 'View documents', lang) },
+          review: { href: 'professor-profile.html', label: profileText('Vezi profilul profesorului', 'View professor profile', lang) }
         };
 
         const fallback = links[type] || links.post;
@@ -1178,18 +1813,19 @@
       }
 
       function buildActivityEmptyState() {
+        const lang = getProfileLanguage();
         const empty = document.createElement('div');
         empty.className = 'activity-empty';
         empty.innerHTML = `
           <div class="activity-empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-          <h3>Nu există activitate recentă</h3>
-          <p>Când vei publica postări, comentarii sau recenzii, acestea vor apărea aici.</p>
+          <h3>${profileText('Nu există activitate recentă', 'No recent activity', lang)}</h3>
+          <p>${profileText('Când vei publica postări, comentarii sau recenzii, acestea vor apărea aici.', 'When you publish posts, comments, or reviews, they will appear here.', lang)}</p>
         `;
 
         const cta = document.createElement('a');
         cta.className = 'btn-secondary';
         cta.href = 'comments.html';
-        cta.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Explorează forumul';
+        cta.innerHTML = `<i class="fa-solid fa-arrow-right"></i> ${profileText('Explorează forumul', 'Explore the forum', lang)}`;
         empty.appendChild(cta);
         return empty;
       }
@@ -1220,14 +1856,20 @@
           const faculty = profileData.data?.faculty || user.user_metadata?.faculty || '-';
           const subject = profileData.data?.taught_subject || user.user_metadata?.taught_subject || '-';
           const teachingYears = Array.isArray(profileData.data?.teaching_years) ? profileData.data.teaching_years.join(', ') : (user.user_metadata?.teaching_years || []).join(', ');
-          const createdAt = formatProfileDateTime(user.created_at);
-          const lastLogin = formatProfileDateTime(user.last_sign_in_at);
-          const roleLabel = isAdmin ? 'Administrator' : (isProfessor ? 'Profesor' : 'Student');
+          const profileLanguage = getProfileLanguage();
+          const createdAt = formatProfileDateTime(user.created_at, profileLanguage);
+          const lastLogin = formatProfileDateTime(user.last_sign_in_at, profileLanguage);
+          const roleLabel = isAdmin
+            ? profileText('Administrator', 'Administrator', profileLanguage)
+            : (isProfessor ? profileText('Profesor', 'Professor', profileLanguage) : profileText('Student', 'Student', profileLanguage));
+          const profilePictureUrl = getProfilePictureUrl(user);
+          const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const profileAboutMe = getProfileAboutMe(user);
         
           // Update header
           document.getElementById('profileFullName').textContent = fullName;
           document.getElementById('profileEmail').textContent = user.email;
-          document.getElementById('profileRole').textContent = `Cont ${roleLabel} conectat`;
+          document.getElementById('profileRole').textContent = profileText(`Cont ${roleLabel} conectat`, `${roleLabel} account connected`, profileLanguage);
           const profileRoleBadge = document.getElementById('profileRoleBadge');
           const profileSummaryRole = document.getElementById('profileSummaryRole');
           const profileSummaryCreatedAt = document.getElementById('profileSummaryCreatedAt');
@@ -1238,39 +1880,96 @@
           const personalSectionTitle = document.getElementById('personalSectionTitle');
           const activitySectionTitle = document.getElementById('activitySectionTitle');
           const recentSectionTitle = document.getElementById('recentSectionTitle');
+          const profileKicker = document.querySelector('.profile-kicker');
+          const viewAchievementsBtn = document.getElementById('viewAchievementsBtn');
+          const closeProfileAchievementsModalBtn = document.getElementById('closeProfileAchievementsModalBtn');
+          const profileAchievementsModal = document.getElementById('profileAchievementsModal');
+          const profileAchievementsModalTitle = document.getElementById('profileAchievementsModalTitle');
+          const profileAchievementsModalSubtitle = document.querySelector('.profile-achievements-subtitle');
           const editProfileBtn = document.getElementById('editProfileBtn');
 
+          if (profileKicker) {
+            profileKicker.innerHTML = `<i class="fa-solid fa-sparkles"></i> ${profileText('Cont personal premium', 'Premium personal account', profileLanguage)}`;
+          }
+
+          if (viewAchievementsBtn) {
+            viewAchievementsBtn.innerHTML = `<i class="fa-solid fa-medal"></i> ${profileText('Vezi achivment-uri', 'View achievements', profileLanguage)}`;
+          }
+
+          if (profileAchievementsModalTitle) {
+            profileAchievementsModalTitle.textContent = profileText('Toate achivment-urile', 'All achievements', profileLanguage);
+          }
+
+          if (profileAchievementsModalSubtitle) {
+            profileAchievementsModalSubtitle.textContent = profileText(
+              'Galerie de prezentare pentru sistemul de gamification.',
+              'Showcase gallery for the gamification system.',
+              profileLanguage
+            );
+          }
+
+          if (closeProfileAchievementsModalBtn) {
+            closeProfileAchievementsModalBtn.setAttribute('aria-label', profileText('Închide fereastra', 'Close dialog', profileLanguage));
+          }
+
           if (isAdmin) {
-            if (yearLabel) yearLabel.textContent = 'Nivel acces';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Administrativ';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Platformă';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Evenimente recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-user-shield"></i> Editează profil admin';
+            if (yearLabel) yearLabel.textContent = profileText('Nivel acces', 'Access level', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Profil Administrativ', 'Admin Profile', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate Platformă', 'Platform Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Evenimente recente', 'Recent events', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${profileText('Editează profil admin', 'Edit admin profile', profileLanguage)}`;
           } else if (isProfessor) {
-            if (yearLabel) yearLabel.textContent = 'Ani de predare';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Profil Academic';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate Comunitate';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Interacțiuni recente';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-chalkboard-user"></i> Editează profil profesor';
+            if (yearLabel) yearLabel.textContent = profileText('Ani de predare', 'Teaching years', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Profil Academic', 'Academic Profile', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate Comunitate', 'Community Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Interacțiuni recente', 'Recent interactions', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-chalkboard-user"></i> ${profileText('Editează profil profesor', 'Edit professor profile', profileLanguage)}`;
           } else {
-            if (yearLabel) yearLabel.textContent = 'An de Studiu';
-            if (personalSectionTitle) personalSectionTitle.textContent = 'Informații Personale';
-            if (activitySectionTitle) activitySectionTitle.textContent = 'Activitate';
-            if (recentSectionTitle) recentSectionTitle.textContent = 'Activitate recentă';
-            if (editProfileBtn) editProfileBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editează profil';
+            if (yearLabel) yearLabel.textContent = profileText('An de Studiu', 'Study year', profileLanguage);
+            if (personalSectionTitle) personalSectionTitle.textContent = profileText('Informații Personale', 'Personal Information', profileLanguage);
+            if (activitySectionTitle) activitySectionTitle.textContent = profileText('Activitate', 'Activity', profileLanguage);
+            if (recentSectionTitle) recentSectionTitle.textContent = profileText('Activitate recentă', 'Recent activity', profileLanguage);
+            if (editProfileBtn) editProfileBtn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ${profileText('Editează profil', 'Edit profile', profileLanguage)}`;
           }
 
           if (profileRoleBadge) profileRoleBadge.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${roleLabel}`;
           if (profileSummaryRole) profileSummaryRole.textContent = roleLabel;
           if (profileSummaryCreatedAt) profileSummaryCreatedAt.textContent = createdAt;
-          if (profileSummaryStatus) profileSummaryStatus.textContent = 'Activ';
-          if (profileStatusBadge) profileStatusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Cont activ';
-          if (profileLoginBadge) profileLoginBadge.innerHTML = `<i class="fa-solid fa-clock"></i> Ultima autentificare: ${lastLogin}`;
+          if (profileSummaryStatus) profileSummaryStatus.textContent = profileText('Activ', 'Active', profileLanguage);
+          if (profileStatusBadge) profileStatusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${profileText('Cont activ', 'Active account', profileLanguage)}`;
+          if (profileLoginBadge) profileLoginBadge.innerHTML = `<i class="fa-solid fa-clock"></i> ${profileText('Ultima autentificare', 'Last login', profileLanguage)}: ${lastLogin}`;
+          const profileAboutMeEl = document.getElementById('profileAboutMe');
+          if (profileAboutMeEl) profileAboutMeEl.textContent = profileAboutMe || profileText('Nu a fost adăugată încă o descriere.', 'No description has been added yet.', profileLanguage);
+
+          renderProfileAchievementSpotlight(isAdmin, profileLanguage);
+          renderProfileAchievementsGrid(profileLanguage);
+
+          if (viewAchievementsBtn) {
+            viewAchievementsBtn.addEventListener('click', openProfileAchievementsModal);
+          }
+
+          if (closeProfileAchievementsModalBtn) {
+            closeProfileAchievementsModalBtn.addEventListener('click', closeProfileAchievementsModal);
+          }
+
+          if (profileAchievementsModal) {
+            profileAchievementsModal.addEventListener('click', (event) => {
+              if (event.target === profileAchievementsModal) {
+                closeProfileAchievementsModal();
+              }
+            });
+          }
+
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+              closeProfileAchievementsModal();
+            }
+          });
         
           // Update info section
           document.getElementById('infoFullName').textContent = fullName;
           document.getElementById('infoEmail').textContent = user.email;
-          document.getElementById('infoYear').textContent = isAdmin ? 'Administrator' : (isProfessor ? (teachingYears || '-') : (year || '-'));
+          document.getElementById('infoYear').textContent = isAdmin ? profileText('Administrator', 'Administrator', profileLanguage) : (isProfessor ? (teachingYears || '-') : (year || '-'));
           document.getElementById('infoSpecialization').textContent = specialization || '-';
           document.getElementById('infoCreatedAt').textContent = createdAt;
           document.getElementById('infoLastLogin').textContent = lastLogin;
@@ -1293,8 +1992,13 @@
           }
         
           // Update avatar
-          const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-          document.getElementById('profileAvatarLarge').textContent = initials || 'ST';
+            renderAvatarFrame(
+              document.getElementById('profileAvatarLarge'),
+              document.getElementById('profileAvatarLargeImage'),
+              document.getElementById('profileAvatarLargeInitials'),
+              profilePictureUrl,
+              initials
+            );
         
           const [postsResult, questionsResult, documentsResult, reviewsResult] = await Promise.all([
             typeof getPosts === 'function' ? getPosts() : Promise.resolve({ success: false, data: [] }),
@@ -1394,8 +2098,115 @@
           const form = document.getElementById('editProfileForm');
           const studentEditFields = document.getElementById('studentEditFields');
           const professorEditFields = document.getElementById('professorEditFields');
+          const editProfilePictureGroup = document.getElementById('editProfilePictureGroup');
+          const editAboutMeGroup = document.getElementById('editAboutMeGroup');
+          const adminEditAboutMe = document.getElementById('adminEditAboutMe');
+          const profilePictureInput = document.getElementById('profilePictureInput');
+          const clearProfilePictureBtn = document.getElementById('clearProfilePictureBtn');
+          const profilePicturePreview = document.getElementById('profilePicturePreview');
+          const profilePicturePreviewImage = document.getElementById('profilePicturePreviewImage');
+          const profilePicturePreviewInitials = document.getElementById('profilePicturePreviewInitials');
+          let selectedProfilePictureUrl = profilePictureUrl;
+
+          const localizeEditProfileModal = () => {
+            if (!modal) return;
+            const modalTitle = modal.querySelector('.modal-header h2');
+            const labels = modal.querySelectorAll('.form-group > label');
+            const pictureHelp = modal.querySelector('.avatar-upload-help');
+            const primaryButton = modal.querySelector('.form-actions .btn-primary');
+            const secondaryButton = modal.querySelector('.form-actions .btn-secondary');
+            const clearButton = modal.querySelector('#clearProfilePictureBtn');
+            const yearOptions = Array.from(modal.querySelectorAll('#studentEditYear option'));
+            const studentName = modal.querySelector('#studentEditFullName');
+            const studentSpecialization = modal.querySelector('#studentEditSpecialization');
+            const professorName = modal.querySelector('#professorEditFullName');
+            const professorFaculty = modal.querySelector('#professorEditFaculty');
+            const professorSpecialization = modal.querySelector('#professorEditSpecialization');
+            const professorSubject = modal.querySelector('#professorEditSubject');
+            const professorTeachingYears = modal.querySelector('#professorEditTeachingYears');
+
+            if (modalTitle) modalTitle.textContent = profileText('Editează Profil', 'Edit Profile', profileLanguage);
+            if (labels[0]) labels[0].textContent = profileText('Poză de profil', 'Profile picture', profileLanguage);
+            if (pictureHelp) pictureHelp.textContent = profileText('Alege o imagine JPG, PNG sau WEBP. Poza va fi salvată împreună cu profilul.', 'Choose a JPG, PNG, or WEBP image. The picture will be saved with your profile.', profileLanguage);
+            if (labels[1]) labels[1].textContent = profileText('Despre mine', 'About me', profileLanguage);
+            if (labels[2]) labels[2].textContent = profileText('Nume Complet (Student)', 'Full Name (Student)', profileLanguage);
+            if (labels[3]) labels[3].textContent = profileText('An de Studiu', 'Study Year', profileLanguage);
+            if (labels[4]) labels[4].textContent = profileText('Specializare', 'Specialization', profileLanguage);
+            if (labels[5]) labels[5].textContent = profileText('Nume Complet (Profesor)', 'Full Name (Professor)', profileLanguage);
+            if (labels[6]) labels[6].textContent = profileText('Facultate / Departament', 'Faculty / Department', profileLanguage);
+            if (labels[7]) labels[7].textContent = profileText('Specializare', 'Specialization', profileLanguage);
+            if (labels[8]) labels[8].textContent = profileText('Materie predată', 'Taught subject', profileLanguage);
+            if (labels[9]) labels[9].textContent = profileText('Anii de predare', 'Teaching years', profileLanguage);
+            if (primaryButton) primaryButton.textContent = profileText('Salvează', 'Save', profileLanguage);
+            if (secondaryButton) secondaryButton.textContent = profileText('Anulează', 'Cancel', profileLanguage);
+            if (clearButton) clearButton.textContent = profileText('Elimină poza', 'Remove picture', profileLanguage);
+            if (yearOptions[0]) yearOptions[0].textContent = profileText('Selectează anul', 'Select year', profileLanguage);
+            if (yearOptions[1]) yearOptions[1].textContent = profileText('Anul I', 'Year 1', profileLanguage);
+            if (yearOptions[2]) yearOptions[2].textContent = profileText('Anul II', 'Year 2', profileLanguage);
+            if (yearOptions[3]) yearOptions[3].textContent = profileText('Anul III', 'Year 3', profileLanguage);
+            if (yearOptions[4]) yearOptions[4].textContent = profileText('Anul IV', 'Year 4', profileLanguage);
+            if (yearOptions[5]) yearOptions[5].textContent = profileText('Masterat', 'Master', profileLanguage);
+            if (studentName) studentName.placeholder = profileText('Introdu numele tău complet', 'Enter your full name', profileLanguage);
+            if (studentSpecialization) studentSpecialization.placeholder = profileText('Ex: Calculatoare, Tehnologia Informației, Ingineria Sistemelor Multimedia', 'E.g. Computer Science, Information Technology, Multimedia Systems Engineering', profileLanguage);
+            if (professorName) professorName.placeholder = profileText('Nume profesor', 'Professor name', profileLanguage);
+            if (professorFaculty) professorFaculty.placeholder = profileText('Facultatea de Inginerie', 'Faculty of Engineering', profileLanguage);
+            if (professorSpecialization) professorSpecialization.placeholder = profileText('Calculatoare', 'Computer Science', profileLanguage);
+            if (professorSubject) professorSubject.placeholder = profileText('Programare Web', 'Web Programming', profileLanguage);
+            if (professorTeachingYears) professorTeachingYears.placeholder = profileText('1,2,3,4,master', '1,2,3,4,master', profileLanguage);
+          };
+
+          const refreshPreviewAvatar = () => {
+            renderAvatarFrame(
+              profilePicturePreview,
+              profilePicturePreviewImage,
+              profilePicturePreviewInitials,
+              selectedProfilePictureUrl,
+              initials
+            );
+          };
+
+          if (profilePictureInput) {
+            profilePictureInput.addEventListener('change', async () => {
+              const file = profilePictureInput.files?.[0];
+              if (!file) return;
+
+              if (!file.type.startsWith('image/')) {
+                showNotification(profileText('Alege doar un fișier imagine.', 'Choose an image file only.', profileLanguage), 'error');
+                profilePictureInput.value = '';
+                return;
+              }
+
+              if (file.size > 2 * 1024 * 1024) {
+                showNotification(profileText('Imaginea trebuie să aibă cel mult 2 MB.', 'The image must be at most 2 MB.', profileLanguage), 'error');
+                profilePictureInput.value = '';
+                return;
+              }
+
+              try {
+                selectedProfilePictureUrl = await fileToDataUrl(file);
+                refreshPreviewAvatar();
+              } catch (error) {
+                showNotification(error.message || profileText('Nu s-a putut încărca imaginea.', 'The image could not be uploaded.', profileLanguage), 'error');
+                profilePictureInput.value = '';
+              }
+            });
+          }
+
+          if (clearProfilePictureBtn) {
+            clearProfilePictureBtn.addEventListener('click', () => {
+              selectedProfilePictureUrl = '';
+              if (profilePictureInput) profilePictureInput.value = '';
+              refreshPreviewAvatar();
+            });
+          }
         
           editBtn.addEventListener('click', () => {
+          localizeEditProfileModal();
+          if (editProfilePictureGroup) editProfilePictureGroup.style.display = isAdmin ? 'block' : 'none';
+          if (editAboutMeGroup) editAboutMeGroup.style.display = isAdmin ? 'block' : 'none';
+          selectedProfilePictureUrl = profilePictureUrl;
+          if (profilePictureInput) profilePictureInput.value = '';
+          if (adminEditAboutMe) adminEditAboutMe.value = profileAboutMe;
           if (isProfessor || isAdmin) {
             if (studentEditFields) studentEditFields.style.display = 'none';
             if (professorEditFields) professorEditFields.style.display = 'block';
@@ -1412,11 +2223,21 @@
             document.getElementById('studentEditSpecialization').value = specialization || '';
           }
 
+          refreshPreviewAvatar();
+
           modal.style.display = 'flex';
           });
         
-          closeBtn.addEventListener('click', () => modal.style.display = 'none');
-          cancelBtn.addEventListener('click', () => modal.style.display = 'none');
+          closeBtn.addEventListener('click', () => {
+          modal.style.display = 'none';
+          if (profilePictureInput) profilePictureInput.value = '';
+          selectedProfilePictureUrl = profilePictureUrl;
+          });
+          cancelBtn.addEventListener('click', () => {
+          modal.style.display = 'none';
+          if (profilePictureInput) profilePictureInput.value = '';
+          selectedProfilePictureUrl = profilePictureUrl;
+          });
         
           form.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -1439,21 +2260,23 @@
             specialization: newSpec,
             faculty: newFaculty,
             taught_subject: newSubject,
-            teaching_years: newTeachingYears
+            teaching_years: newTeachingYears,
+            profile_picture_url: selectedProfilePictureUrl,
+            about_me: isAdmin && adminEditAboutMe ? adminEditAboutMe.value : profileAboutMe
           });
 
           if (updateResult.success) {
             const freshUser = await getAuthenticatedUser(false);
             if (!freshUser) {
-              showNotification('Nu s-a putut actualiza sesiunea utilizatorului.', 'error');
+              showNotification(profileText('Nu s-a putut actualiza sesiunea utilizatorului.', 'User session could not be refreshed.', profileLanguage), 'error');
               return;
             }
 
-            showNotification('Profil actualizat!', 'success');
+            showNotification(profileText('Profil actualizat!', 'Profile updated!', profileLanguage), 'success');
             modal.style.display = 'none';
             setTimeout(() => window.location.reload(), 1000);
           } else {
-            showNotification(updateResult.error || 'Nu s-au putut salva datele.', 'error');
+            showNotification(updateResult.error || profileText('Nu s-au putut salva datele.', 'Data could not be saved.', profileLanguage), 'error');
           }
           });
         
@@ -1461,28 +2284,28 @@
           const twoFactorBtn = document.getElementById('twoFactorBtn');
           if (twoFactorBtn) {
             twoFactorBtn.disabled = true;
-            twoFactorBtn.title = '2FA este dezactivat în configurația curentă.';
+            twoFactorBtn.title = profileText('2FA este dezactivat în configurația curentă.', '2FA is disabled in the current configuration.', profileLanguage);
             twoFactorBtn.addEventListener('click', () => {
-              showNotification('2FA este dezactivat în prezent.');
+              showNotification(profileText('2FA este dezactivat în prezent.', '2FA is currently disabled.', profileLanguage));
             });
           }
 
           document.getElementById('changePasswordBtn').addEventListener('click', () => {
-            showNotification('Pentru schimbarea parolei, folosește fluxul de recuperare din pagina de conectare.', 'info');
+            showNotification(profileText('Pentru schimbarea parolei, folosește fluxul de recuperare din pagina de conectare.', 'To change your password, use the recovery flow on the login page.', profileLanguage), 'info');
           });
         
           document.getElementById('deleteAccountBtn').addEventListener('click', () => {
-            if (confirm('Ești sigur? Această acțiune nu poate fi anulată!')) {
-              showNotification('Pentru ștergerea contului, trimite o solicitare prin pagina de contact.', 'info');
+            if (confirm(profileText('Ești sigur? Această acțiune nu poate fi anulată!', 'Are you sure? This action cannot be undone!', profileLanguage))) {
+              showNotification(profileText('Pentru ștergerea contului, trimite o solicitare prin pagina de contact.', 'To delete your account, send a request through the contact page.', profileLanguage), 'info');
             }
           });
         } catch (error) {
           console.error('Profile initialization failed:', error);
           const infoEmail = document.getElementById('infoEmail');
           if (infoEmail) {
-            infoEmail.textContent = 'Sesiune invalidă sau conexiune Supabase indisponibilă';
+            infoEmail.textContent = profileText('Sesiune invalidă sau conexiune Supabase indisponibilă', 'Invalid session or unavailable Supabase connection', getProfileLanguage());
           }
-          showNotification('Nu am putut încărca profilul din baza de date. Reîncarcă pagina.', 'error');
+          showNotification(profileText('Nu am putut încărca profilul din baza de date. Reîncarcă pagina.', 'Could not load the profile from the database. Reload the page.', getProfileLanguage()), 'error');
         }
       }
       

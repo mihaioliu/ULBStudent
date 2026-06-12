@@ -121,8 +121,25 @@
 
       .discussion-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
+        grid-template-columns: 300px 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+          "sidebar header"
+          "sidebar main";
         gap: 1rem;
+        align-items: start;
+      }
+
+      .discussion-sidebar { grid-area: sidebar; }
+      .discussion-header-card { grid-area: header; }
+      .discussion-main { grid-area: main; }
+
+      .discussion-header-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 16px 36px rgba(15,23,42,0.06);
       }
 
       .discussion-main,
@@ -596,22 +613,26 @@
     </header>
 
     <main class="discussion-detail-container">
-      <section class="discussion-hero">
-        <div class="discussion-hero-top">
-          <div>
-            <span class="discussion-brand"><i class="fa-solid fa-comments"></i> ULBStudent Forum</span>
-            <h1>Discuție</h1>
-            <p>Vezi postarea, votează în sondaj și participă la conversație.</p>
-            <div class="discussion-hero-meta">
-              <span class="discussion-status-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Conversație activă</span>
-              <span class="discussion-pill"><i class="fa-solid fa-shield-heart"></i> Comunitate academică</span>
-            </div>
-          </div>
-          <a href="comments.html" class="discussion-back-link"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
-        </div>
-      </section>
 
       <div class="discussion-layout">
+        <!-- SIDEBAR (left) -->
+        
+        <!-- Header card (to the right of sidebar) -->
+        <div class="discussion-header-card">
+          <div class="discussion-hero-top">
+            <div>
+              <span class="discussion-brand"><i class="fa-solid fa-comments"></i> ULBStudent Forum</span>
+              <h1>Discuție</h1>
+              <p>Vezi postarea, votează în sondaj și participă la conversație.</p>
+              <div class="discussion-hero-meta">
+                <span class="discussion-status-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Conversație activă</span>
+                <span class="discussion-pill"><i class="fa-solid fa-shield-heart"></i> Comunitate academică</span>
+              </div>
+            </div>
+            <a href="comments.html" class="discussion-back-link"><i class="fa-solid fa-arrow-left"></i> Înapoi la discuții</a>
+          </div>
+        </div>
+
         <div class="discussion-main">
           <article id="commentsPostContainer" class="discussion-panel discussion-thread-card is-loading">
             <div class="thread-skeleton" aria-hidden="true" style="display:grid; gap:0.75rem;">

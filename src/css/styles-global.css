@@ -2290,15 +2290,22 @@ footer {
 }
 
 .activity-avatar {
-  font-size: 2rem;
+  font-size: 0.85rem;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: rgba(230, 57, 70, 0.1);
+  width: 40px;
+  height: 40px;
+  background: rgba(230, 57, 70, 0.08);
   border-radius: 50%;
   flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 4px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .activity-content {
@@ -2413,6 +2420,18 @@ footer {
   color: var(--text);
   margin: 0;
   font-weight: 600;
+}
+
+/* Prevent long professor names from overflowing the card */
+.testimonial-author > div {
+  min-width: 0; /* allow flex child to shrink */
+  overflow: hidden;
+}
+
+.testimonial-author h4 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .testimonial-author span {
@@ -3833,7 +3852,8 @@ main#home {
   border-radius: 14px;
   display: grid;
   place-items: center;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .activity-avatar,
@@ -4109,9 +4129,45 @@ main#home {
   gap: 0.85rem;
 }
 
+/* Desktop: make testimonial cards wider and show one card centered at a time */
 #home #testimonialsGrid > * {
   min-width: calc(100% - 0.85rem);
   max-width: calc(100% - 0.85rem);
+}
+
+@media (min-width: 900px) {
+  /* Centered, wider testimonial cards on desktop: use viewport-based slide width
+     but keep the slider mechanism consistent with other tracks. */
+  #home #testimonialsGrid {
+    grid-auto-flow: column;
+    /* match recent activity: one slide equals full column width */
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    gap: 0.5rem;
+    justify-content: flex-start;
+  }
+
+  #home #testimonialsGrid > * {
+    min-width: 100%;
+    max-width: 100%;
+    margin: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Enforce one testimonial per slide and match activity card width */
+#home #testimonialsGrid > * {
+  min-width: 100% !important;
+  max-width: 100% !important;
+  scroll-snap-align: start !important;
+}
+
+#home #testimonialsGrid .testimonial-card {
+  width: 100% !important;
+  box-sizing: border-box;
 }
 
 #home .home-slider-track.is-sliding > *.is-active {
@@ -6802,6 +6858,27 @@ body.dark-mode .review-field textarea {
   background: #111827 !important;
   border-color: #334155 !important;
   color: #f8fafc !important;
+}
+
+/* Ensure the contact form submit button follows global theme colors
+   Light: metallic gold like other primary actions
+   Dark: red accent to match dark-mode accents */
+#contactForm .btn-primary,
+.contact-page-shell .btn-primary {
+  background: linear-gradient(135deg, #d4af37 0%, #c9a227 100%) !important;
+  color: #1a1403 !important;
+  border: 1px solid #d4af37 !important;
+  box-shadow: 0 4px 16px rgba(212,175,55,0.3) !important;
+}
+
+body.dark-mode #contactForm .btn-primary,
+html.dark-mode #contactForm .btn-primary,
+body.dark-mode .contact-page-shell .btn-primary,
+html.dark-mode .contact-page-shell .btn-primary {
+  background: linear-gradient(135deg, #e63946 0%, #cc1d26 100%) !important;
+  color: #ffffff !important;
+  border-color: #e63946 !important;
+  box-shadow: 0 4px 16px rgba(230,57,70,0.25) !important;
 }
 
 @media (max-width: 1100px) {
